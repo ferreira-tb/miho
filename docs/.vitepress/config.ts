@@ -17,6 +17,16 @@ export default defineConfig({
     plugins: [UnoCSS({ presets: [presetUno()] })]
   },
 
+  head: [
+    [
+      'meta',
+      {
+        name: 'google-site-verification',
+        content: 'FpKCfhe8tgbogFn89w4fUPpqlYF_Hcrv7h6GpUL8rdE'
+      }
+    ]
+  ],
+
   themeConfig: {
     nav: [
       {
