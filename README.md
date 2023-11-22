@@ -2,8 +2,20 @@
 
 Easily bump your package.json version.
 
-```
-npm i -D miho
+## Config file
+
+It is recommended to use a configuration file to better manage Miho. The file should be named `miho.config.ts`, but other extensions are also accepted, such as `.js`. For more details on the options available, [visit the API](https://tb.dev.br/miho/interfaces/MihoOptions.html).
+
+```ts
+import { defineConfig } from 'miho';
+
+export default defineConfig({
+  release: 'patch',
+  recursive: false,
+  overrides: {
+    'project-1': 'minor'
+  }
+});
 ```
 
 ## CLI Usage
@@ -45,9 +57,23 @@ npx miho 8
 8.0.0
 ```
 
+#### `--ask`
+
+After getting the packages and being ready to bump them, Miho, by default, checks that you agree with the changes. When multiple packages are being changed at the same time, Miho also allows you to specify which ones to change.
+
+You can change this behavior using the `--no-ask` command. That way, Miho won't ask for your confirmation and will execute the changes immediately.
+
+```bash
+npx miho patch --no-ask
+```
+
 #### `--recursive`
 
-Recursively searches for packages in the directory and all its subdirectories, except `.git` and `node_modules`. To refine the search, use it together with other commands, such as `--exclude`.
+Recursively searches for packages in the directory and all its subdirectories, except `.git` and `node_modules`. To refine the search, use it together with other commands, such as [`--exclude`](https://github.com/ferreira-tb/miho#--exclude).
+
+```bash
+npx miho major -r
+```
 
 #### `--ignore`
 
