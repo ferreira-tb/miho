@@ -62,13 +62,13 @@ npx miho major -r
 
 Glob pattern indicating where to search for packages. By default, Miho will search the [current working directory](https://nodejs.org/dist/latest/docs/api/process.html#processcwd) (and also subdirectories, if [`--recursive`](./cli.md#recursive)).
 
-::: warning
-If the search is not recursive, this option is ignored. Miho will only search the current directory.
-:::
-
 ```bash
 npx miho major -r -i testdir/**
 ```
+
+::: warning
+If the search is not recursive, this option is ignored. Miho will only search the current directory.
+:::
 
 #### `--exclude`
 
