@@ -6,7 +6,7 @@ import chalk from 'chalk';
 import { Miho } from '../index';
 import { loadMihoConfig } from '../config';
 import { prompt } from './prompt';
-import type { MihoOptions } from '../../types';
+import type { MihoOptions } from '../types';
 
 async function init() {
   const l = console.log;
@@ -28,14 +28,22 @@ async function init() {
         type: 'boolean',
         alias: 'r'
       },
-      ignore: {
-        desc: 'Package names to ignore.',
-        type: 'array'
+      include: {
+        desc: 'Glob pattern indicating where to search for packages.',
+        type: 'array',
+        alias: 'i'
       },
       exclude: {
-        desc: 'Glob patterns indicating where to not search for packages.',
+        desc: `Glob patterns indicating where to ${chalk.bold(
+          'NOT'
+        )} search for packages.`,
         type: 'array',
         alias: 'x'
+      },
+      filter: {
+        desc: 'Package names to filter.',
+        type: 'array',
+        alias: 'f'
       },
       overrides: {
         desc: 'Allow to configure each package individually.',
@@ -60,8 +68,16 @@ async function init() {
     options.recursive = argv.recursive;
   }
 
-  if (Array.isArray(argv.ignore)) {
-    options.ignore = argv.ignore.map((i) => {
+  if (Array.isArray(argv.include)) {
+    options.include = argv.include.map((i) => i.toString());
+  }
+
+  if (Array.isArray(argv.exclude)) {
+    options.exclude = argv.exclude.map((i) => i.toString());
+  }
+
+  if (Array.isArray(argv.filter)) {
+    options.filter = argv.filter.map((i) => {
       const value = i.toString();
       if (/^\/.*\/$/.test(value)) {
         try {
@@ -73,10 +89,6 @@ async function init() {
 
       return value;
     });
-  }
-
-  if (Array.isArray(argv.exclude)) {
-    options.exclude = argv.exclude.map((i) => i.toString());
   }
 
   if (argv.overrides && typeof argv.overrides === 'object') {

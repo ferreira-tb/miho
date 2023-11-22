@@ -4,8 +4,9 @@
 | :---------------------------------: | :---- | :------------------------------------------------------------------ |
 |       [`--ask`](./cli.md#ask)       | none  | Determines whether Miho should ask for confirmation before bumping. |
 | [`--recursive`](./cli.md#recursive) | `-r`  | Recursively bumps all packages in the monorepo.                     |
-|    [`--ignore`](./cli.md#ignore)    | none  | Package names to ignore. May be regex.                              |
-|   [`--exclude`](./cli.md#exclude)   | `-x`  | Glob patterns indicating where to not search for packages.          |
+|   [`--include`](./cli.md#include)   | `-i`  | Glob pattern indicating where to search for packages.               |
+|   [`--exclude`](./cli.md#exclude)   | `-x`  | Glob patterns indicating where to **NOT** search for packages.      |
+|    [`--filter`](./cli.md#filter)    | `-f`  | Package names to filter. May be regex.                              |
 | [`--overrides`](./cli.md#overrides) | `-o`  | Allow to configure each package individually.                       |
 |     [`--preid`](./cli.md#preid)     | `-p`  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.           |
 
@@ -57,20 +58,32 @@ Recursively searches for packages in the directory and all its subdirectories, e
 npx miho major -r
 ```
 
-#### `--ignore`
+#### `--include`
 
-Defines package names that should be ignored. Strings in the format `/abc/` will be treated as regex.
+Glob pattern indicating where to search for packages. By default, Miho will search the [current working directory](https://nodejs.org/dist/latest/docs/api/process.html#processcwd) (and also subdirectories, if [`--recursive`](./cli.md#recursive)).
+
+::: warning
+If the search is not recursive, this option is ignored. Miho will only search the current directory.
+:::
 
 ```bash
-npx miho patch -r --ignore my-project /onlytest/
+npx miho major -r -i testdir/**
 ```
 
 #### `--exclude`
 
-Glob pattern indicating where Miho should not look for packages.
+Glob pattern indicating where Miho should **not** look for packages.
 
 ```bash
 npx miho patch -r -x testdir/**
+```
+
+#### `--filter`
+
+Package names that should be filtered. Strings in the format `/abc/` will be treated as regex.
+
+```bash
+npx miho patch -r -f my-project /onlytest/
 ```
 
 #### `--overrides`

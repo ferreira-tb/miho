@@ -1,14 +1,15 @@
 import process from 'node:process';
 import { loadConfig } from 'c12';
-import type { MihoOptions } from '../types';
+import type { MihoOptions } from './types';
 
 /** @ignore */
 export const defaultConfig: MihoOptions = {
   preid: 'alpha',
   release: 'patch',
   recursive: false,
-  ignore: [],
-  exclude: []
+  include: '**/',
+  exclude: [],
+  filter: []
 };
 
 /** @internal */
