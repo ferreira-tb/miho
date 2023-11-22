@@ -1,7 +1,8 @@
 import { glob } from 'glob';
 import { MihoPackage } from './package';
 import { defaultConfig } from './config';
-import type { GetPackagesOptions, MihoOptions, PackageData } from '../types';
+import { Filename, MihoIgnore, isNotBlankString } from './utils';
+import type { GetPackagesOptions, MihoOptions, PackageData } from './types';
 
 export class Miho {
   private readonly packages = new Map<number, MihoPackage>();
@@ -65,15 +66,13 @@ export class Miho {
 
   /** Search for all packages that meet the requirements. */
   public static async init(config: Partial<MihoOptions> = {}): Promise<Miho> {
-    let exclude = Array.isArray(config.exclude)
-      ? config.exclude
-      : defaultConfig.exclude;
-    exclude = exclude.filter((e) => typeof e === 'string' && e.length > 0);
+    let { exclude } = config;
+    if (!Array.isArray(exclude)) exclude = defaultConfig.exclude;
+    exclude = exclude.filter(isNotBlankString);
 
-    const pattern = `${config.recursive ? '**/' : ''}package.json`;
-    const files = await glob(pattern, {
+    const files = await glob(this.resolvePatterns(config), {
       withFileTypes: true,
-      ignore: ['.git/**', 'node_modules/**', ...exclude]
+      ignore: [MihoIgnore.GIT, MihoIgnore.NODE_MODULES, ...exclude]
     });
 
     const result = await Promise.all(
@@ -83,5 +82,16 @@ export class Miho {
     );
 
     return new Miho(result.filter(Boolean) as MihoPackage[]);
+  }
+
+  private static resolvePatterns(config: Partial<MihoOptions>) {
+    if (!config.recursive) return Filename.PACKAGE_JSON;
+    let patterns = config.include ?? [];
+    if (typeof patterns === 'string') patterns = [patterns];
+
+    patterns = patterns.map((i) => i.trim());
+    patterns = patterns.filter((i) => i.length > 0);
+    if (patterns.length === 0) return defaultConfig.include;
+    return patterns;
   }
 }

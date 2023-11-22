@@ -3,7 +3,7 @@ import detectIndent from 'detect-indent';
 import semver, { type ReleaseType } from 'semver';
 import { defaultConfig } from './config';
 import type { Path } from 'glob';
-import type { MihoOptions } from '../types';
+import type { MihoOptions } from './types';
 
 type MihoPackageConstructor = {
   readonly raw: Path;
@@ -95,8 +95,8 @@ export class MihoPackage {
     const pkg = JSON.parse(file) as Record<string, unknown>;
 
     const packageName = typeof pkg.name === 'string' ? pkg.name : null;
-    if (packageName && Array.isArray(config.ignore)) {
-      for (const rule of config.ignore) {
+    if (packageName && Array.isArray(config.filter)) {
+      for (const rule of config.filter) {
         if (
           (typeof rule === 'string' && rule === packageName) ||
           (rule instanceof RegExp && rule.test(packageName))

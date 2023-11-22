@@ -22,15 +22,20 @@ export interface MihoOptions extends PackageOptions {
    */
   recursive: boolean;
   /**
-   * Package names to ignore.
-   * This should not be a glob pattern.
+   * Glob pattern indicating where to search for packages.
+   *
+   * By default, Miho will search the current directory (and also subdirectories, if `--recursive`).
    */
-  ignore: (string | RegExp)[];
+  include: string | string[];
   /**
-   * Glob patterns indicating where to not search for packages.
+   * Glob patterns indicating where to **NOT** search for packages.
    * `.git` and `node_modules` are **ALWAYS** excluded.
    */
   exclude: string[];
+  /**
+   * Package names to filter.
+   */
+  filter: (string | RegExp)[];
   /**
    * Each key represents the name of a package.
    * From here you can configure each one individually.
@@ -46,5 +51,5 @@ export type PackageData = {
 };
 
 export type GetPackagesOptions = {
-  filter?: (package: PackageData) => boolean;
+  filter?: (pkg: PackageData) => boolean;
 };
