@@ -59,9 +59,9 @@ npx miho 8
 
 #### `--ask`
 
-After getting the packages and being ready to bump them, Miho, by default, checks that you agree with the changes. When multiple packages are being changed at the same time, Miho also allows you to specify which ones to change.
+After getting the packages and being ready to bump them, Miho, by default, checks that you agree with the changes. When multiple packages are being bumped at the same time, Miho also allows you to specify which ones.
 
-You can change this behavior using the `--no-ask` command. That way, Miho won't ask for your confirmation and will execute the changes immediately.
+You can adjust this behavior using the `--no-ask` command. That way, Miho won't ask for your confirmation and will execute the changes immediately.
 
 ```bash
 npx miho patch --no-ask
@@ -105,4 +105,31 @@ Prerelease identifier. Only considered when the release type is `premajor`, `pre
 
 ```bash
 npx miho preminor -p alpha
+```
+
+## Node usage
+
+```ts
+import { Miho } from 'miho';
+
+// Set up Miho and search for packages.
+const miho = await Miho.init({
+  release: 'patch',
+  recursive: true,
+  ignore: [/test/],
+  overrides: {
+    'that-project': 'major'
+  }
+});
+
+// Get basic information on the packages found.
+// This also returns an id identifying each package,
+// which can eventually be used to bump them individually.
+console.log(miho.getPackages());
+
+// Bump a package by its id.
+await miho.bump(package.id);
+
+// Bump all the packages found by Miho.
+await miho.bumpAll();
 ```
