@@ -29,10 +29,6 @@ export default defineConfig({
 | `--overrides` | `-o`  | Allow to configure each package individually.                       |
 |   `--preid`   | `-p`  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.           |
 
-```bash
-npx miho prepatch -r -p beta -o.test=major
-```
-
 ## Node usage
 
 ```ts
@@ -63,3 +59,7 @@ await miho.bumpAll();
 ## Documentation
 
 Read the [documentation](https://tb.dev.br/miho) for more details.
+
+## License
+
+[MIT](https://github.com/ferreira-tb/miho/blob/main/LICENSE)
