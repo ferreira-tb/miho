@@ -1,3 +1,7 @@
+---
+outline: [2, 3]
+---
+
 # CLI
 
 |               Command               | Alias | Description                                                         |
@@ -50,7 +54,7 @@ You can adjust this behavior using the `--no-ask` command. This way, Miho won't 
 npx miho patch --no-ask
 ```
 
-#### `--recursive`
+### `--recursive`
 
 Recursively searches for packages in the directory and all its subdirectories, except `.git` and `node_modules`. To refine the search, use it together with other commands, such as [`--exclude`](https://github.com/ferreira-tb/miho#--exclude).
 
@@ -58,7 +62,7 @@ Recursively searches for packages in the directory and all its subdirectories, e
 npx miho major -r
 ```
 
-#### `--include`
+### `--include`
 
 Glob pattern indicating where to search for packages. By default, Miho will search the [current working directory](https://nodejs.org/dist/latest/docs/api/process.html#processcwd) (and also subdirectories, if [`--recursive`](./cli.md#recursive)).
 
@@ -70,7 +74,7 @@ npx miho major -r -i testdir/**
 If the search is not recursive, this option is ignored. Miho will only search the current directory.
 :::
 
-#### `--exclude`
+### `--exclude`
 
 Glob pattern indicating where Miho should **not** look for packages.
 
@@ -78,7 +82,7 @@ Glob pattern indicating where Miho should **not** look for packages.
 npx miho patch -r -x testdir/**
 ```
 
-#### `--filter`
+### `--filter`
 
 Package names that should be filtered. Strings in the format `/abc/` will be treated as regex.
 
@@ -86,7 +90,7 @@ Package names that should be filtered. Strings in the format `/abc/` will be tre
 npx miho patch -r -f my-project /onlytest/
 ```
 
-#### `--overrides`
+### `--overrides`
 
 Allows each package to be configured individually. Note that it is more appropriate to use a [config file](../index.md#config-file) in cases like this.
 
@@ -94,7 +98,7 @@ Allows each package to be configured individually. Note that it is more appropri
 npx miho premajor -p beta -r -o.test=patch
 ```
 
-#### `--preid`
+### `--preid`
 
 Prerelease identifier. Only relevant when the release type is `premajor`, `preminor` or `prepatch`.
 
