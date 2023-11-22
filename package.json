@@ -1,14 +1,17 @@
 {
   "name": "miho",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Easily bump your package version",
   "license": "MIT",
   "type": "module",
   "private": false,
-  "homepage": "https://github.com/ferreira-tb/miho",
+  "homepage": "https://tb.dev.br/miho/",
   "repository": {
     "type": "git",
     "url": "https://github.com/ferreira-tb/miho.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ferreira-tb/miho/issues"
   },
   "keywords": [
     "miho",
