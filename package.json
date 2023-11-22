@@ -1,6 +1,6 @@
 {
   "name": "miho",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Easily bump your package.json version.",
   "license": "MIT",
   "type": "module",
@@ -62,7 +62,7 @@
     "vite-plugin-dts": "^3.6.3"
   },
   "bin": {
-    "minify-it": "bin/miho.mjs"
+    "miho": "bin/miho.mjs"
   },
   "files": [
     "dist"
