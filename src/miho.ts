@@ -13,6 +13,11 @@ export class Miho {
     });
   }
 
+  /**
+   * Bump a single package.
+   *
+   * You can get the id of the packages using the {@link Miho.getPackages} method.
+   */
   public async bump(id: number): Promise<Miho> {
     const pkg = this.packages.get(id);
     if (pkg) {
@@ -23,6 +28,7 @@ export class Miho {
     return this;
   }
 
+  /** Bumps all packages found by Miho. */
   public async bumpAll(): Promise<Miho> {
     await Promise.all(
       Array.from(this.packages.keys()).map(this.bump.bind(this))
@@ -31,6 +37,13 @@ export class Miho {
     return this;
   }
 
+  /**
+   * Returns information on the packages found by Miho.
+   *
+   * The objects returned by this method are just a snapshot of
+   * the state of the packages at the time they were found.
+   * @param options
+   */
   public getPackages(options?: GetPackagesOptions): PackageData[] {
     let packages: PackageData[] = Array.from(this.packages.entries()).map(
       ([id, pkg]) => {
@@ -50,6 +63,7 @@ export class Miho {
     return packages;
   }
 
+  /** Search for all packages that meet the requirements. */
   public static async init(config: Partial<MihoOptions> = {}): Promise<Miho> {
     let exclude = Array.isArray(config.exclude)
       ? config.exclude

@@ -3,6 +3,7 @@ import prompts from 'prompts';
 import type { Miho } from '../miho';
 import type { PackageData } from 'types';
 
+/** @internal */
 export async function prompt(miho: Miho, packages: PackageData[]) {
   const l = console.log;
 

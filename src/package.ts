@@ -12,6 +12,7 @@ type MihoPackageConstructor = {
   readonly indent: string;
 };
 
+/** @internal */
 export class MihoPackage {
   private readonly fullpath: string;
   private readonly _packageName: string | null;
