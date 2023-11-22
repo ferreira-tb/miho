@@ -1,0 +1,75 @@
+{
+  "name": "miho",
+  "version": "1.0.0",
+  "description": "Easily bump your package.json version.",
+  "license": "MIT",
+  "type": "module",
+  "private": false,
+  "homepage": "https://github.com/ferreira-tb/miho",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ferreira-tb/miho.git"
+  },
+  "keywords": [
+    "miho",
+    "version bump",
+    "semver"
+  ],
+  "packageManager": "pnpm@8.10.5",
+  "lint-staged": {
+    "*.{?(c|m)@(j|t)s,css,vue,md,json}": "prettier --write"
+  },
+  "scripts": {
+    "build": "node --loader ts-node/esm scripts/build.ts",
+    "minify": "pnpm exec minify-it dist",
+    "prepare": "husky install",
+    "prettier": "pnpm exec prettier . --write",
+    "rollup": "rollup --config rollup.config.ts --configPlugin typescript={tsconfig:'tsconfig.rollup.json'}",
+    "taze": "pnpm exec taze -w -f"
+  },
+  "dependencies": {
+    "c12": "^1.5.1",
+    "chalk": "^5.3.0",
+    "detect-indent": "^7.0.1",
+    "glob": "^10.3.10",
+    "prompts": "^2.4.2",
+    "semver": "^7.5.4",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@types/node": "^20.9.3",
+    "@types/prompts": "^2.4.9",
+    "@types/semver": "^7.5.6",
+    "@types/yargs": "^17.0.32",
+    "execa": "^8.0.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.1.0",
+    "minify-it": "^1.1.1",
+    "npm-run-all2": "^6.1.1",
+    "prettier": "^3.1.0",
+    "rollup": "^4.5.0",
+    "taze": "^0.12.0",
+    "ts-node": "^10.9.1",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.2",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.6.3"
+  },
+  "bin": {
+    "minify-it": "bin/miho.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  }
+}

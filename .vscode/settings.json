@@ -1,0 +1,14 @@
+{
+  "vsicons.associations.files": [
+    {
+      "icon": "tsconfig",
+      "extensions": ["tsconfig.rollup.json"],
+      "filename": true,
+      "format": "svg"
+    }
+  ],
+  "conventionalCommits.promptScopes": false,
+  "prettier.requireConfig": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 2
+}
