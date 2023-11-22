@@ -11,10 +11,11 @@ lerna-debug.log*
 .DS_Store
 dist
 dist-ssr
-docs
 coverage
 *.local
 .vite
+**/.vitepress/temp
+**/.vitepress/cache
 
 /cypress/videos/
 /cypress/screenshots/
