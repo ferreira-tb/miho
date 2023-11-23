@@ -5,6 +5,7 @@
   "license": "MIT",
   "type": "module",
   "private": false,
+  "packageManager": "pnpm@8.10.5",
   "homepage": "https://tb.dev.br/miho/",
   "repository": {
     "type": "git",
@@ -20,17 +21,15 @@
     "semver",
     "package"
   ],
-  "packageManager": "pnpm@8.10.5",
   "lint-staged": {
     "*.{?(c|m)@(j|t)s,css,vue,md,json}": "prettier --write"
   },
   "scripts": {
     "build": "node --loader ts-node/esm scripts/build.ts",
-    "deploy": "run-s docs:build docs:typedoc",
     "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
+    "docs:build": "vitepress build docs && pnpm docs:typedoc",
     "docs:preview": "vitepress preview docs",
-    "docs:typedoc": "npx typedoc --plugin typedoc-plugin-mdn-links",
+    "docs:typedoc": "pnpm exec typedoc --plugin typedoc-plugin-mdn-links",
     "minify": "pnpm exec minify-it dist",
     "prepare": "husky install",
     "prettier": "pnpm exec prettier . --write",
