@@ -1,9 +1,9 @@
 import * as fs from 'node:fs/promises';
 import detectIndent from 'detect-indent';
 import semver, { type ReleaseType } from 'semver';
-import { defaultConfig } from './config';
+import { defaultConfig } from '../config';
 import type { Path } from 'glob';
-import type { MihoOptions } from './types';
+import type { MihoOptions } from '../types';
 
 type MihoPackageConstructor = {
   readonly raw: Path;
@@ -12,7 +12,10 @@ type MihoPackageConstructor = {
   readonly indent: string;
 };
 
-/** @internal */
+/**
+ * @internal
+ * @ignore
+ */
 export class MihoPackage {
   private readonly fullpath: string;
   private readonly _packageName: string | null;
@@ -120,5 +123,19 @@ export class MihoPackage {
   private static isReleaseType(value: unknown): value is ReleaseType {
     if (typeof value !== 'string') return false;
     return semver.RELEASE_TYPES.some((r) => r === value);
+  }
+}
+
+export class PackageData {
+  readonly id: number;
+  readonly name: string | null;
+  readonly version: string;
+  readonly newVersion: string | null;
+
+  constructor(id: number, pkg: MihoPackage) {
+    this.id = id;
+    this.name = pkg.packageName;
+    this.version = pkg.version;
+    this.newVersion = pkg.newVersion;
   }
 }

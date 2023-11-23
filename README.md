@@ -45,7 +45,7 @@ const options = {
   }
 };
 
-const miho = await new Miho(options).search();
+const miho = await new Miho().search(options);
 
 // Get basic information on the packages found.
 // This also returns an id identifying each package,

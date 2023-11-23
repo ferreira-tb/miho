@@ -2,7 +2,10 @@ import process from 'node:process';
 import { loadConfig } from 'c12';
 import type { MihoOptions } from './types';
 
-/** @ignore */
+/**
+ * @internal
+ * @ignore
+ */
 export const defaultConfig: MihoOptions = {
   preid: 'alpha',
   release: 'patch',
@@ -12,7 +15,10 @@ export const defaultConfig: MihoOptions = {
   filter: []
 };
 
-/** @internal */
+/**
+ * @internal
+ * @ignore
+ */
 export async function loadMihoConfig(overrides: Partial<MihoOptions> = {}) {
   const { config } = await loadConfig<MihoOptions>({
     name: 'miho',

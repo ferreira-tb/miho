@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
 import type { Miho } from '../miho';
-import type { PackageData } from '../types';
+import type { PackageData } from '../files';
 
 /** @internal */
 export async function prompt(miho: Miho, packages: PackageData[]) {

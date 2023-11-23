@@ -6,7 +6,7 @@ import chalk from 'chalk';
 import { Miho } from '../index';
 import { loadMihoConfig } from '../config';
 import { prompt } from './prompt';
-import type { MihoOptions } from '../types';
+import type { CliOptions } from '../types';
 
 async function init() {
   const l = console.log;
@@ -54,7 +54,7 @@ async function init() {
     .scriptName('miho')
     .parse();
 
-  const options: Partial<MihoOptions> = {};
+  const options: Partial<CliOptions> = {};
 
   if (argv._[0]) {
     options.release = argv._[0];
@@ -95,9 +95,12 @@ async function init() {
     options.overrides = argv.overrides;
   }
 
-  const config = await loadMihoConfig(options);
+  const { hooks, ...config } = await loadMihoConfig(options);
+  const miho = new Miho(config);
+  if (hooks) miho.resolveHooks(hooks);
 
-  const miho = await new Miho(config).search();
+  await miho.search();
+
   let packages = miho.getPackages({
     filter: (pkg) => Boolean(semver.valid(pkg.version))
   });
