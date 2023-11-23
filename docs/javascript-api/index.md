@@ -14,7 +14,7 @@ const miho = new Miho({
   release: 'patch',
   recursive: true,
   exclude: ['testdir/**'],
-  ignore: [/test/],
+  filter: [/test/],
   overrides: {
     'that-project': 'major'
   }

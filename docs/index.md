@@ -33,3 +33,11 @@ Read the [Javascript API](./javascript-api/index.md#options) section for more de
 ::: tip
 Other extensions, like `.ts` and `.mjs`, are also supported.
 :::
+
+## CommonJS
+
+```ts
+const { Miho } = require('miho');
+```
+
+Miho also has a [CJS](https://nodejs.org/docs/latest/api/modules.html#modules-commonjs-modules) bundle, so you can `require` it too.

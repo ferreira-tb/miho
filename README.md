@@ -23,7 +23,7 @@ import { Miho } from 'miho';
 const options = {
   release: 'patch',
   recursive: true,
-  ignore: [/test/],
+  filter: [/test/],
   overrides: {
     'that-project': 'major'
   }
