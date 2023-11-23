@@ -5,9 +5,9 @@ import { Filename, MihoIgnore, isNotBlankString } from './utils';
 import type { GetPackagesOptions, MihoOptions, PackageData } from './types';
 
 export class Miho {
-  private readonly packages = new Map<number, MihoPackage>();
+        private readonly packages = new Map<number, MihoPackage>();
 
-  private constructor(packages: MihoPackage[]) {
+     private constructor(packages: MihoPackage[]) {
     let id = 0;
     packages.forEach((pkg) => {
       this.packages.set(++id, pkg);
