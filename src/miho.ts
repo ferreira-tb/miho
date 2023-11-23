@@ -1,16 +1,33 @@
 import { glob } from 'glob';
-import { MihoPackage } from './package';
+import { MihoPackage, PackageData } from './files/package';
 import { defaultConfig } from './config';
-import { Filename, MihoIgnore, isNotBlankString } from './utils';
-import type { GetPackagesOptions, MihoOptions, PackageData } from './types';
+import {
+  Filename,
+  MihoIgnore,
+  isNotBlankString,
+  HookCallbackMap
+} from './utils';
+import type {
+  GetPackagesOptions,
+  MihoHooks,
+  MihoOptions,
+  MihoHookCallback
+} from './types';
 
 export class Miho {
   private readonly packages = new Map<number, MihoPackage>();
+  private readonly hookCallbackMap = new HookCallbackMap();
 
-  constructor(private readonly config: Partial<MihoOptions> = {}) {}
+  public readonly beforeAll = this.createHookRegisterFn('beforeAll');
+  public readonly afterAll = this.createHookRegisterFn('afterAll');
+  public readonly beforeEach = this.createHookRegisterFn('beforeEach');
+  public readonly afterEach = this.createHookRegisterFn('afterEach');
+
+  constructor(private config: Partial<MihoOptions> = {}) {}
 
   /** Search for all packages that meet the requirements. */
-  public async search(): Promise<this> {
+  public async search(config?: Partial<MihoOptions>): Promise<this> {
+    if (config) this.config = { ...this.config, ...config };
     let { exclude } = this.config;
     if (!Array.isArray(exclude)) exclude = defaultConfig.exclude;
     exclude = exclude.filter(isNotBlankString);
@@ -42,8 +59,17 @@ export class Miho {
   public async bump(id: number): Promise<this> {
     const pkg = this.packages.get(id);
     if (pkg) {
+      for (const cb of this.yieldHookCallbacks('beforeEach')) {
+        const returnValue = await cb(new PackageData(id, pkg));
+        if (returnValue === false) return this;
+      }
+
       await pkg.bump();
       this.packages.delete(id);
+
+      for (const cb of this.yieldHookCallbacks('afterEach')) {
+        await cb(new PackageData(id, pkg));
+      }
     }
 
     return this;
@@ -51,9 +77,19 @@ export class Miho {
 
   /** Bumps all packages found by Miho. */
   public async bumpAll(): Promise<this> {
+    const packages = this.getPackages();
+    for (const cb of this.yieldHookCallbacks('beforeAll')) {
+      const returnValue = await cb(packages);
+      if (returnValue === false) return this;
+    }
+
     await Promise.all(
       Array.from(this.packages.keys()).map(this.bump.bind(this))
     );
+
+    for (const cb of this.yieldHookCallbacks('afterAll')) {
+      await cb(packages);
+    }
 
     return this;
   }
@@ -67,14 +103,7 @@ export class Miho {
    */
   public getPackages(options?: GetPackagesOptions): PackageData[] {
     let packages: PackageData[] = Array.from(this.packages.entries()).map(
-      ([id, pkg]) => {
-        return {
-          id,
-          name: pkg.packageName,
-          version: pkg.version,
-          newVersion: pkg.newVersion
-        };
-      }
+      ([id, pkg]) => new PackageData(id, pkg)
     );
 
     if (options?.filter) {
@@ -82,6 +111,15 @@ export class Miho {
     }
 
     return packages;
+  }
+
+  /** Define multiple hooks simultaneously. */
+  public resolveHooks<T extends keyof MihoHooks>(hooks: MihoHooks): this {
+    Object.entries(hooks).forEach(([key, value]: [T, MihoHooks[T]]) => {
+      this.hookCallbackMap.set(key, value);
+    });
+
+    return this;
   }
 
   private resolvePatterns() {
@@ -93,5 +131,17 @@ export class Miho {
     patterns = patterns.filter((i) => i.length > 0);
     if (patterns.length === 0) return defaultConfig.include;
     return patterns;
+  }
+
+  private createHookRegisterFn<T extends keyof MihoHooks>(hookName: T) {
+    return (cb: MihoHooks[T]) => {
+      this.hookCallbackMap.set(hookName, cb);
+      return this;
+    };
+  }
+
+  private *yieldHookCallbacks<T extends keyof MihoHooks>(hookName: T) {
+    const cbs = this.hookCallbackMap.get(hookName) as MihoHookCallback<T>[];
+    for (const cb of cbs) yield cb;
   }
 }

@@ -1,4 +1,9 @@
-export interface PackageOptions {
+import type { MaybeArray, MaybePromise } from './utils';
+import type { PackageData } from '../index';
+
+export type * from './utils';
+
+export type PackageOptions = {
   /**
    * This option will be applied to every package found by Miho.
    *
@@ -13,9 +18,9 @@ export interface PackageOptions {
    * @default 'alpha'
    */
   preid: string;
-}
+};
 
-export interface MihoOptions extends PackageOptions {
+export type CliOptions = PackageOptions & {
   /**
    * Recursively bumps all packages in the monorepo.
    * @default false
@@ -44,13 +49,36 @@ export interface MihoOptions extends PackageOptions {
     string,
     PackageOptions['release'] | Partial<PackageOptions>
   >;
-}
+};
 
-export type PackageData = {
-  readonly id: number;
-  readonly name: string | null;
-  readonly version: string;
-  readonly newVersion: string | null;
+export type HookBeforeAllCallback = (
+  data: PackageData[]
+) => MaybePromise<boolean | void>;
+export type HookAfterAllCallback = (data: PackageData[]) => MaybePromise<void>;
+export type HookBeforeEachCallback = (
+  data: PackageData
+) => MaybePromise<boolean | void>;
+export type HookAfterEachCallback = (data: PackageData) => MaybePromise<void>;
+
+export type MihoHooks = {
+  readonly beforeAll: MaybeArray<HookBeforeAllCallback>;
+  readonly afterAll: MaybeArray<HookAfterAllCallback>;
+  readonly beforeEach: MaybeArray<HookBeforeEachCallback>;
+  readonly afterEach: MaybeArray<HookAfterEachCallback>;
+};
+
+export type MihoHookCallback<T extends keyof MihoHooks> = T extends 'beforeAll'
+  ? HookBeforeAllCallback
+  : T extends 'afterAll'
+    ? HookAfterAllCallback
+    : T extends 'beforeEach'
+      ? HookBeforeEachCallback
+      : T extends 'afterEach'
+        ? HookAfterEachCallback
+        : never;
+
+export type MihoOptions = CliOptions & {
+  readonly hooks?: MihoHooks;
 };
 
 export type GetPackagesOptions = {
