@@ -36,14 +36,16 @@ export default defineConfig({
 import { Miho } from 'miho';
 
 // Set up Miho and search for packages.
-const miho = await Miho.init({
+const options = {
   release: 'patch',
   recursive: true,
   ignore: [/test/],
   overrides: {
     'that-project': 'major'
   }
-});
+};
+
+const miho = await new Miho(options).search();
 
 // Get basic information on the packages found.
 // This also returns an id identifying each package,

@@ -4,7 +4,7 @@ export async function compareOldPackages(
   oldPkgs: PackageData[],
   options: Partial<MihoOptions>
 ) {
-  const updatedMiho = await Miho.init(options);
+  const updatedMiho = await new Miho(options).search();
   const updatedPkgs = updatedMiho.getPackages();
   for (const pkg of updatedPkgs) {
     const old = oldPkgs.find(({ name }) => name === pkg.name);
