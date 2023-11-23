@@ -14,22 +14,23 @@ Easily bump your package.json version.
 | [`--overrides`](https://tb.dev.br/miho/cli#overrides) | `-o`  | Allow to configure each package individually.                       |
 |     [`--preid`](https://tb.dev.br/miho/cli#preid)     | `-p`  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.           |
 
-## Node
+## Javascript API
 
 ```ts
 import { Miho } from 'miho';
 
 // Set up Miho and search for packages.
-const options = {
+const miho = new Miho({
   release: 'patch',
   recursive: true,
+  exclude: ['testdir/**'],
   filter: [/test/],
   overrides: {
     'that-project': 'major'
   }
-};
+});
 
-const miho = await new Miho().search(options);
+await miho.search(options);
 
 // Get basic information on the packages found.
 // This also returns an id identifying each package,
