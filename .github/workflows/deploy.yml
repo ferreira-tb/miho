@@ -38,7 +38,7 @@ jobs:
 
       - name: Build
         run: |
-          pnpm docs:build
+          pnpm run docs:build
           touch docs/.vitepress/dist/.nojekyll
 
       - name: Upload artifact
