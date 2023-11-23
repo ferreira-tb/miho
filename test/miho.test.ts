@@ -1,8 +1,9 @@
 import fs from 'node:fs/promises';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { Miho, type MihoOptions, type PackageData } from '../src';
+import { Miho, type MihoOptions } from '../src';
 import {
   createMockPackages,
+  compareOldPackages,
   getTempDir,
   MihoMock,
   PackageJsonMock
@@ -59,26 +60,12 @@ describe('Miho.prototype.getPackages', () => {
   });
 });
 
-async function compareOldPackages(oldPkgs: PackageData[]) {
-  const updatedMiho = await Miho.init(options);
-  const updatedPkgs = updatedMiho.getPackages();
-  for (const pkg of updatedPkgs) {
-    const old = oldPkgs.find(({ name }) => name === pkg.name);
-    if (!old) throw new TypeError(`Could not find package ${pkg.name}`);
-    if (pkg.version !== old.newVersion) {
-      throw new TypeError(
-        `Version mismatch: ${pkg.version} !== ${old.newVersion}`
-      );
-    }
-  }
-}
-
 describe('Miho.prototype.bump', () => {
   it('should bump', async () => {
     const miho = await Miho.init({ ...options, release: 'major' });
     const pkgs = miho.getPackages();
     await Promise.all(pkgs.map(({ id }) => miho.bump(id)));
-    await compareOldPackages(pkgs);
+    await compareOldPackages(pkgs, options);
   });
 });
 
@@ -87,6 +74,6 @@ describe('Miho.prototype.bumpAll', () => {
     const miho = await Miho.init({ ...options, release: 'major' });
     const pkgs = miho.getPackages();
     await miho.bumpAll();
-    await compareOldPackages(pkgs);
+    await compareOldPackages(pkgs, options);
   });
 });
