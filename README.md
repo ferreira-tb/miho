@@ -2,33 +2,17 @@
 
 Easily bump your package.json version.
 
-## Config file
-
-It is recommended to use a config file whenever possible. It should be named `miho.config.ts`, but other extensions are also accepted, such as `.js`. For more details on the options available, [check the API](https://tb.dev.br/miho/api/interfaces/MihoOptions.html).
-
-```ts
-import { defineConfig } from 'miho';
-
-export default defineConfig({
-  release: 'patch',
-  recursive: false,
-  overrides: {
-    'project-1': 'minor'
-  }
-});
-```
-
 ## CLI
 
-|                             Command                              | Alias | Description                                                         |
-| :--------------------------------------------------------------: | :---- | :------------------------------------------------------------------ |
-|       [`--ask`](https://tb.dev.br/miho/usage/cli.html#ask)       | none  | Determines whether Miho should ask for confirmation before bumping. |
-| [`--recursive`](https://tb.dev.br/miho/usage/cli.html#recursive) | `-r`  | Recursively bumps all packages in the monorepo.                     |
-|   [`--include`](https://tb.dev.br/miho/usage/cli.html#include)   | `-i`  | Glob pattern indicating where to search for packages.               |
-|   [`--exclude`](https://tb.dev.br/miho/usage/cli.html#exclude)   | `-x`  | Glob patterns indicating where to **NOT** search for packages.      |
-|    [`--filter`](https://tb.dev.br/miho/usage/cli.html#filter)    | `-f`  | Package names to filter. May be regex.                              |
-| [`--overrides`](https://tb.dev.br/miho/usage/cli.html#overrides) | `-o`  | Allow to configure each package individually.                       |
-|     [`--preid`](https://tb.dev.br/miho/usage/cli.html#preid)     | `-p`  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.           |
+|                        Command                        | Alias | Description                                                         |
+| :---------------------------------------------------: | :---- | :------------------------------------------------------------------ |
+|       [`--ask`](https://tb.dev.br/miho/cli#ask)       | none  | Determines whether Miho should ask for confirmation before bumping. |
+| [`--recursive`](https://tb.dev.br/miho/cli#recursive) | `-r`  | Recursively bumps all packages in the monorepo.                     |
+|   [`--include`](https://tb.dev.br/miho/cli#include)   | `-i`  | Glob pattern indicating where to search for packages.               |
+|   [`--exclude`](https://tb.dev.br/miho/cli#exclude)   | `-x`  | Glob patterns indicating where to **NOT** search for packages.      |
+|    [`--filter`](https://tb.dev.br/miho/cli#filter)    | `-f`  | Package names to filter. May be regex.                              |
+| [`--overrides`](https://tb.dev.br/miho/cli#overrides) | `-o`  | Allow to configure each package individually.                       |
+|     [`--preid`](https://tb.dev.br/miho/cli#preid)     | `-p`  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.           |
 
 ## Node
 

@@ -39,7 +39,7 @@ expect.extend({
   }
 });
 
-describe('Miho', () => {
+describe('Miho.prototype.search', () => {
   const temp = getTempDir();
 
   it('should find something', async () => {
@@ -59,10 +59,11 @@ describe('Miho', () => {
   it('should not be recursive', async () => {
     // If the search is not recursive, --include is ignored.
     // Miho will only search the current working directory.
-    const miho = await new Miho({
+    const miho = await new Miho().search({
       ...defaultOptions,
       recursive: false
-    }).search();
+    });
+
     expect(miho.getPackages()).toHaveLength(0);
   });
 });
@@ -85,55 +86,51 @@ describe('Miho.prototype.getPackages', () => {
 
 describe('Miho.prototype.bump', () => {
   it('should bump', async () => {
-    const miho = await new Miho().search({
-      ...defaultOptions,
-      release: 'major'
-    });
+    const miho = await new Miho().search(defaultOptions);
     const pkgs = miho.getPackages();
 
-    await Promise.all(pkgs.map(({ id }) => miho.bump(id)));
+    const results = await Promise.all(pkgs.map(({ id }) => miho.bump(id)));
+
+    expect(results.every(Boolean)).toBe(true);
     await expect(pkgs).toHaveBeenBumped();
   });
 
   it('should execute callback before', async () => {
     const miho = new Miho(defaultOptions);
-    const cb: HookBeforeEachCallback = () => true;
+    const cb: HookBeforeEachCallback = vi.fn(() => true);
 
-    const spy = vi.fn(cb);
-    miho.beforeEach(spy);
-
+    miho.beforeEach(cb);
     await miho.search();
     const pkgs = miho.getPackages();
     expect(pkgs.length).toBeGreaterThanOrEqual(1);
-
     await Promise.all(pkgs.map(({ id }) => miho.bump(id)));
-    expect(spy).toHaveBeenCalledTimes(pkgs.length);
+
+    expect(cb).toHaveBeenCalledTimes(pkgs.length);
   });
 
   it('should abort if false is returned', async () => {
     const miho = new Miho(defaultOptions);
-    const cb: HookBeforeEachCallback = () => false;
+    const cb: HookBeforeEachCallback = vi.fn(() => false);
 
-    const spy = vi.fn(cb);
-    miho.beforeEach(spy);
-
+    miho.beforeEach(cb);
     await miho.search();
     const pkgs = miho.getPackages();
     await Promise.all(pkgs.map(({ id }) => miho.bump(id)));
+
+    expect(cb).toHaveBeenCalled();
     await expect(pkgs).not.toHaveBeenBumped();
   });
 
   it('should execute callback after', async () => {
     const miho = new Miho(defaultOptions);
-    const cb: HookAfterEachCallback = () => void 0;
+    const cb: HookAfterEachCallback = vi.fn(() => void 0);
 
-    const spy = vi.fn(cb);
-    miho.beforeEach(spy);
-
+    miho.beforeEach(cb);
     await miho.search();
     const pkgs = miho.getPackages();
     await Promise.all(pkgs.map(({ id }) => miho.bump(id)));
-    expect(spy).toHaveBeenCalledTimes(pkgs.length);
+
+    expect(cb).toHaveBeenCalledTimes(pkgs.length);
   });
 });
 
@@ -147,44 +144,68 @@ describe('Miho.prototype.bumpAll', () => {
     await miho.search();
     const pkgs = miho.getPackages();
 
-    await miho.bumpAll();
+    const amount = await miho.bumpAll();
+    expect(amount).toBe(pkgs.length);
     await expect(pkgs).toHaveBeenBumped();
   });
 
   it('should execute callback before', async () => {
     const miho = new Miho(defaultOptions);
-    const cb: HookBeforeAllCallback = () => true;
+    const cb: HookBeforeAllCallback = vi.fn(() => true);
 
-    const spy = vi.fn(cb);
-    miho.beforeAll(spy);
-
+    miho.beforeAll(cb);
     await miho.search();
     await miho.bumpAll();
-    expect(spy).toHaveBeenCalledTimes(1);
+
+    expect(cb).toHaveBeenCalled();
   });
 
   it('should abort if false is returned', async () => {
     const miho = new Miho(defaultOptions);
-    const cb: HookBeforeAllCallback = () => false;
+    const cb: HookBeforeAllCallback = vi.fn(() => false);
 
-    const spy = vi.fn(cb);
-    miho.beforeAll(spy);
-
+    miho.beforeAll(cb);
     await miho.search();
     const pkgs = miho.getPackages();
     await miho.bumpAll();
+
+    expect(cb).toHaveBeenCalled();
     await expect(pkgs).not.toHaveBeenBumped();
   });
 
   it('should execute callback after', async () => {
     const miho = new Miho(defaultOptions);
-    const cb: HookAfterAllCallback = () => void 0;
+    const cb: HookAfterAllCallback = vi.fn(() => void 0);
 
-    const spy = vi.fn(cb);
-    miho.afterAll(spy);
+    miho.afterAll(cb);
+    await miho.search();
+    await miho.bumpAll();
+
+    expect(cb).toHaveBeenCalled();
+  });
+});
+
+describe('Miho.prototype.resolveHooks', () => {
+  it('should resolve', async () => {
+    const miho = new Miho(defaultOptions);
+    const beforeEachCb: HookBeforeEachCallback = vi.fn(() => true);
+    const afterEachCb: HookAfterEachCallback = vi.fn(() => void 0);
+    const beforeAllCb: HookBeforeAllCallback = vi.fn(() => true);
+    const afterAllCb: HookAfterAllCallback = vi.fn(() => void 0);
+
+    miho.resolveHooks({
+      beforeEach: beforeEachCb,
+      afterEach: afterEachCb,
+      beforeAll: [beforeAllCb, () => true],
+      afterAll: [afterAllCb, () => void 0]
+    });
 
     await miho.search();
     await miho.bumpAll();
-    expect(spy).toHaveBeenCalledTimes(1);
+
+    expect(beforeEachCb).toHaveBeenCalled();
+    expect(afterEachCb).toHaveBeenCalled();
+    expect(beforeAllCb).toHaveBeenCalled();
+    expect(afterAllCb).toHaveBeenCalled();
   });
 });

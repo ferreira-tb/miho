@@ -7,6 +7,9 @@
       "format": "svg"
     }
   ],
+  "vsicons.associations.folders": [
+    { "icon": "api", "extensions": ["javascript-api"], "format": "svg" }
+  ],
   "conventionalCommits.promptScopes": false,
   "prettier.requireConfig": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",

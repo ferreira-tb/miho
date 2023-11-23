@@ -9,7 +9,7 @@ export type PackageOptions = {
    *
    * If this is a number, Miho will try to coerce it to a valid version.
    *
-   * You can override the release type for individual packages in the `miho.config.ts` file.
+   * You can override this for individual packages in the config file.
    * @default 'patch'
    */
   release: string | number;
@@ -29,7 +29,7 @@ export type CliOptions = PackageOptions & {
   /**
    * Glob pattern indicating where to search for packages.
    *
-   * By default, Miho will search the current directory (and also subdirectories, if `--recursive`).
+   * By default, Miho will search the current directory.
    */
   include: string | string[];
   /**
@@ -78,7 +78,7 @@ export type MihoHookCallback<T extends keyof MihoHooks> = T extends 'beforeAll'
         : never;
 
 export type MihoOptions = CliOptions & {
-  readonly hooks?: MihoHooks;
+  readonly hooks?: Partial<MihoHooks>;
 };
 
 export type GetPackagesOptions = {

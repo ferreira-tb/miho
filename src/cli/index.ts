@@ -95,11 +95,8 @@ async function init() {
     options.overrides = argv.overrides;
   }
 
-  const { hooks, ...config } = await loadMihoConfig(options);
-  const miho = new Miho(config);
-  if (hooks) miho.resolveHooks(hooks);
-
-  await miho.search();
+  const config = await loadMihoConfig(options);
+  const miho = await new Miho(config).search();
 
   let packages = miho.getPackages({
     filter: (pkg) => Boolean(semver.valid(pkg.version))
@@ -130,8 +127,8 @@ async function init() {
   if (argv.ask) {
     await prompt(miho, packages);
   } else {
-    await miho.bumpAll();
-    l(chalk.green.bold('Packages bumped.'));
+    const amount = await miho.bumpAll();
+    l(chalk.green.bold(`${amount} package(s) bumped.`));
   }
 }
 

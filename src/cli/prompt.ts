@@ -9,7 +9,7 @@ export async function prompt(miho: Miho, packages: PackageData[]) {
 
   if (packages.length === 1) {
     const name = packages[0].name;
-    const result = await prompts({
+    const response = await prompts({
       name: 'confirm',
       type: 'toggle',
       message: `Bump${name ? ` ${name}` : ''}?`,
@@ -18,12 +18,16 @@ export async function prompt(miho: Miho, packages: PackageData[]) {
       inactive: 'no'
     });
 
-    if (result.confirm === true) {
-      await miho.bump(packages[0].id);
-      l(chalk.green.bold('Package bumped.'));
+    if (response.confirm === true) {
+      const result = await miho.bump(packages[0].id);
+      if (result) {
+        l(chalk.green.bold('Package bumped.'));
+      } else {
+        l(chalk.red.bold(`Could not bump package${name ? ` "${name}"` : ''}.`));
+      }
     }
   } else {
-    const result = await prompts([
+    const response = await prompts([
       {
         name: 'bumpMode',
         type: 'select',
@@ -47,19 +51,23 @@ export async function prompt(miho: Miho, packages: PackageData[]) {
       }
     ]);
 
-    switch (result.bumpMode) {
+    let amount: number = 0;
+    switch (response.bumpMode) {
       case 'none':
-        return;
+        amount = 0;
+        break;
       case 'all': {
-        await miho.bumpAll();
-        l(chalk.green.bold('Packages bumped.'));
+        amount = await miho.bumpAll();
         break;
       }
       case 'some': {
-        const list = result.packageList as number[];
-        await Promise.all(list.map(miho.bump.bind(miho)));
-        l(chalk.green.bold(`Package${list.length > 1 ? 's' : ''} bumped.`));
+        const list = response.packageList as number[];
+        const results = await Promise.all(list.map(miho.bump.bind(miho)));
+        amount = results.filter(Boolean).length;
+        break;
       }
     }
+
+    l(chalk.green.bold(`${amount} package(s) bumped.`));
   }
 }
