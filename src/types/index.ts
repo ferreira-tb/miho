@@ -40,7 +40,10 @@ export interface MihoOptions extends PackageOptions {
    * Each key represents the name of a package.
    * From here you can configure each one individually.
    */
-  overrides?: Record<string, string | number | Partial<PackageOptions>>;
+  overrides?: Record<
+    string,
+    PackageOptions['release'] | Partial<PackageOptions>
+  >;
 }
 
 export type PackageData = {
