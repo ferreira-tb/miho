@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "rollup.config.ts"],
   "compilerOptions": {
     "baseUrl": ".",
     "target": "esnext",
