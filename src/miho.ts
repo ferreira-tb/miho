@@ -7,19 +7,39 @@ import type { GetPackagesOptions, MihoOptions, PackageData } from './types';
 export class Miho {
   private readonly packages = new Map<number, MihoPackage>();
 
-  private constructor(packages: MihoPackage[]) {
+  constructor(private readonly config: Partial<MihoOptions> = {}) {}
+
+  /** Search for all packages that meet the requirements. */
+  public async search(): Promise<this> {
+    let { exclude } = this.config;
+    if (!Array.isArray(exclude)) exclude = defaultConfig.exclude;
+    exclude = exclude.filter(isNotBlankString);
+
+    const files = await glob(this.resolvePatterns(), {
+      withFileTypes: true,
+      ignore: [MihoIgnore.GIT, MihoIgnore.NODE_MODULES, ...exclude]
+    });
+
+    const result = await Promise.all(
+      files.map((filePath) => {
+        return MihoPackage.create(filePath, this.config);
+      })
+    );
+
     let id = 0;
-    packages.forEach((pkg) => {
+    result.filter(Boolean).forEach((pkg: MihoPackage) => {
       this.packages.set(++id, pkg);
     });
+
+    return this;
   }
 
   /**
    * Bump a single package.
    *
-   * You can get the id of the packages using the {@link Miho.getPackages} method.
+   * You can get the id of the packages using the {@link getPackages} method.
    */
-  public async bump(id: number): Promise<Miho> {
+  public async bump(id: number): Promise<this> {
     const pkg = this.packages.get(id);
     if (pkg) {
       await pkg.bump();
@@ -30,7 +50,7 @@ export class Miho {
   }
 
   /** Bumps all packages found by Miho. */
-  public async bumpAll(): Promise<Miho> {
+  public async bumpAll(): Promise<this> {
     await Promise.all(
       Array.from(this.packages.keys()).map(this.bump.bind(this))
     );
@@ -64,29 +84,9 @@ export class Miho {
     return packages;
   }
 
-  /** Search for all packages that meet the requirements. */
-  public static async init(config: Partial<MihoOptions> = {}): Promise<Miho> {
-    let { exclude } = config;
-    if (!Array.isArray(exclude)) exclude = defaultConfig.exclude;
-    exclude = exclude.filter(isNotBlankString);
-
-    const files = await glob(this.resolvePatterns(config), {
-      withFileTypes: true,
-      ignore: [MihoIgnore.GIT, MihoIgnore.NODE_MODULES, ...exclude]
-    });
-
-    const result = await Promise.all(
-      files.map((filePath) => {
-        return MihoPackage.create(filePath, config);
-      })
-    );
-
-    return new Miho(result.filter(Boolean) as MihoPackage[]);
-  }
-
-  private static resolvePatterns(config: Partial<MihoOptions>) {
-    if (!config.recursive) return Filename.PACKAGE_JSON;
-    let patterns = config.include ?? [];
+  private resolvePatterns() {
+    if (!this.config.recursive) return Filename.PACKAGE_JSON;
+    let patterns = this.config.include ?? [];
     if (typeof patterns === 'string') patterns = [patterns];
 
     patterns = patterns.map((i) => i.trim());

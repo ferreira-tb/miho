@@ -97,7 +97,7 @@ async function init() {
 
   const config = await loadMihoConfig(options);
 
-  const miho = await Miho.init(config);
+  const miho = await new Miho(config).search();
   let packages = miho.getPackages({
     filter: (pkg) => Boolean(semver.valid(pkg.version))
   });
