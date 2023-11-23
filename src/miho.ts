@@ -11,10 +11,12 @@ import type {
   GetPackagesOptions,
   MihoHooks,
   MihoOptions,
-  MihoHookCallback
+  MihoHookCallback,
+  CliOptions
 } from './types';
 
 export class Miho {
+  private config: Partial<CliOptions> = {};
   private readonly packages = new Map<number, MihoPackage>();
   private readonly hookCallbackMap = new HookCallbackMap();
 
@@ -23,11 +25,14 @@ export class Miho {
   public readonly beforeEach = this.createHookRegisterFn('beforeEach');
   public readonly afterEach = this.createHookRegisterFn('afterEach');
 
-  constructor(private config: Partial<MihoOptions> = {}) {}
+  constructor(options: Partial<MihoOptions> = {}) {
+    this.resolveMihoOptions(options);
+  }
 
   /** Search for all packages that meet the requirements. */
-  public async search(config?: Partial<MihoOptions>): Promise<this> {
-    if (config) this.config = { ...this.config, ...config };
+  public async search(options: Partial<MihoOptions> = {}): Promise<this> {
+    this.resolveMihoOptions(options);
+
     let { exclude } = this.config;
     if (!Array.isArray(exclude)) exclude = defaultConfig.exclude;
     exclude = exclude.filter(isNotBlankString);
@@ -55,13 +60,14 @@ export class Miho {
    * Bump a single package.
    *
    * You can get the id of the packages using the {@link getPackages} method.
+   * @returns Whether the package was successfully bumped.
    */
-  public async bump(id: number): Promise<this> {
+  public async bump(id: number): Promise<boolean> {
     const pkg = this.packages.get(id);
     if (pkg) {
       for (const cb of this.yieldHookCallbacks('beforeEach')) {
         const returnValue = await cb(new PackageData(id, pkg));
-        if (returnValue === false) return this;
+        if (returnValue === false) return false;
       }
 
       await pkg.bump();
@@ -72,18 +78,21 @@ export class Miho {
       }
     }
 
-    return this;
+    return true;
   }
 
-  /** Bumps all packages found by Miho. */
-  public async bumpAll(): Promise<this> {
+  /**
+   * Bumps all packages found by Miho.
+   * @returns Number of packages successfully bumped.
+   */
+  public async bumpAll(): Promise<number> {
     const packages = this.getPackages();
     for (const cb of this.yieldHookCallbacks('beforeAll')) {
       const returnValue = await cb(packages);
-      if (returnValue === false) return this;
+      if (returnValue === false) return 0;
     }
 
-    await Promise.all(
+    const results = await Promise.all(
       Array.from(this.packages.keys()).map(this.bump.bind(this))
     );
 
@@ -91,7 +100,7 @@ export class Miho {
       await cb(packages);
     }
 
-    return this;
+    return results.filter(Boolean).length;
   }
 
   /**
@@ -99,7 +108,6 @@ export class Miho {
    *
    * The objects returned by this method are just a snapshot of
    * the state of the packages at the time they were found.
-   * @param options
    */
   public getPackages(options?: GetPackagesOptions): PackageData[] {
     let packages: PackageData[] = Array.from(this.packages.entries()).map(
@@ -113,13 +121,21 @@ export class Miho {
     return packages;
   }
 
-  /** Define multiple hooks simultaneously. */
-  public resolveHooks<T extends keyof MihoHooks>(hooks: MihoHooks): this {
+  /** Register multiple hooks simultaneously. */
+  public resolveHooks<T extends keyof MihoHooks>(
+    hooks: Partial<MihoHooks>
+  ): this {
     Object.entries(hooks).forEach(([key, value]: [T, MihoHooks[T]]) => {
       this.hookCallbackMap.set(key, value);
     });
 
     return this;
+  }
+
+  private resolveMihoOptions(options: Partial<MihoOptions>) {
+    const { hooks, ...config } = options;
+    this.config = { ...this.config, ...config };
+    if (hooks) this.resolveHooks(hooks);
   }
 
   private resolvePatterns() {

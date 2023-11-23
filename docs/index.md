@@ -12,7 +12,9 @@ Easily bump your package.json version.
 
 ## Config file
 
-It is recommended to use a config file. It should be named `miho.config.ts`, but other extensions are also accepted, such as `.js`. For more details on the options available, [check the API](https://tb.dev.br/miho/api/interfaces/MihoOptions.html).
+When using [Miho CLI](./cli/), it will try to find a config file named `miho.config.js` inside the [current working directory](https://nodejs.org/dist/latest/docs/api/process.html#processcwd). Any options set in the config file will eventually be passed down to Miho.
+
+A example would look like this:
 
 ```ts
 import { defineConfig } from 'miho';
@@ -25,3 +27,9 @@ export default defineConfig({
   }
 });
 ```
+
+Read the [Javascript API](./javascript-api/index.md#options) section for more details about the available options.
+
+::: tip
+Other extensions, like `.ts` and `.mjs`, are also supported.
+:::

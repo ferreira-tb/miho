@@ -8,6 +8,7 @@ export default defineConfig({
   description: 'Easily bump your package version',
   lang: 'en',
   lastUpdated: true,
+  cleanUrls: true,
 
   sitemap: {
     hostname: 'https://tb.dev.br'
@@ -30,23 +31,17 @@ export default defineConfig({
   themeConfig: {
     nav: [
       {
-        text: 'API',
-        link: 'https://tb.dev.br/miho/api/index.html'
+        text: 'typedoc',
+        link: 'https://tb.dev.br/miho/typedoc/index.html'
       }
     ],
 
-    sidebar: {
-      '/': [
-        {
-          text: 'Usage',
-          collapsed: false,
-          items: [
-            { text: 'CLI ', link: '/usage/cli' },
-            { text: 'Node ', link: '/usage/node' }
-          ]
-        }
-      ]
-    },
+    sidebar: [
+      { text: 'CLI', link: '/cli/' },
+      { text: 'Javascript API', link: '/javascript-api/' },
+      { text: 'Hooks', link: '/hooks/' },
+      { text: 'Typescript Utilities', link: '/typescript-utilities/' }
+    ],
 
     editLink: {
       pattern: 'https://github.com/ferreira-tb/miho/edit/main/docs/:path'
