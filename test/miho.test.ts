@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getDefaultOptions, toHaveBeenBumped } from './utils';
 import {
   Miho,
   type HookBeforeEachCallback,
@@ -11,6 +10,8 @@ import {
 import {
   createMockPackages,
   getTempDir,
+  getDefaultOptions,
+  toHaveBeenBumped,
   MihoMock,
   PackageJsonMock
 } from './utils';
@@ -199,5 +200,20 @@ describe('Miho.prototype.resolveHooks', () => {
     expect(afterEachCb).toHaveBeenCalled();
     expect(beforeAllCb).toHaveBeenCalled();
     expect(afterAllCb).toHaveBeenCalled();
+  });
+});
+
+describe('Miho.prototype.l', () => {
+  const options = getDefaultOptions(testName);
+
+  it('should not throw', () => {
+    const miho = new Miho(options);
+    const spy = vi.spyOn(miho, 'l').mockImplementation(() => void 0);
+
+    miho.l`LOG`;
+
+    expect(spy).toHaveBeenCalled();
+    expect(spy).toHaveBeenLastCalledWith(['LOG']);
+    spy.mockReset();
   });
 });

@@ -148,7 +148,7 @@ interface Miho {
 
 Returns information on the packages found by Miho.
 
-The objects returned by this method are just a snapshot of the state of the packages at the time they were found. Modifying any property will have no effect on the packages.
+The objects returned are just a snapshot of the packages at the time they were found. Modifying any property will have no effect on them.
 
 ### resolveHooks
 

@@ -29,7 +29,7 @@ async function init() {
         alias: 'r'
       },
       include: {
-        desc: 'Glob pattern indicating where to search for packages.',
+        desc: 'Glob patterns indicating where to search for packages.',
         type: 'array',
         alias: 'i'
       },

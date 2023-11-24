@@ -9,7 +9,7 @@ Easily bump your package.json version.
 |       [`--ask`](https://tb.dev.br/miho/cli#ask)       | none  | Determines whether Miho should ask for confirmation before bumping. |
 |   [`--exclude`](https://tb.dev.br/miho/cli#exclude)   | `-x`  | Glob patterns indicating where to **NOT** search for packages.      |
 |    [`--filter`](https://tb.dev.br/miho/cli#filter)    | `-f`  | Package names to filter. May be regex.                              |
-|   [`--include`](https://tb.dev.br/miho/cli#include)   | `-i`  | Glob pattern indicating where to search for packages.               |
+|   [`--include`](https://tb.dev.br/miho/cli#include)   | `-i`  | Glob patterns indicating where to search for packages.              |
 | [`--overrides`](https://tb.dev.br/miho/cli#overrides) | `-o`  | Allow to configure each package individually.                       |
 |     [`--preid`](https://tb.dev.br/miho/cli#preid)     | `-p`  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.           |
 | [`--recursive`](https://tb.dev.br/miho/cli#recursive) | `-r`  | Recursively bumps all packages in the monorepo.                     |
