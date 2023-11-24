@@ -12,7 +12,9 @@ export const defaultConfig: MihoOptions = {
   recursive: false,
   include: '**/',
   exclude: [],
-  filter: []
+  filter: [],
+  silent: false,
+  verbose: false
 };
 
 /**

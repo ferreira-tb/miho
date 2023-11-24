@@ -5,52 +5,61 @@ import {
   Filename,
   MihoIgnore,
   isNotBlankString,
-  HookCallbackMap
+  HookCallbackMap,
+  isTemplateArray,
+  LogLevel
 } from './utils';
 import type {
   GetPackagesOptions,
   MihoHooks,
   MihoOptions,
   MihoHookCallback,
-  CliOptions
+  CliOptions,
+  HookCallbackParameters
 } from './types';
 
 export class Miho {
-  private config: Partial<CliOptions> = {};
-  private readonly packages = new Map<number, MihoPackage>();
-  private readonly hookCallbackMap = new HookCallbackMap();
+  #config: Partial<CliOptions> = {};
+  readonly #packages = new Map<number, MihoPackage>();
+  readonly #hookCallbackMap = new HookCallbackMap();
 
-  public readonly beforeAll = this.createHookRegisterFn('beforeAll');
-  public readonly afterAll = this.createHookRegisterFn('afterAll');
-  public readonly beforeEach = this.createHookRegisterFn('beforeEach');
-  public readonly afterEach = this.createHookRegisterFn('afterEach');
+  /**
+   * @internal
+   * @ignore
+   */
+  public readonly l = this.#createLogger();
+
+  public readonly beforeAll = this.#createHookRegisterFn('beforeAll');
+  public readonly afterAll = this.#createHookRegisterFn('afterAll');
+  public readonly beforeEach = this.#createHookRegisterFn('beforeEach');
+  public readonly afterEach = this.#createHookRegisterFn('afterEach');
 
   constructor(options: Partial<MihoOptions> = {}) {
-    this.resolveMihoOptions(options);
+    this.#resolveMihoOptions(options);
   }
 
   /** Search for all packages that meet the requirements. */
   public async search(options: Partial<MihoOptions> = {}): Promise<this> {
-    this.resolveMihoOptions(options);
+    this.#resolveMihoOptions(options);
 
-    let { exclude } = this.config;
+    let { exclude } = this.#config;
     if (!Array.isArray(exclude)) exclude = defaultConfig.exclude;
     exclude = exclude.filter(isNotBlankString);
 
-    const files = await glob(this.resolvePatterns(), {
+    const files = await glob(this.#resolvePatterns(), {
       withFileTypes: true,
       ignore: [MihoIgnore.GIT, MihoIgnore.NODE_MODULES, ...exclude]
     });
 
     const result = await Promise.all(
       files.map((filePath) => {
-        return MihoPackage.create(filePath, this.config);
+        return MihoPackage.create(this, filePath, this.#config);
       })
     );
 
     let id = 0;
     result.filter(Boolean).forEach((pkg: MihoPackage) => {
-      this.packages.set(++id, pkg);
+      this.#packages.set(++id, pkg);
     });
 
     return this;
@@ -63,18 +72,20 @@ export class Miho {
    * @returns Whether the package was successfully bumped.
    */
   public async bump(id: number): Promise<boolean> {
-    const pkg = this.packages.get(id);
+    const pkg = this.#packages.get(id);
     if (pkg) {
-      for (const cb of this.yieldHookCallbacks('beforeEach')) {
-        const returnValue = await cb(new PackageData(id, pkg));
+      for (const cb of this.#yieldHookCallbacks('beforeEach')) {
+        const returnValue = await cb(
+          this.#createHookParameters(new PackageData(id, pkg))
+        );
         if (returnValue === false) return false;
       }
 
       await pkg.bump();
-      this.packages.delete(id);
+      this.#packages.delete(id);
 
-      for (const cb of this.yieldHookCallbacks('afterEach')) {
-        await cb(new PackageData(id, pkg));
+      for (const cb of this.#yieldHookCallbacks('afterEach')) {
+        await cb(this.#createHookParameters(new PackageData(id, pkg)));
       }
     }
 
@@ -87,17 +98,17 @@ export class Miho {
    */
   public async bumpAll(): Promise<number> {
     const packages = this.getPackages();
-    for (const cb of this.yieldHookCallbacks('beforeAll')) {
-      const returnValue = await cb(packages);
+    for (const cb of this.#yieldHookCallbacks('beforeAll')) {
+      const returnValue = await cb(this.#createHookParameters(packages));
       if (returnValue === false) return 0;
     }
 
     const results = await Promise.all(
-      Array.from(this.packages.keys()).map(this.bump.bind(this))
+      Array.from(this.#packages.keys()).map(this.bump.bind(this))
     );
 
-    for (const cb of this.yieldHookCallbacks('afterAll')) {
-      await cb(packages);
+    for (const cb of this.#yieldHookCallbacks('afterAll')) {
+      await cb(this.#createHookParameters(packages));
     }
 
     return results.filter(Boolean).length;
@@ -110,7 +121,7 @@ export class Miho {
    * the state of the packages at the time they were found.
    */
   public getPackages(options?: GetPackagesOptions): PackageData[] {
-    let packages: PackageData[] = Array.from(this.packages.entries()).map(
+    let packages: PackageData[] = Array.from(this.#packages.entries()).map(
       ([id, pkg]) => new PackageData(id, pkg)
     );
 
@@ -126,21 +137,21 @@ export class Miho {
     hooks: Partial<MihoHooks>
   ): this {
     Object.entries(hooks).forEach(([key, value]: [T, MihoHooks[T]]) => {
-      this.hookCallbackMap.set(key, value);
+      this.#hookCallbackMap.set(key, value);
     });
 
     return this;
   }
 
-  private resolveMihoOptions(options: Partial<MihoOptions>) {
+  #resolveMihoOptions(options: Partial<MihoOptions>) {
     const { hooks, ...config } = options;
-    this.config = { ...this.config, ...config };
+    this.#config = { ...this.#config, ...config };
     if (hooks) this.resolveHooks(hooks);
   }
 
-  private resolvePatterns() {
-    if (!this.config.recursive) return Filename.PACKAGE_JSON;
-    let patterns = this.config.include ?? [];
+  #resolvePatterns() {
+    if (!this.#config.recursive) return Filename.PACKAGE_JSON;
+    let patterns = this.#config.include ?? [];
     if (typeof patterns === 'string') patterns = [patterns];
 
     patterns = patterns.map((i) => i.trim());
@@ -149,15 +160,54 @@ export class Miho {
     return patterns;
   }
 
-  private createHookRegisterFn<T extends keyof MihoHooks>(hookName: T) {
+  #createHookRegisterFn<T extends keyof MihoHooks>(hookName: T) {
     return (cb: MihoHooks[T]) => {
-      this.hookCallbackMap.set(hookName, cb);
+      this.#hookCallbackMap.set(hookName, cb);
       return this;
     };
   }
 
-  private *yieldHookCallbacks<T extends keyof MihoHooks>(hookName: T) {
-    const cbs = this.hookCallbackMap.get(hookName) as MihoHookCallback<T>[];
+  #createHookParameters<T>(data: T): HookCallbackParameters<T> {
+    return {
+      miho: this,
+      data
+    };
+  }
+
+  *#yieldHookCallbacks<T extends keyof MihoHooks>(hookName: T) {
+    const cbs = this.#hookCallbackMap.get(hookName) as MihoHookCallback<T>[];
     for (const cb of cbs) yield cb;
+  }
+
+  #createLogger(logLevel: LogLevel = LogLevel.HIGH) {
+    const self = this;
+    function l(options: LogLevel): typeof l;
+    function l(strings: TemplateStringsArray, ...subs: unknown[]): void;
+    function l(raw: TemplateStringsArray | LogLevel, ...subs: unknown[]) {
+      if (isTemplateArray(raw)) {
+        const result = String.raw({ raw }, ...subs);
+        const log = () => console.log(result);
+
+        if (!self.#config.silent) {
+          switch (logLevel) {
+            case LogLevel.LOW: {
+              if (self.#config.verbose) log();
+              return;
+            }
+            case LogLevel.NORMAL: {
+              log();
+              return;
+            }
+          }
+        }
+
+        if (logLevel === LogLevel.HIGH) log();
+        return;
+      } else {
+        return self.#createLogger(raw);
+      }
+    }
+
+    return l.bind(this);
   }
 }

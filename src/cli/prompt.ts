@@ -5,8 +5,6 @@ import type { PackageData } from '../files';
 
 /** @internal */
 export async function prompt(miho: Miho, packages: PackageData[]) {
-  const l = console.log;
-
   if (packages.length === 1) {
     const name = packages[0].name;
     const response = await prompts({
@@ -21,9 +19,10 @@ export async function prompt(miho: Miho, packages: PackageData[]) {
     if (response.confirm === true) {
       const result = await miho.bump(packages[0].id);
       if (result) {
-        l(chalk.green.bold('Package bumped.'));
+        miho.l`${chalk.green.bold('Package bumped.')}`;
       } else {
-        l(chalk.red.bold(`Could not bump package${name ? ` "${name}"` : ''}.`));
+        const msg = `Could not bump package${name ? ` "${name}"` : ''}.`;
+        miho.l`${chalk.red.bold(msg)}`;
       }
     }
   } else {
@@ -68,6 +67,6 @@ export async function prompt(miho: Miho, packages: PackageData[]) {
       }
     }
 
-    l(chalk.green.bold(`${amount} package(s) bumped.`));
+    miho.l`${chalk.green.bold(`${amount} package(s) bumped.`)}`;
   }
 }

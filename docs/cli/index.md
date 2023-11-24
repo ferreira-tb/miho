@@ -7,12 +7,14 @@ outline: [2, 3]
 |           Command           | Alias | Description                                                         |
 | :-------------------------: | :---- | :------------------------------------------------------------------ |
 |       [`--ask`](#ask)       | none  | Determines whether Miho should ask for confirmation before bumping. |
-| [`--recursive`](#recursive) | `-r`  | Recursively bumps all packages in the monorepo.                     |
-|   [`--include`](#include)   | `-i`  | Glob pattern indicating where to search for packages.               |
 |   [`--exclude`](#exclude)   | `-x`  | Glob patterns indicating where to **NOT** search for packages.      |
 |    [`--filter`](#filter)    | `-f`  | Package names to filter. May be regex.                              |
+|   [`--include`](#include)   | `-i`  | Glob pattern indicating where to search for packages.               |
 | [`--overrides`](#overrides) | `-o`  | Allow to configure each package individually.                       |
 |     [`--preid`](#preid)     | `-p`  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.           |
+| [`--recursive`](#recursive) | `-r`  | Recursively bumps all packages in the monorepo.                     |
+|    [`--silent`](#silent)    | none  | Omit unimportant logs.                                              |
+|   [`--verbose`](#verbose)   | none  | Log additional info.                                                |
 
 The first positional argument will always be taken as the desired release type. It can be an arbitrary string containing a valid version, an integer or one of the constants below:
 
@@ -54,26 +56,6 @@ You can adjust this behavior using the `--no-ask` command. This way, Miho won't 
 npx miho patch --no-ask
 ```
 
-### `--recursive`
-
-Recursively searches for packages in the directory and all its subdirectories, except `.git` and `node_modules`. To refine the search, use it together with other commands, such as [`--exclude`](#exclude).
-
-```bash
-npx miho major -r
-```
-
-### `--include`
-
-Glob pattern indicating where to search for packages. By default, Miho will search the [current working directory](https://nodejs.org/dist/latest/docs/api/process.html#processcwd) (and also subdirectories, if [`--recursive`](#recursive)).
-
-```bash
-npx miho major -r -i testdir/**
-```
-
-::: warning
-If the search is not recursive, this option is ignored. Miho will only search the current directory.
-:::
-
 ### `--exclude`
 
 Glob pattern indicating where Miho should **not** look for packages.
@@ -90,6 +72,14 @@ Package names that should be filtered. Strings in the format `/abc/` will be tre
 npx miho patch -r -f my-project /onlytest/
 ```
 
+### `--include`
+
+Glob pattern indicating where to search for packages. By default, Miho will search the [current working directory](https://nodejs.org/dist/latest/docs/api/process.html#processcwd) (and also subdirectories, if [`--recursive`](#recursive)).
+
+```bash
+npx miho major -r -i testdir/**
+```
+
 ### `--overrides`
 
 Allows each package to be configured individually. Note that it is more appropriate to use a [config file](../index.md#config-file) in cases like this.
@@ -104,4 +94,32 @@ Prerelease identifier. Only relevant when the release type is `premajor`, `premi
 
 ```bash
 npx miho preminor -p alpha
+```
+
+### `--recursive`
+
+Recursively searches for packages in the directory and all its subdirectories, except `.git` and `node_modules`. To refine the search, use it together with other commands, such as [`--exclude`](#exclude).
+
+```bash
+npx miho major -r
+```
+
+::: warning
+If the search is not recursive, this option is ignored. Miho will only search the current directory.
+:::
+
+### `--silent`
+
+Omit unimportant logs. This takes precedence if [`--verbose`](#verbose) is also set.
+
+```bash
+npx miho major --r --silent
+```
+
+### `--verbose`
+
+Log additional info. May be useful for debugging.
+
+```bash
+npx miho patch -r --verbose
 ```

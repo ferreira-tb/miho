@@ -1,5 +1,6 @@
 import type { MaybeArray, MaybePromise } from './utils';
-import type { PackageData } from '../index';
+import type { Miho, PackageData } from '../index';
+import type { Options } from 'yargs';
 
 export type * from './utils';
 
@@ -42,6 +43,16 @@ export type CliOptions = PackageOptions & {
    */
   filter: (string | RegExp)[];
   /**
+   * Omit unimportant logs.
+   * @default false
+   */
+  silent: boolean;
+  /**
+   * Log additional info.
+   * @default false
+   */
+  verbose: boolean;
+  /**
    * Each key represents the name of a package.
    * From here you can configure each one individually.
    */
@@ -51,14 +62,31 @@ export type CliOptions = PackageOptions & {
   >;
 };
 
+export type CliFlag = Record<
+  Exclude<keyof CliOptions, 'release'> | 'ask',
+  Options
+>;
+
+export interface HookCallbackParameters<T> {
+  miho: Miho;
+  data: T;
+}
+
 export type HookBeforeAllCallback = (
-  data: PackageData[]
+  data: HookCallbackParameters<PackageData[]>
 ) => MaybePromise<boolean | void>;
-export type HookAfterAllCallback = (data: PackageData[]) => MaybePromise<void>;
+
+export type HookAfterAllCallback = (
+  data: HookCallbackParameters<PackageData[]>
+) => MaybePromise<void>;
+
 export type HookBeforeEachCallback = (
-  data: PackageData
+  data: HookCallbackParameters<PackageData>
 ) => MaybePromise<boolean | void>;
-export type HookAfterEachCallback = (data: PackageData) => MaybePromise<void>;
+
+export type HookAfterEachCallback = (
+  data: HookCallbackParameters<PackageData>
+) => MaybePromise<void>;
 
 export type MihoHooks = {
   readonly beforeAll: MaybeArray<HookBeforeAllCallback>;

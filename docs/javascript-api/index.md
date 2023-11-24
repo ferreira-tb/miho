@@ -81,6 +81,16 @@ interface CliOptions extends PackageOptions {
    */
   filter: (string | RegExp)[];
   /**
+   * Omit unimportant logs.
+   * @default false
+   */
+  silent: boolean;
+  /**
+   * Log additional info.
+   * @default false
+   */
+  verbose: boolean;
+  /**
    * Each key represents the name of a package.
    * From here you can configure each one individually.
    */
@@ -154,10 +164,10 @@ Read the [hooks](../hooks/index.md#hooks) section for more details.
 
 ```ts
 miho.resolveHooks({
-  beforeEach: (data) => data.id === 1,
-  afterEach: (data) => console.log(data),
-  beforeAll: (data) => data.every(({ id }) => id > 1),
-  afterAll: (data) => data.forEach((pkg) => console.log(pkg))
+  beforeEach: ({ data }) => data.id === 1,
+  afterEach: ({ data }) => console.log(data),
+  beforeAll: ({ data }) => data.every(({ id }) => id > 1),
+  afterAll: ({ data }) => data.forEach((pkg) => console.log(pkg))
 });
 ```
 

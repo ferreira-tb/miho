@@ -6,12 +6,12 @@ import chalk from 'chalk';
 import { Miho } from '../index';
 import { loadMihoConfig } from '../config';
 import { prompt } from './prompt';
-import type { CliOptions } from '../types';
+import { LogLevel } from '../utils';
+import type { CliOptions, CliFlag } from '../types';
 
 async function init() {
-  const l = console.log;
-
   const argv = await yargs(hideBin(process.argv))
+    .scriptName('miho')
     .options({
       ask: {
         desc: 'Determines whether Miho should ask for confirmation.',
@@ -34,9 +34,7 @@ async function init() {
         alias: 'i'
       },
       exclude: {
-        desc: `Glob patterns indicating where to ${chalk.bold(
-          'NOT'
-        )} search for packages.`,
+        desc: 'Glob patterns indicating where to NOT search for packages.',
         type: 'array',
         alias: 'x'
       },
@@ -45,31 +43,26 @@ async function init() {
         type: 'array',
         alias: 'f'
       },
+      silent: {
+        desc: 'Omit unimportant logs.',
+        type: 'boolean'
+      },
+      verbose: {
+        desc: 'Log additional info.',
+        type: 'boolean'
+      },
       overrides: {
         desc: 'Allow to configure each package individually.',
         type: 'string',
         alias: 'o'
       }
-    })
-    .scriptName('miho')
+    } satisfies CliFlag)
     .parse();
 
   const options: Partial<CliOptions> = {};
 
   if (argv._[0]) {
     options.release = argv._[0];
-  }
-
-  if (typeof argv.preid === 'string') {
-    options.preid = argv.preid;
-  }
-
-  if (typeof argv.recursive === 'boolean') {
-    options.recursive = argv.recursive;
-  }
-
-  if (Array.isArray(argv.include)) {
-    options.include = argv.include.map((i) => i.toString());
   }
 
   if (Array.isArray(argv.exclude)) {
@@ -91,8 +84,28 @@ async function init() {
     });
   }
 
+  if (Array.isArray(argv.include)) {
+    options.include = argv.include.map((i) => i.toString());
+  }
+
   if (argv.overrides && typeof argv.overrides === 'object') {
     options.overrides = argv.overrides;
+  }
+
+  if (typeof argv.preid === 'string') {
+    options.preid = argv.preid;
+  }
+
+  if (typeof argv.recursive === 'boolean') {
+    options.recursive = argv.recursive;
+  }
+
+  if (typeof argv.silent === 'boolean') {
+    options.silent = argv.silent;
+  }
+
+  if (typeof argv.verbose === 'boolean') {
+    options.verbose = argv.verbose;
   }
 
   const config = await loadMihoConfig(options);
@@ -103,7 +116,7 @@ async function init() {
   });
 
   if (packages.length === 0) {
-    l(chalk.red.bold('No valid package found.'));
+    miho.l`${chalk.red.bold('No valid package found.')}`;
     return;
   }
 
@@ -114,13 +127,13 @@ async function init() {
       ? chalk.green.bold(pkg.newVersion)
       : chalk.red.bold('INVALID VERSION');
 
-    l(`[ ${chalk.bold(pkg.id)}: ${name} ]  ${version}  =>  ${newVersion}`);
+    miho.l`[ ${chalk.bold(pkg.id)}: ${name} ]  ${version}  =>  ${newVersion}`;
   });
 
   packages = packages.filter((pkg) => Boolean(semver.valid(pkg.newVersion)));
   if (packages.length === 0) {
-    l(chalk.red.bold('No semver compliant package.'));
-    l(`Check: ${chalk.underline('https://semver.org/')}`);
+    miho.l`${chalk.red.bold('No semver compliant package.')}`;
+    miho.l(LogLevel.NORMAL)`Check: ${chalk.underline('https://semver.org/')}`;
     return;
   }
 
@@ -128,7 +141,7 @@ async function init() {
     await prompt(miho, packages);
   } else {
     const amount = await miho.bumpAll();
-    l(chalk.green.bold(`${amount} package(s) bumped.`));
+    miho.l`${chalk.green.bold(`${amount} package(s) bumped.`)}`;
   }
 }
 

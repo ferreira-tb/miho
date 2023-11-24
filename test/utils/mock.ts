@@ -10,8 +10,7 @@ export enum MihoMock {
   PACKAGE_PREFIX = 'package-',
   PACKAGE_FILENAME = Filename.PACKAGE_JSON,
   TEMP_DIR = '.temp',
-  TEMP_SUBDIR_PREFIX = 'subdir',
-  TEMP_GLOB = '.temp/**'
+  TEMP_SUBDIR_PREFIX = 'subdir'
 }
 
 export class PackageJsonMock {
@@ -40,10 +39,10 @@ export class PackageJsonMock {
   }
 }
 
-export async function createMockPackages() {
-  const temp = getTempDir();
+export async function createMockPackages(testName: string) {
+  const temp = getTempDir(testName);
   if (exists(temp)) fs.rm(temp, { recursive: true });
-  await fs.mkdir(temp);
+  await fs.mkdir(temp, { recursive: true });
 
   let cwd = temp;
   for (let i = 0; i < MihoMock.DEFAULT_AMOUNT; i++) {
@@ -60,6 +59,6 @@ export async function createMockPackages() {
   return () => fs.rm(temp, { recursive: true });
 }
 
-export function getTempDir() {
-  return path.join(process.cwd(), MihoMock.TEMP_DIR);
+export function getTempDir(testName: string) {
+  return path.join(process.cwd(), MihoMock.TEMP_DIR, testName);
 }
