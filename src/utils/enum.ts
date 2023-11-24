@@ -1,4 +1,4 @@
-export const enum Filename {
+export const enum FileType {
   PACKAGE_JSON = 'package.json'
 }
 

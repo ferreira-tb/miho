@@ -6,36 +6,32 @@ import semver, { type ReleaseType } from 'semver';
 import { defaultConfig } from '../config';
 import { LogLevel } from '../utils';
 import type { Path } from 'glob';
-import type { MihoOptions } from '../types';
+import type { MihoInternalOptions } from '../types';
 import type { Miho } from '../miho';
 
 type MihoPackageConstructor = {
-  readonly raw: Path;
+  readonly pathObj: Path;
   readonly packageName: string | null;
   readonly version: string;
   readonly indent: string;
 };
 
-/**
- * @internal
- * @ignore
- */
 export class MihoPackage {
   readonly #fullpath: string;
   readonly #packageName: string | null;
   readonly #version: string;
   readonly #indent: string;
-  #release: MihoOptions['release'];
-  #preid: MihoOptions['preid'];
+  #release: MihoInternalOptions['release'];
+  #preid: MihoInternalOptions['preid'];
   #newVersion: string | null = null;
 
   private constructor(
-    config: Partial<MihoOptions>,
+    config: Partial<MihoInternalOptions>,
     options: MihoPackageConstructor
   ) {
     const name = options.packageName;
 
-    this.#fullpath = options.raw.fullpath();
+    this.#fullpath = options.pathObj.fullpath();
     this.#packageName = name;
     this.#version = options.version;
     this.#indent = options.indent;
@@ -74,6 +70,10 @@ export class MihoPackage {
     }
   }
 
+  /**
+   * @internal
+   * @ignore
+   */
   public async bump() {
     if (typeof this.#newVersion !== 'string') {
       throw new TypeError(`Invalid version: ${this.#newVersion}`);
@@ -101,12 +101,12 @@ export class MihoPackage {
 
   public static async create(
     miho: Miho,
-    raw: Path,
-    config: Partial<MihoOptions> = {}
+    pathObj: Path,
+    config: Partial<MihoInternalOptions> = {}
   ) {
-    if (!raw.isFile()) return null;
+    if (!pathObj.isFile()) return null;
 
-    const fullpath = raw.fullpath();
+    const fullpath = pathObj.fullpath();
     const file = await fs.readFile(fullpath, 'utf-8');
     const pkg = JSON.parse(file) as Record<string, unknown>;
 
@@ -126,7 +126,7 @@ export class MihoPackage {
     if (!version) return null;
 
     const mihoPackage = new MihoPackage(config, {
-      raw,
+      pathObj,
       packageName,
       version,
       indent: detectIndent(file).indent
@@ -143,19 +143,5 @@ export class MihoPackage {
   static #isReleaseType(value: unknown): value is ReleaseType {
     if (typeof value !== 'string') return false;
     return semver.RELEASE_TYPES.some((r) => r === value);
-  }
-}
-
-export class PackageData {
-  readonly id: number;
-  readonly name: string | null;
-  readonly version: string;
-  readonly newVersion: string | null;
-
-  constructor(id: number, pkg: MihoPackage) {
-    this.id = id;
-    this.name = pkg.packageName;
-    this.version = pkg.version;
-    this.newVersion = pkg.newVersion;
   }
 }

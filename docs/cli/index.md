@@ -16,16 +16,18 @@ outline: [2, 3]
 |    [`--silent`](#silent)    | none  | Omit unimportant logs.                                              |
 |   [`--verbose`](#verbose)   | none  | Log additional info. May be useful for debugging.                   |
 
-The first positional argument will always be taken as the desired release type. It can be an arbitrary string containing a valid version, an integer or one of the constants below:
+The first positional argument will always be taken as the desired release version or type. Possible values are:
 
-- major
-- premajor
-- minor
-- preminor
-- patch
-- prepatch
+- A valid semver version number
+- A integer
+- `major`
+- `premajor`
+- `minor`
+- `preminor`
+- `patch`
+- `prepatch`
 
-If it is a version, Miho will bump the packages to that version. If a number, it will perform a major bump to the version it corresponds to. Finally, using constants such as `major` and `patch` does what one would expect.
+If it is a version, Miho will bump the packages to that specific version. If a integer, it will perform a major bump to the version it corresponds to. Finally, using constants such as `major` and `patch` does what one would expect.
 
 Given a package whose version is `1.0.0`:
 

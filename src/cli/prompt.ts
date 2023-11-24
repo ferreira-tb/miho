@@ -1,10 +1,10 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
 import type { Miho } from '../miho';
-import type { PackageData } from '../files';
+import type { FileData } from '../files';
 
 /** @internal */
-export async function prompt(miho: Miho, packages: PackageData[]) {
+export async function prompt(miho: Miho, packages: FileData[]) {
   if (packages.length === 1) {
     const name = packages[0].name;
     const response = await prompts({

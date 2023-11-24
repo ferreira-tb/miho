@@ -17,7 +17,7 @@ interface HookCallbackParameters<T> {
 
 ```ts
 type HookAfterAllCallback = (
-  data: HookCallbackParameters<PackageData[]>
+  data: HookCallbackParameters<FileData[]>
 ) => MaybePromise<void>;
 
 interface Miho {
@@ -37,7 +37,7 @@ miho.afterAll(async (data) => {
 
 ```ts
 type HookAfterEachCallback = (
-  data: HookCallbackParameters<PackageData>
+  data: HookCallbackParameters<FileData>
 ) => MaybePromise<void>;
 
 interface Miho {
@@ -51,7 +51,7 @@ Register one or more callbacks to be called after each [`bump()`](#bump).
 
 ```ts
 type HookBeforeAllCallback = (
-  data: HookCallbackParameters<PackageData[]>
+  data: HookCallbackParameters<FileData[]>
 ) => MaybePromise<boolean | void>;
 
 interface Miho {
@@ -67,7 +67,7 @@ If `false` is returned, the operation will be aborted.
 
 ```ts
 type HookBeforeEachCallback = (
-  data: HookCallbackParameters<PackageData>
+  data: HookCallbackParameters<FileData>
 ) => MaybePromise<boolean | void>;
 
 interface Miho {

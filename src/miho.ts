@@ -1,10 +1,11 @@
 import { glob } from 'glob';
-import { MihoPackage, PackageData } from './files/package';
+import { MihoPackage, FileData } from './files';
 import { defaultConfig } from './config';
+import { Commit } from './git';
 import {
-  Filename,
+  FileType,
   MihoIgnore,
-  isNotBlankString,
+  isNotBlank,
   HookCallbackMap,
   isTemplateArray,
   LogLevel
@@ -14,14 +15,21 @@ import type {
   MihoHooks,
   MihoOptions,
   MihoHookCallback,
-  CliOptions,
-  HookCallbackParameters
+  HookCallbackParameters,
+  MihoInternalOptions,
+  Nullish,
+  CommitOptions
 } from './types';
 
 export class Miho {
-  #config: Partial<CliOptions> = {};
+  #config: Partial<MihoInternalOptions> = {};
+  #commit: Nullish<Commit>;
   readonly #packages = new Map<number, MihoPackage>();
   readonly #hookCallbackMap = new HookCallbackMap();
+
+  constructor(options: Partial<MihoOptions> = {}) {
+    this.#resolveMihoOptions(options);
+  }
 
   /**
    * @internal
@@ -34,17 +42,14 @@ export class Miho {
   public readonly beforeEach = this.#createHookRegisterFn('beforeEach');
   public readonly afterEach = this.#createHookRegisterFn('afterEach');
 
-  constructor(options: Partial<MihoOptions> = {}) {
-    this.#resolveMihoOptions(options);
-  }
-
   /** Search for all packages that meet the requirements. */
   public async search(options: Partial<MihoOptions> = {}): Promise<this> {
     this.#resolveMihoOptions(options);
 
     let { exclude } = this.#config;
-    if (!Array.isArray(exclude)) exclude = defaultConfig.exclude;
-    exclude = exclude.filter(isNotBlankString);
+    if (!exclude) exclude = defaultConfig.exclude;
+    if (!Array.isArray(exclude)) exclude = [exclude];
+    exclude = exclude.filter(isNotBlank);
 
     const files = await glob(this.#resolvePatterns(), {
       withFileTypes: true,
@@ -52,8 +57,8 @@ export class Miho {
     });
 
     const result = await Promise.all(
-      files.map((filePath) => {
-        return MihoPackage.create(this, filePath, this.#config);
+      files.map((pathObj) => {
+        return MihoPackage.create(this, pathObj, this.#config);
       })
     );
 
@@ -76,7 +81,7 @@ export class Miho {
     if (pkg) {
       for (const cb of this.#yieldHookCallbacks('beforeEach')) {
         const returnValue = await cb(
-          this.#createHookParameters(new PackageData(id, pkg))
+          this.#createHookParameters(new FileData(id, pkg))
         );
         if (returnValue === false) return false;
       }
@@ -85,7 +90,7 @@ export class Miho {
       this.#packages.delete(id);
 
       for (const cb of this.#yieldHookCallbacks('afterEach')) {
-        await cb(this.#createHookParameters(new PackageData(id, pkg)));
+        await cb(this.#createHookParameters(new FileData(id, pkg)));
       }
     }
 
@@ -117,12 +122,11 @@ export class Miho {
   /**
    * Returns information on the packages found by Miho.
    *
-   * The objects returned by this method are just a snapshot of
-   * the state of the packages at the time they were found.
+   * @returns Snapshot of the packages at the time they were found. Modifying any property will have no effect on them.
    */
-  public getPackages(options?: GetPackagesOptions): PackageData[] {
-    let packages: PackageData[] = Array.from(this.#packages.entries()).map(
-      ([id, pkg]) => new PackageData(id, pkg)
+  public getPackages(options?: GetPackagesOptions): FileData[] {
+    let packages: FileData[] = Array.from(this.#packages.entries()).map(
+      ([id, pkg]) => new FileData(id, pkg)
     );
 
     if (options?.filter) {
@@ -144,13 +148,25 @@ export class Miho {
   }
 
   #resolveMihoOptions(options: Partial<MihoOptions>) {
-    const { hooks, ...config } = options;
+    const { hooks, commit, ...config } = options;
     this.#config = { ...this.#config, ...config };
+    if (commit) this.#resolveCommitOptions(commit);
     if (hooks) this.resolveHooks(hooks);
   }
 
+  #resolveCommitOptions(options: Partial<CommitOptions>) {
+    if (typeof options.message === 'string') {
+      this.#commit = new Commit({
+        ...(this.#commit ? { ...this.#commit } : {}),
+        ...options
+      });
+    } else {
+      this.#commit = null;
+    }
+  }
+
   #resolvePatterns() {
-    if (!this.#config.recursive) return Filename.PACKAGE_JSON;
+    if (!this.#config.recursive) return FileType.PACKAGE_JSON;
     let patterns = this.#config.include ?? [];
     if (typeof patterns === 'string') patterns = [patterns];
 

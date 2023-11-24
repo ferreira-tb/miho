@@ -75,7 +75,7 @@ interface CliOptions extends PackageOptions {
    * Glob patterns indicating where to NOT search for packages.
    * `.git` and `node_modules` are ALWAYS excluded.
    */
-  exclude: string[];
+  exclude: string | string[];
   /**
    * Package names to filter.
    */
@@ -86,7 +86,7 @@ interface CliOptions extends PackageOptions {
    */
   silent: boolean;
   /**
-   * Log additional info.
+   * Log additional info. May be useful for debugging.
    * @default false
    */
   verbose: boolean;
@@ -142,13 +142,13 @@ Returns the amount of packages successfully bumped.
 
 ```ts
 interface Miho {
-  getPackages(): PackageData[];
+  getPackages(): FileData[];
 }
 ```
 
 Returns information on the packages found by Miho.
 
-The objects returned are just a snapshot of the packages at the time they were found. Modifying any property will have no effect on them.
+The `FileData` objects are just a snapshot of the packages at the time they were found. Modifying any property will have no effect on them.
 
 ### resolveHooks
 
@@ -179,4 +179,4 @@ interface Miho {
 }
 ```
 
-Search for all packages that meet the requirements. If the `options` parameter is defined, it will override those previously given to the constructor.
+Search for all packages that meet the requirements. If `options` is defined, it will override those previously given to the constructor.

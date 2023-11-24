@@ -40,7 +40,7 @@ export default defineConfig({
       { text: 'CLI', link: '/cli/' },
       { text: 'Javascript API', link: '/javascript-api/' },
       { text: 'Hooks', link: '/hooks/' },
-      { text: 'Typescript Utilities', link: '/typescript-utilities/' }
+      { text: 'Typescript', link: '/typescript/' }
     ],
 
     editLink: {

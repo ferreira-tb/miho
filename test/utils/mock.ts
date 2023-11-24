@@ -2,13 +2,13 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import process from 'node:process';
 import { existsSync as exists, type Dirent } from 'node:fs';
-import { Filename } from '../../src/utils';
+import { FileType } from '../../src/utils';
 
 export enum MihoMock {
   DEFAULT_AMOUNT = 10,
   DEFAULT_VERSION = '1.0.0',
   PACKAGE_PREFIX = 'package-',
-  PACKAGE_FILENAME = Filename.PACKAGE_JSON,
+  PACKAGE_FILENAME = FileType.PACKAGE_JSON,
   TEMP_DIR = '.temp',
   TEMP_SUBDIR_PREFIX = 'subdir'
 }
