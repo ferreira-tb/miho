@@ -14,7 +14,7 @@ outline: [2, 3]
 |     [`--preid`](#preid)     | `-p`  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.           |
 | [`--recursive`](#recursive) | `-r`  | Recursively bumps all packages in the monorepo.                     |
 |    [`--silent`](#silent)    | none  | Omit unimportant logs.                                              |
-|   [`--verbose`](#verbose)   | none  | Log additional info.                                                |
+|   [`--verbose`](#verbose)   | none  | Log additional info. May be useful for debugging.                   |
 
 The first positional argument will always be taken as the desired release type. It can be an arbitrary string containing a valid version, an integer or one of the constants below:
 

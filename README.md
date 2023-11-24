@@ -14,7 +14,7 @@ Easily bump your package.json version.
 |     [`--preid`](https://tb.dev.br/miho/cli#preid)     | `-p`  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.           |
 | [`--recursive`](https://tb.dev.br/miho/cli#recursive) | `-r`  | Recursively bumps all packages in the monorepo.                     |
 |    [`--silent`](https://tb.dev.br/miho/cli#silent)    | none  | Omit unimportant logs.                                              |
-|   [`--verbose`](https://tb.dev.br/miho/cli#verbose)   | none  | Log additional info.                                                |
+|   [`--verbose`](https://tb.dev.br/miho/cli#verbose)   | none  | Log additional info. May be useful for debugging.                   |
 
 ## Javascript API
 
