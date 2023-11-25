@@ -13,16 +13,16 @@ import { Miho } from 'miho';
 const miho = new Miho({
   release: 'patch',
   recursive: true,
-  exclude: ['testdir/**'],
-  filter: [/test/],
+  exclude: ['foo/**'],
+  filter: [/bar/],
   commit: {
     message: 'a commit message',
     all: true,
     push: true
   },
   overrides: {
-    'main-project': 'major',
-    'my-other-project': {
+    baz: 'major',
+    qux: {
       release: 'preminor',
       preid: 'beta'
     }
