@@ -95,7 +95,7 @@ Commit the modified packages.
 If omitted, the message defaults to `chore: bump version`.
 
 ```bash
-npx miho patch -c "this is a message"
+npx miho patch -c "a commit message"
 ```
 
 ### `--exclude`
@@ -107,7 +107,7 @@ npx miho patch -c "this is a message"
 Glob patterns indicating where Miho should **not** look for packages.
 
 ```bash
-npx miho patch -r -x testdir/**
+npx miho patch -r -x foo/**
 ```
 
 ### `--filter`
@@ -119,7 +119,7 @@ npx miho patch -r -x testdir/**
 Package names that should be filtered. Strings in the format `/abc/` will be treated as regex.
 
 ```bash
-npx miho patch -r -f my-project /onlytest/
+npx miho patch -r -f foo /bar/
 ```
 
 ### `--help`
@@ -139,7 +139,7 @@ Show usage information.
 Glob patterns indicating where to search for packages. By default, Miho will search the [current working directory](https://nodejs.org/dist/latest/docs/api/process.html#processcwd) (and also subdirectories, if [`--recursive`](#recursive)).
 
 ```bash
-npx miho major -r -i testdir/**
+npx miho major -r -i foo/**
 ```
 
 ### `--no-verify`
@@ -159,7 +159,7 @@ By default, the [`pre-commit`](https://git-scm.com/docs/githooks#_pre_commit) an
 Allows each package to be configured individually. Note that it is more appropriate to use a [config file](../index.md#config-file) in cases like this.
 
 ```bash
-npx miho premajor -p beta -r -o.test=patch
+npx miho premajor -p beta -r -o.foo=patch
 ```
 
 ### `--preid`
