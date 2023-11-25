@@ -155,7 +155,7 @@ export class Miho {
   }
 
   #resolveCommitOptions(options: Partial<CommitOptions>) {
-    if (typeof options.message === 'string') {
+    if (typeof options.message === 'string' || options.all === true) {
       this.#commit = new Commit({
         ...(this.#commit ? { ...this.#commit } : {}),
         ...options
