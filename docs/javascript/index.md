@@ -29,7 +29,7 @@ const miho = new Miho({
   }
 });
 
-await miho.search(options);
+await miho.search();
 
 // Get basic information on the packages found.
 // This also returns an id identifying each package,
@@ -54,16 +54,16 @@ Most of these options are already explained in the [CLI](../cli/index.md) sectio
 
 ```ts
 interface MihoOptions {
-  commit?: {
+  commit: {
     message: string;
     all: boolean;
     'no-verify': boolean;
   };
   exclude: string | string[];
   filter: (string | RegExp)[];
-  hooks?: Partial<MihoHooks>;
+  hooks: Partial<MihoHooks>;
   include: string | string[];
-  overrides?: Record<string, MihoOptions['release'] | Partial<PackageOptions>>;
+  overrides: Record<string, MihoOptions['release'] | Partial<PackageOptions>>;
   preid: string;
   recursive: boolean;
   release: string | number;
