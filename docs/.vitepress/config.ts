@@ -38,9 +38,9 @@ export default defineConfig({
 
     sidebar: [
       { text: 'CLI', link: '/cli/' },
-      { text: 'Javascript API', link: '/javascript-api/' },
+      { text: 'Javascript API', link: '/javascript/' },
       { text: 'Hooks', link: '/hooks/' },
-      { text: 'Typescript Utilities', link: '/typescript-utilities/' }
+      { text: 'Typescript', link: '/typescript/' }
     ],
 
     editLink: {

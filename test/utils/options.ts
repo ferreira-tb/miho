@@ -1,8 +1,11 @@
-import { MihoMock } from './mock';
 import type { MihoOptions } from '../../src';
 
-export const defaultOptions: Partial<MihoOptions> = {
-  include: [MihoMock.TEMP_GLOB.toString()],
-  filter: [/miho/],
-  recursive: true
-};
+export function getDefaultOptions(testName: string): Partial<MihoOptions> {
+  return {
+    release: 'patch',
+    include: [`.temp/${testName}/**`],
+    filter: [/miho/],
+    recursive: true,
+    verbose: false
+  };
+}

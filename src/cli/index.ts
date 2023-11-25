@@ -4,98 +4,23 @@ import { hideBin } from 'yargs/helpers';
 import semver from 'semver';
 import chalk from 'chalk';
 import { Miho } from '../index';
-import { loadMihoConfig } from '../config';
+import { loadConfig } from '../config';
 import { prompt } from './prompt';
-import type { CliOptions } from '../types';
+import { normalize } from './normalize';
+import { LogLevel } from '../utils';
+import { createOptions } from './options';
+import type { CliArguments } from '../types';
 
 async function init() {
-  const l = console.log;
-
   const argv = await yargs(hideBin(process.argv))
-    .options({
-      ask: {
-        desc: 'Determines whether Miho should ask for confirmation.',
-        type: 'boolean',
-        default: true
-      },
-      preid: {
-        desc: 'Prerelease identifier.',
-        type: 'string',
-        alias: 'p'
-      },
-      recursive: {
-        desc: 'Recursively bumps all packages in the monorepo.',
-        type: 'boolean',
-        alias: 'r'
-      },
-      include: {
-        desc: 'Glob pattern indicating where to search for packages.',
-        type: 'array',
-        alias: 'i'
-      },
-      exclude: {
-        desc: `Glob patterns indicating where to ${chalk.bold(
-          'NOT'
-        )} search for packages.`,
-        type: 'array',
-        alias: 'x'
-      },
-      filter: {
-        desc: 'Package names to filter.',
-        type: 'array',
-        alias: 'f'
-      },
-      overrides: {
-        desc: 'Allow to configure each package individually.',
-        type: 'string',
-        alias: 'o'
-      }
-    })
     .scriptName('miho')
+    .alias('h', 'help')
+    .alias('v', 'version')
+    .options(createOptions())
     .parse();
 
-  const options: Partial<CliOptions> = {};
-
-  if (argv._[0]) {
-    options.release = argv._[0];
-  }
-
-  if (typeof argv.preid === 'string') {
-    options.preid = argv.preid;
-  }
-
-  if (typeof argv.recursive === 'boolean') {
-    options.recursive = argv.recursive;
-  }
-
-  if (Array.isArray(argv.include)) {
-    options.include = argv.include.map((i) => i.toString());
-  }
-
-  if (Array.isArray(argv.exclude)) {
-    options.exclude = argv.exclude.map((i) => i.toString());
-  }
-
-  if (Array.isArray(argv.filter)) {
-    options.filter = argv.filter.map((i) => {
-      const value = i.toString();
-      if (/^\/.*\/$/.test(value)) {
-        try {
-          return new RegExp(value);
-        } catch {
-          return value;
-        }
-      }
-
-      return value;
-    });
-  }
-
-  if (argv.overrides && typeof argv.overrides === 'object') {
-    options.overrides = argv.overrides;
-  }
-
-  const config = await loadMihoConfig(options);
+  const options = normalize(argv as unknown as CliArguments);
+  const config = await loadConfig(options);
   const miho = await new Miho(config).search();
 
   let packages = miho.getPackages({
@@ -103,7 +28,7 @@ async function init() {
   });
 
   if (packages.length === 0) {
-    l(chalk.red.bold('No valid package found.'));
+    miho.l`${chalk.red.bold('No valid package found.')}`;
     return;
   }
 
@@ -114,13 +39,13 @@ async function init() {
       ? chalk.green.bold(pkg.newVersion)
       : chalk.red.bold('INVALID VERSION');
 
-    l(`[ ${chalk.bold(pkg.id)}: ${name} ]  ${version}  =>  ${newVersion}`);
+    miho.l`[ ${chalk.bold(pkg.id)}: ${name} ]  ${version}  =>  ${newVersion}`;
   });
 
   packages = packages.filter((pkg) => Boolean(semver.valid(pkg.newVersion)));
   if (packages.length === 0) {
-    l(chalk.red.bold('No semver compliant package.'));
-    l(`Check: ${chalk.underline('https://semver.org/')}`);
+    miho.l`${chalk.red.bold('No semver compliant package.')}`;
+    miho.l(LogLevel.NORMAL)`Check: ${chalk.underline('https://semver.org/')}`;
     return;
   }
 
@@ -128,7 +53,12 @@ async function init() {
     await prompt(miho, packages);
   } else {
     const amount = await miho.bumpAll();
-    l(chalk.green.bold(`${amount} package(s) bumped.`));
+    miho.l`${chalk.green.bold(`${amount} package(s) bumped.`)}`;
+  }
+
+  if (miho.shouldCommit()) {
+    miho.l(LogLevel.NORMAL)`Committing files...`;
+    await miho.commit();
   }
 }
 

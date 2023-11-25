@@ -6,17 +6,26 @@ outline: [2, 3]
 
 ## Bump lifecycle
 
+```ts
+interface HookCallbackParameters<T> {
+  miho: Miho;
+  data: T;
+}
+```
+
 ### afterAll
 
 ```ts
-type HookAfterAllCallback = (data: PackageData[]) => MaybePromise<void>;
+type HookAfterAllCallback = (
+  data: HookCallbackParameters<FileData[]>
+) => MaybePromise<void>;
 
 interface Miho {
   afterAll(cb: MaybeArray<HookAfterAllCallback>): Miho;
 }
 ```
 
-Register a callback to be called after [`bumpAll()`](#bumpall).
+Register one or more callbacks to be called after [`bumpAll()`](#bumpall).
 
 ```ts
 miho.afterAll(async (data) => {
@@ -27,20 +36,22 @@ miho.afterAll(async (data) => {
 ### afterEach
 
 ```ts
-type HookAfterEachCallback = (data: PackageData) => MaybePromise<void>;
+type HookAfterEachCallback = (
+  data: HookCallbackParameters<FileData>
+) => MaybePromise<void>;
 
 interface Miho {
   afterEach(cb: MaybeArray<HookAfterEachCallback>): Miho;
 }
 ```
 
-Register a callback to be called after each [`bump()`](#bump).
+Register one or more callbacks to be called after each [`bump()`](#bump).
 
 ### beforeAll
 
 ```ts
 type HookBeforeAllCallback = (
-  data: PackageData[]
+  data: HookCallbackParameters<FileData[]>
 ) => MaybePromise<boolean | void>;
 
 interface Miho {
@@ -48,7 +59,7 @@ interface Miho {
 }
 ```
 
-Register a callback to be called before [`bumpAll()`](#bumpall).
+Register one or more callbacks to be called before [`bumpAll()`](#bumpall).
 
 If `false` is returned, the operation will be aborted.
 
@@ -56,7 +67,7 @@ If `false` is returned, the operation will be aborted.
 
 ```ts
 type HookBeforeEachCallback = (
-  data: PackageData
+  data: HookCallbackParameters<FileData>
 ) => MaybePromise<boolean | void>;
 
 interface Miho {
@@ -64,6 +75,6 @@ interface Miho {
 }
 ```
 
-Register a callback to be called before each [`bump()`](#bump).
+Register one or more callbacks to be called before each [`bump()`](#bump).
 
 If `false` is returned, the operation will be aborted.

@@ -1,9 +1,7 @@
 import fs from 'node:fs/promises';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { defaultOptions } from './utils';
 import {
   Miho,
-  PackageData,
   type HookBeforeEachCallback,
   type HookAfterEachCallback,
   type HookBeforeAllCallback,
@@ -12,44 +10,31 @@ import {
 import {
   createMockPackages,
   getTempDir,
+  getDefaultOptions,
+  toHaveBeenBumped,
   MihoMock,
   PackageJsonMock
 } from './utils';
 
-beforeEach(createMockPackages);
+const testName = 'miho';
+beforeEach(() => createMockPackages(testName));
 
 expect.extend({
-  async toHaveBeenBumped(oldPkgs: PackageData[]) {
-    const updatedMiho = await new Miho(defaultOptions).search();
-    const updatedPkgs = updatedMiho.getPackages();
-
-    function bumped(pkg: PackageData) {
-      const old = oldPkgs.find(({ name }) => name === pkg.name);
-      if (!old) return false;
-      return pkg.version === old.newVersion;
-    }
-
-    return {
-      pass: updatedPkgs.every(bumped),
-      message: () => {
-        const bumpedAmount = updatedPkgs.filter(bumped).length;
-        return `${bumpedAmount} package(s) bumped`;
-      }
-    };
-  }
+  toHaveBeenBumped: toHaveBeenBumped(testName, this)
 });
 
 describe('Miho.prototype.search', () => {
-  const temp = getTempDir();
+  const temp = getTempDir(testName);
+  const options = getDefaultOptions(testName);
 
   it('should find something', async () => {
-    const miho = await new Miho(defaultOptions).search();
+    const miho = await new Miho(options).search();
     const pkgs = miho.getPackages();
     expect(pkgs.length).toBeGreaterThanOrEqual(1);
   });
 
   it('should be recursive', async () => {
-    const miho = await new Miho().search(defaultOptions);
+    const miho = await new Miho().search(options);
     const ents = await fs.readdir(temp, { withFileTypes: true });
 
     expect(ents.filter(PackageJsonMock.isPackage)).toHaveLength(1);
@@ -60,7 +45,7 @@ describe('Miho.prototype.search', () => {
     // If the search is not recursive, --include is ignored.
     // Miho will only search the current working directory.
     const miho = await new Miho().search({
-      ...defaultOptions,
+      ...options,
       recursive: false
     });
 
@@ -69,13 +54,15 @@ describe('Miho.prototype.search', () => {
 });
 
 describe('Miho.prototype.getPackages', () => {
+  const options = getDefaultOptions(testName);
+
   it('should find all packages', async () => {
-    const miho = await new Miho().search(defaultOptions);
+    const miho = await new Miho().search(options);
     expect(miho.getPackages()).toHaveLength(MihoMock.DEFAULT_AMOUNT);
   });
 
   it('should filter correctly', async () => {
-    const miho = await new Miho().search(defaultOptions);
+    const miho = await new Miho().search(options);
     const pkgs = miho.getPackages({
       filter: (pkg) => !pkg.name?.startsWith(MihoMock.PACKAGE_PREFIX)
     });
@@ -84,9 +71,33 @@ describe('Miho.prototype.getPackages', () => {
   });
 });
 
+describe('Miho.prototype.getPackageByName', () => {
+  const options = getDefaultOptions(testName);
+
+  it('should find', async () => {
+    const miho = await new Miho().search(options);
+    const pkgs = miho.getPackages();
+    const packageName = pkgs[2].name;
+    if (!packageName) {
+      throw new TypeError('No package name to search for.');
+    }
+
+    const pkg = miho.getPackageByName(packageName);
+    expect(pkg).toBeTruthy();
+  });
+
+  it('should not find', async () => {
+    const miho = await new Miho().search(options);
+    const pkg = miho.getPackageByName('awesome-miho-explosion');
+    expect(pkg).toBeNull();
+  });
+});
+
 describe('Miho.prototype.bump', () => {
+  const options = getDefaultOptions(testName);
+
   it('should bump', async () => {
-    const miho = await new Miho().search(defaultOptions);
+    const miho = await new Miho().search(options);
     const pkgs = miho.getPackages();
 
     const results = await Promise.all(pkgs.map(({ id }) => miho.bump(id)));
@@ -96,7 +107,7 @@ describe('Miho.prototype.bump', () => {
   });
 
   it('should execute callback before', async () => {
-    const miho = new Miho(defaultOptions);
+    const miho = new Miho(options);
     const cb: HookBeforeEachCallback = vi.fn(() => true);
 
     miho.beforeEach(cb);
@@ -109,7 +120,7 @@ describe('Miho.prototype.bump', () => {
   });
 
   it('should abort if false is returned', async () => {
-    const miho = new Miho(defaultOptions);
+    const miho = new Miho(options);
     const cb: HookBeforeEachCallback = vi.fn(() => false);
 
     miho.beforeEach(cb);
@@ -122,7 +133,7 @@ describe('Miho.prototype.bump', () => {
   });
 
   it('should execute callback after', async () => {
-    const miho = new Miho(defaultOptions);
+    const miho = new Miho(options);
     const cb: HookAfterEachCallback = vi.fn(() => void 0);
 
     miho.beforeEach(cb);
@@ -135,9 +146,11 @@ describe('Miho.prototype.bump', () => {
 });
 
 describe('Miho.prototype.bumpAll', () => {
+  const options = getDefaultOptions(testName);
+
   it('should bump all', async () => {
     const miho = new Miho({
-      ...defaultOptions,
+      ...options,
       release: 'major'
     });
 
@@ -150,7 +163,7 @@ describe('Miho.prototype.bumpAll', () => {
   });
 
   it('should execute callback before', async () => {
-    const miho = new Miho(defaultOptions);
+    const miho = new Miho(options);
     const cb: HookBeforeAllCallback = vi.fn(() => true);
 
     miho.beforeAll(cb);
@@ -161,7 +174,7 @@ describe('Miho.prototype.bumpAll', () => {
   });
 
   it('should abort if false is returned', async () => {
-    const miho = new Miho(defaultOptions);
+    const miho = new Miho(options);
     const cb: HookBeforeAllCallback = vi.fn(() => false);
 
     miho.beforeAll(cb);
@@ -174,7 +187,7 @@ describe('Miho.prototype.bumpAll', () => {
   });
 
   it('should execute callback after', async () => {
-    const miho = new Miho(defaultOptions);
+    const miho = new Miho(options);
     const cb: HookAfterAllCallback = vi.fn(() => void 0);
 
     miho.afterAll(cb);
@@ -186,8 +199,10 @@ describe('Miho.prototype.bumpAll', () => {
 });
 
 describe('Miho.prototype.resolveHooks', () => {
+  const options = getDefaultOptions(testName);
+
   it('should resolve', async () => {
-    const miho = new Miho(defaultOptions);
+    const miho = new Miho(options);
     const beforeEachCb: HookBeforeEachCallback = vi.fn(() => true);
     const afterEachCb: HookAfterEachCallback = vi.fn(() => void 0);
     const beforeAllCb: HookBeforeAllCallback = vi.fn(() => true);
@@ -207,5 +222,20 @@ describe('Miho.prototype.resolveHooks', () => {
     expect(afterEachCb).toHaveBeenCalled();
     expect(beforeAllCb).toHaveBeenCalled();
     expect(afterAllCb).toHaveBeenCalled();
+  });
+});
+
+describe('Miho.prototype.l', () => {
+  const options = getDefaultOptions(testName);
+
+  it('should not explode', () => {
+    const miho = new Miho(options);
+    const spy = vi.spyOn(miho, 'l').mockImplementation(() => void 0);
+
+    miho.l`LOG`;
+
+    expect(spy).toHaveBeenCalled();
+    expect(spy).toHaveBeenLastCalledWith(['LOG']);
+    spy.mockReset();
   });
 });

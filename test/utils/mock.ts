@@ -2,16 +2,15 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import process from 'node:process';
 import { existsSync as exists, type Dirent } from 'node:fs';
-import { Filename } from '../../src/utils';
+import { FileType } from '../../src/utils';
 
 export enum MihoMock {
   DEFAULT_AMOUNT = 10,
   DEFAULT_VERSION = '1.0.0',
   PACKAGE_PREFIX = 'package-',
-  PACKAGE_FILENAME = Filename.PACKAGE_JSON,
+  PACKAGE_FILENAME = FileType.PACKAGE_JSON,
   TEMP_DIR = '.temp',
-  TEMP_SUBDIR_PREFIX = 'subdir',
-  TEMP_GLOB = '.temp/**'
+  TEMP_SUBDIR_PREFIX = 'subdir'
 }
 
 export class PackageJsonMock {
@@ -40,10 +39,10 @@ export class PackageJsonMock {
   }
 }
 
-export async function createMockPackages() {
-  const temp = getTempDir();
+export async function createMockPackages(testName: string) {
+  const temp = getTempDir(testName);
   if (exists(temp)) fs.rm(temp, { recursive: true });
-  await fs.mkdir(temp);
+  await fs.mkdir(temp, { recursive: true });
 
   let cwd = temp;
   for (let i = 0; i < MihoMock.DEFAULT_AMOUNT; i++) {
@@ -60,6 +59,6 @@ export async function createMockPackages() {
   return () => fs.rm(temp, { recursive: true });
 }
 
-export function getTempDir() {
-  return path.join(process.cwd(), MihoMock.TEMP_DIR);
+export function getTempDir(testName: string) {
+  return path.join(process.cwd(), MihoMock.TEMP_DIR, testName);
 }

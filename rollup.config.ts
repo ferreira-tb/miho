@@ -8,6 +8,7 @@ const externalDeps: ExternalOption = [
   'c12',
   'chalk',
   'detect-indent',
+  'execa',
   'glob',
   'prompts',
   'semver'

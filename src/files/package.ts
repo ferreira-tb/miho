@@ -1,100 +1,101 @@
-import * as fs from 'node:fs/promises';
+import process from 'node:process';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 import detectIndent from 'detect-indent';
 import semver, { type ReleaseType } from 'semver';
 import { defaultConfig } from '../config';
+import { LogLevel } from '../utils';
 import type { Path } from 'glob';
-import type { MihoOptions } from '../types';
+import type { MihoInternalOptions } from '../types';
+import type { Miho } from '../miho';
 
 type MihoPackageConstructor = {
-  readonly raw: Path;
+  readonly pathObj: Path;
   readonly packageName: string | null;
   readonly version: string;
   readonly indent: string;
 };
 
-/**
- * @internal
- * @ignore
- */
 export class MihoPackage {
-  private readonly fullpath: string;
-  private readonly _packageName: string | null;
-  private readonly _version: string;
-  private readonly indent: string;
-  private release: MihoOptions['release'];
-  private preid: MihoOptions['preid'];
-  private _newVersion: string | null = null;
+  readonly #fullpath: string;
+  readonly #packageName: string | null;
+  readonly #version: string;
+  readonly #indent: string;
+  #release: MihoInternalOptions['release'];
+  #preid: MihoInternalOptions['preid'];
+  #newVersion: string | null = null;
 
   private constructor(
-    config: Partial<MihoOptions>,
+    config: Partial<MihoInternalOptions>,
     options: MihoPackageConstructor
   ) {
     const name = options.packageName;
 
-    this.fullpath = options.raw.fullpath();
-    this._packageName = name;
-    this._version = options.version;
-    this.indent = options.indent;
+    this.#fullpath = options.pathObj.fullpath();
+    this.#packageName = name;
+    this.#version = options.version;
+    this.#indent = options.indent;
 
-    this.release = config.release ?? defaultConfig.release;
-    this.preid = config.preid ?? defaultConfig.preid;
+    this.#release = config.release ?? defaultConfig.release;
+    this.#preid = config.preid ?? defaultConfig.preid;
 
     const override = name ? config.overrides?.[name] : null;
     if (override) {
       switch (typeof override) {
-        case 'object': {
-          this.release = override.release ?? defaultConfig.release;
-          this.preid = override.preid ?? defaultConfig.preid;
-          break;
-        }
         case 'string':
         case 'number':
-          this.release = override;
+          this.#release = override;
+          break;
+        case 'object': {
+          this.#release = override.release ?? defaultConfig.release;
+          this.#preid = override.preid ?? defaultConfig.preid;
+        }
       }
     }
 
-    if (typeof this.release === 'number') {
-      this._newVersion = semver.coerce(this.release)?.raw ?? null;
-    } else if (MihoPackage.isReleaseType(this.release)) {
-      if (this.release.startsWith('pre')) {
-        this._newVersion = semver.inc(this._version, this.release, this.preid);
+    if (typeof this.#release === 'number') {
+      this.#newVersion = semver.coerce(this.#release)?.raw ?? null;
+    } else if (MihoPackage.#isReleaseType(this.#release)) {
+      if (this.#release.startsWith('pre')) {
+        this.#newVersion = semver.inc(
+          this.#version,
+          this.#release,
+          this.#preid
+        );
       } else {
-        this._newVersion = semver.inc(this._version, this.release);
+        this.#newVersion = semver.inc(this.#version, this.#release);
       }
     } else {
-      this._newVersion = semver.clean(this.release);
+      this.#newVersion = semver.clean(this.#release);
     }
   }
 
+  /**
+   * @internal
+   * @ignore
+   */
   public async bump() {
-    if (typeof this._newVersion !== 'string') {
-      throw new TypeError(`Invalid version: ${this._newVersion}`);
+    if (typeof this.#newVersion !== 'string') {
+      throw new TypeError(`Invalid version: ${this.#newVersion}`);
     }
 
-    const file = await fs.readFile(this.fullpath, 'utf-8');
+    const file = await fs.readFile(this.#fullpath, 'utf-8');
     const pkg = JSON.parse(file) as Record<string, unknown>;
-    pkg.version = this._newVersion;
+    pkg.version = this.#newVersion;
 
-    const jsonString = JSON.stringify(pkg, null, this.indent);
-    await fs.writeFile(this.fullpath, jsonString, 'utf-8');
+    const jsonString = JSON.stringify(pkg, null, this.#indent);
+    await fs.writeFile(this.#fullpath, jsonString, 'utf-8');
   }
 
-  get packageName() {
-    return this._packageName;
-  }
+  public static async create(
+    miho: Miho,
+    pathObj: Path,
+    config: Partial<MihoInternalOptions> = {}
+  ) {
+    if (!pathObj.isFile()) return null;
 
-  get version() {
-    return this._version;
-  }
-
-  get newVersion() {
-    return this._newVersion;
-  }
-
-  public static async create(raw: Path, config: Partial<MihoOptions> = {}) {
-    if (!raw.isFile()) return null;
-
-    const file = await fs.readFile(raw.fullpath(), 'utf-8');
+    const fullpath = pathObj.fullpath();
+    const file = await fs.readFile(fullpath, 'utf-8');
     const pkg = JSON.parse(file) as Record<string, unknown>;
 
     const packageName = typeof pkg.name === 'string' ? pkg.name : null;
@@ -112,30 +113,39 @@ export class MihoPackage {
     const version = semver.clean(String(pkg.version));
     if (!version) return null;
 
-    return new this(config, {
-      raw,
+    const mihoPackage = new MihoPackage(config, {
+      pathObj,
       packageName,
       version,
       indent: detectIndent(file).indent
     });
+
+    if (config.verbose) {
+      const relative = path.relative(process.cwd(), fullpath);
+      miho.l(LogLevel.LOW)`Found: ${relative}`;
+    }
+
+    return mihoPackage;
   }
 
-  private static isReleaseType(value: unknown): value is ReleaseType {
+  static #isReleaseType(value: unknown): value is ReleaseType {
     if (typeof value !== 'string') return false;
     return semver.RELEASE_TYPES.some((r) => r === value);
   }
-}
 
-export class PackageData {
-  readonly id: number;
-  readonly name: string | null;
-  readonly version: string;
-  readonly newVersion: string | null;
+  get packageName() {
+    return this.#packageName;
+  }
 
-  constructor(id: number, pkg: MihoPackage) {
-    this.id = id;
-    this.name = pkg.packageName;
-    this.version = pkg.version;
-    this.newVersion = pkg.newVersion;
+  get version() {
+    return this.#version;
+  }
+
+  get newVersion() {
+    return this.#newVersion;
+  }
+
+  get fullpath() {
+    return this.#fullpath;
   }
 }
