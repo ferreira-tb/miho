@@ -6,7 +6,7 @@ export class Commit implements CommitOptions {
 
   public readonly message: string;
   public readonly all: boolean;
-  public readonly verify: boolean;
+  public readonly 'no-verify': boolean;
 
   constructor(options: PartialNullish<CommitOptions> = {}) {
     this.message = isNotBlank(options.message)
@@ -14,7 +14,7 @@ export class Commit implements CommitOptions {
       : Commit.DEFAULT_MESSAGE;
 
     this.all = options.all ?? false;
-    this.verify = options.verify ?? true;
+    this['no-verify'] = options['no-verify'] ?? false;
   }
 
   public commit() {

@@ -14,6 +14,8 @@ import type { CliArguments } from '../types';
 async function init() {
   const argv = await yargs(hideBin(process.argv))
     .scriptName('miho')
+    .alias('h', 'help')
+    .alias('v', 'version')
     .options(createOptions())
     .parse();
 

@@ -60,7 +60,7 @@ function normalizeCommit(argv: CliArguments): Partial<CommitOptions> {
   const commit: Partial<CommitOptions> = {};
 
   normalizeCommitBoolean(commit, 'all', argv.all);
-  normalizeCommitBoolean(commit, 'verify', argv.verify);
+  normalizeCommitBoolean(commit, 'no-verify', argv['no-verify']);
   normalizeCommitString(commit, 'message', argv.commit);
 
   return commit;

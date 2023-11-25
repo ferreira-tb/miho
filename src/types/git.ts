@@ -10,8 +10,8 @@ export interface CommitOptions {
    */
   all: boolean;
   /**
-   * @default true
+   * @default false
    * @see https://git-scm.com/docs/git-commit#Documentation/git-commit.txt---no-verify
    */
-  verify: boolean;
+  'no-verify': boolean;
 }

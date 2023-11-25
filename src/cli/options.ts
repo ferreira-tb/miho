@@ -13,7 +13,7 @@ export function createOptions() {
       default: true
     },
     commit: {
-      desc: 'Commit the modififed packages.',
+      desc: 'Commit the modified packages.',
       type: 'string',
       alias: 'c'
     },
@@ -31,6 +31,11 @@ export function createOptions() {
       desc: 'Glob patterns indicating where to search for packages.',
       type: 'array',
       alias: 'i'
+    },
+    'no-verify': {
+      desc: 'Bypass pre-commit and commit-msg hooks.',
+      type: 'boolean',
+      alias: 'n'
     },
     overrides: {
       desc: 'Allow to configure each package individually.',
@@ -53,10 +58,6 @@ export function createOptions() {
     },
     verbose: {
       desc: 'Log additional info. May be useful for debugging.',
-      type: 'boolean'
-    },
-    verify: {
-      desc: 'Allow pre-commit and commit-msg hooks to run.',
       type: 'boolean'
     }
   };
