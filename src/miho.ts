@@ -1,4 +1,5 @@
 import { glob } from 'glob';
+import type { Options as ExecaOptions } from 'execa';
 import { MihoPackage, FileData } from './files';
 import { defaultConfig } from './config';
 import { GitCommit } from './git';
@@ -135,6 +136,10 @@ export class Miho {
       throw new Error('Nothing to commit.');
     }
 
+    const execaOptions: ExecaOptions = this.#config.verbose
+      ? { stdout: 'inherit' }
+      : {};
+
     const entries = Array.from(this.#updatedPackages.entries());
     const data = entries.map(([id, pkg]) => new FileData(id, pkg));
 
@@ -144,7 +149,7 @@ export class Miho {
     }
 
     const packages = entries.map(([, pkg]) => pkg);
-    await this.#commit.commit(packages);
+    await this.#commit.commit(packages, execaOptions);
     this.#updatedPackages.clear();
 
     for (const cb of this.#yieldHookCallbacks('afterCommit')) {
@@ -157,7 +162,7 @@ export class Miho {
         if (returnValue === false) return;
       }
 
-      await this.#commit.pushCommit();
+      await this.#commit.pushCommit(execaOptions);
 
       for (const cb of this.#yieldHookCallbacks('afterPush')) {
         await cb(this.#createHookParameters(data));

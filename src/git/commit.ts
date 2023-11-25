@@ -10,8 +10,6 @@ export class GitCommit implements CommitOptions {
   public readonly 'no-verify': boolean;
   public readonly push: boolean;
 
-  readonly #execaOptions: ExecaOptions = { stderr: 'inherit' };
-
   constructor(options: PartialNullish<CommitOptions> = {}) {
     this.message = isNotBlank(options.message)
       ? options.message
@@ -22,7 +20,7 @@ export class GitCommit implements CommitOptions {
     this.push = options.push ?? false;
   }
 
-  public async commit(packages: MihoPackage[]) {
+  public async commit(packages: MihoPackage[], execaOptions?: ExecaOptions) {
     const args: string[] = [CommitCommand.MESSAGE, this.message];
 
     if (this['no-verify']) {
@@ -38,10 +36,10 @@ export class GitCommit implements CommitOptions {
       });
     }
 
-    await execa('git', ['commit', ...args], this.#execaOptions);
+    await execa('git', ['commit', ...args], execaOptions);
   }
 
-  public async pushCommit() {
-    await execa('git', ['push'], this.#execaOptions);
+  public async pushCommit(execaOptions?: ExecaOptions) {
+    await execa('git', ['push'], execaOptions);
   }
 }
