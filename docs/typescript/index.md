@@ -38,7 +38,7 @@ type PartialNullish<T> = {
 };
 ```
 
-Constructs a type where all properties of `T` maybe be nullish.
+Constructs a type where all properties of `T` may be nullish.
 
 ### PickByValue\<T, V>
 
