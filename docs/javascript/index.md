@@ -37,12 +37,14 @@ await miho.search();
 console.log(miho.getPackages());
 
 // Register hooks.
-miho.beforeEach(async ({ data }) => {
-  await doSomethingAsync(data);
+miho.on('beforeEach', async (event) => {
+  const { miho, data } = event;
+  const result = await doSomethingAsync(miho, data);
+  if (!result) event.preventDefault();
 });
 
 // Bump a package by its id.
-await miho.bump(package.id);
+await miho.bump(id);
 
 // Bump all the packages found by Miho.
 await miho.bumpAll();
