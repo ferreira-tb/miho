@@ -4,23 +4,23 @@ outline: [2, 3]
 
 # CLI
 
-|           Command           | Alias | Description                                                         |
-| :-------------------------: | :---- | :------------------------------------------------------------------ |
-|       [`--all`](#all)       | `-a`  | Commit all modified files, not only the packages.                   |
-|       [`--ask`](#ask)       | none  | Determines whether Miho should ask for confirmation before bumping. |
-|    [`--commit`](#commit)    | `-c`  | Commit the modified packages.                                       |
-|   [`--exclude`](#exclude)   | `-x`  | Glob patterns indicating where to **NOT** search for packages.      |
-|    [`--filter`](#filter)    | `-f`  | Package names to filter. May be regex.                              |
-|      [`--help`](#help)      | `-h`  | Show usage information.                                             |
-|   [`--include`](#include)   | `-i`  | Glob patterns indicating where to search for packages.              |
-| [`--no-verify`](#no-verify) | `-n`  | Bypass `pre-commit` and `commit-msg` hooks.                         |
-| [`--overrides`](#overrides) | `-o`  | Allow to configure each package individually.                       |
-|     [`--preid`](#preid)     | none  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.           |
-|      [`--push`](#push)      | `-p`  | Push the commit.                                                    |
-| [`--recursive`](#recursive) | `-r`  | Recursively bumps all packages in the monorepo.                     |
-|    [`--silent`](#silent)    | none  | Omit unimportant logs.                                              |
-|   [`--verbose`](#verbose)   | none  | Log additional info. May be useful for debugging.                   |
-|   [`--version`](#version)   | `-v`  | Show current version.                                               |
+|           Command           | Alias | Description                                                    |
+| :-------------------------: | :---- | :------------------------------------------------------------- |
+|       [`--all`](#all)       | `-a`  | Commit all modified files, not only the packages.              |
+|       [`--ask`](#ask)       | none  | Whether Miho should ask for confirmation before bumping.       |
+|    [`--commit`](#commit)    | `-c`  | Commit the modified packages.                                  |
+|   [`--exclude`](#exclude)   | `-x`  | Glob patterns indicating where to **NOT** search for packages. |
+|    [`--filter`](#filter)    | `-f`  | Package names to filter. May be regex.                         |
+|      [`--help`](#help)      | `-h`  | Show usage information.                                        |
+|   [`--include`](#include)   | `-i`  | Glob patterns indicating where to search for packages.         |
+| [`--no-verify`](#no-verify) | `-n`  | Bypass `pre-commit` and `commit-msg` hooks.                    |
+| [`--overrides`](#overrides) | `-o`  | Allow to configure each package individually.                  |
+|     [`--preid`](#preid)     | none  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.      |
+|      [`--push`](#push)      | `-p`  | Push the commit.                                               |
+| [`--recursive`](#recursive) | `-r`  | Recursively bumps all packages in the monorepo.                |
+|    [`--silent`](#silent)    | none  | Omit unimportant logs.                                         |
+|   [`--verbose`](#verbose)   | none  | Log additional info. May be useful for debugging.              |
+|   [`--version`](#version)   | `-v`  | Show current version.                                          |
 
 ## Release
 

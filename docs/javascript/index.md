@@ -107,6 +107,26 @@ Bumps all packages found by Miho.
 
 Returns the amount of packages successfully bumped.
 
+### clearAllHooks
+
+```ts
+interface Miho {
+  clearAllHooks(): Miho;
+}
+```
+
+Removes all callbacks.
+
+### clearHooks
+
+```ts
+interface Miho {
+  clearHooks<T extends keyof MihoHooks>(hookName: T | T[]): Miho;
+}
+```
+
+Removes all callbacks associated with one or more hooks.
+
 ### commit
 
 ```ts
@@ -123,8 +143,6 @@ interface Miho {
 ```
 
 Commit the modified packages.
-
-This will throw an error if called while no package has been modified.
 
 ### getPackageByName
 

@@ -1,4 +1,4 @@
-import { execa } from 'execa';
+import { execa, type Options as ExecaOptions } from 'execa';
 import type { MihoPackage } from '../files';
 import type { CommitOptions, PartialNullish } from '../types';
 import { isNotBlank } from '../utils';
@@ -20,7 +20,7 @@ export class GitCommit implements CommitOptions {
     this.push = options.push ?? false;
   }
 
-  public async commit(packages: MihoPackage[]) {
+  public async commit(packages: MihoPackage[], execaOptions?: ExecaOptions) {
     const args: string[] = [CommitCommand.MESSAGE, this.message];
 
     if (this['no-verify']) {
@@ -36,7 +36,10 @@ export class GitCommit implements CommitOptions {
       });
     }
 
-    await execa('git', ['commit', ...args]);
-    if (this.push) await execa('git', ['push']);
+    await execa('git', ['commit', ...args], execaOptions);
+  }
+
+  public async pushCommit(execaOptions?: ExecaOptions) {
+    await execa('git', ['push'], execaOptions);
   }
 }

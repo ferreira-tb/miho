@@ -4,14 +4,14 @@ outline: [2, 3]
 
 # Hooks
 
-## Bump lifecycle
-
 ```ts
 interface HookCallbackParameters<T> {
   miho: Miho;
   data: T;
 }
 ```
+
+## Bump
 
 ### afterAll
 
@@ -76,5 +76,67 @@ interface Miho {
 ```
 
 Register one or more callbacks to be called before each [`bump()`](#bump).
+
+If `false` is returned, the operation will be aborted.
+
+## Commit
+
+### afterCommit
+
+```ts
+type HookAfterCommitCallback = (
+  data: HookCallbackParameters<FileData[]>
+) => MaybePromise<void>;
+
+interface Miho {
+  afterCommit(cb: MaybeArray<HookAfterCommitCallback>): Miho;
+}
+```
+
+Register one or more callbacks to be called after committing.
+
+### afterPush
+
+```ts
+type HookAfterPushCallback = (
+  data: HookCallbackParameters<FileData[]>
+) => MaybePromise<void>;
+
+interface Miho {
+  afterPush(cb: MaybeArray<HookAfterPushCallback>): Miho;
+}
+```
+
+Register one or more callbacks to be called after pushing the commit.
+
+### beforeCommit
+
+```ts
+type HookBeforeCommitCallback = (
+  data: HookCallbackParameters<FileData[]>
+) => MaybePromise<boolean | void>;
+
+interface Miho {
+  beforeCommit(cb: MaybeArray<HookBeforeCommitCallback>): Miho;
+}
+```
+
+Register one or more callbacks to be called before committing.
+
+If `false` is returned, the operation will be aborted.
+
+### beforePush
+
+```ts
+type HookBeforePushCallback = (
+  data: HookCallbackParameters<FileData[]>
+) => MaybePromise<boolean | void>;
+
+interface Miho {
+  beforePush(cb: MaybeArray<HookBeforePushCallback>): Miho;
+}
+```
+
+Register one or more callbacks to be called before pushing the commit.
 
 If `false` is returned, the operation will be aborted.

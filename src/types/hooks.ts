@@ -6,35 +6,62 @@ export interface HookCallbackParameters<T> {
   data: T;
 }
 
-export type HookBeforeAllCallback = (
-  data: HookCallbackParameters<FileData[]>
-) => MaybePromise<boolean | void>;
-
+// Bump lifecycle
 export type HookAfterAllCallback = (
   data: HookCallbackParameters<FileData[]>
 ) => MaybePromise<void>;
-
-export type HookBeforeEachCallback = (
-  data: HookCallbackParameters<FileData>
-) => MaybePromise<boolean | void>;
 
 export type HookAfterEachCallback = (
   data: HookCallbackParameters<FileData>
 ) => MaybePromise<void>;
 
+export type HookBeforeAllCallback = (
+  data: HookCallbackParameters<FileData[]>
+) => MaybePromise<boolean | void>;
+
+export type HookBeforeEachCallback = (
+  data: HookCallbackParameters<FileData>
+) => MaybePromise<boolean | void>;
+
+// Commit lifecycle
+export type HookAfterCommitCallback = (
+  data: HookCallbackParameters<FileData[]>
+) => MaybePromise<void>;
+
+export type HookAfterPushCallback = (
+  data: HookCallbackParameters<FileData[]>
+) => MaybePromise<void>;
+
+export type HookBeforeCommitCallback = (
+  data: HookCallbackParameters<FileData[]>
+) => MaybePromise<boolean | void>;
+
+export type HookBeforePushCallback = (
+  data: HookCallbackParameters<FileData[]>
+) => MaybePromise<boolean | void>;
+
 export type MihoHooks = {
-  readonly beforeAll: MaybeArray<HookBeforeAllCallback>;
+  // Bump lifecycle
   readonly afterAll: MaybeArray<HookAfterAllCallback>;
-  readonly beforeEach: MaybeArray<HookBeforeEachCallback>;
   readonly afterEach: MaybeArray<HookAfterEachCallback>;
+  readonly beforeAll: MaybeArray<HookBeforeAllCallback>;
+  readonly beforeEach: MaybeArray<HookBeforeEachCallback>;
+
+  // Commit lifecycle
+  readonly afterCommit: MaybeArray<HookAfterCommitCallback>;
+  readonly afterPush: MaybeArray<HookAfterPushCallback>;
+  readonly beforeCommit: MaybeArray<HookBeforeCommitCallback>;
+  readonly beforePush: MaybeArray<HookBeforePushCallback>;
 };
 
-export type MihoHookCallback<T extends keyof MihoHooks> = T extends 'beforeAll'
-  ? HookBeforeAllCallback
-  : T extends 'afterAll'
-    ? HookAfterAllCallback
-    : T extends 'beforeEach'
-      ? HookBeforeEachCallback
-      : T extends 'afterEach'
-        ? HookAfterEachCallback
-        : never;
+// prettier-ignore
+export type MihoHookCallback<T extends keyof MihoHooks> = 
+  T extends 'afterAll' ? HookAfterAllCallback :
+  T extends 'afterCommit' ? HookAfterCommitCallback :
+  T extends 'afterEach' ? HookAfterEachCallback :
+  T extends 'afterPush' ? HookAfterPushCallback :
+  T extends 'beforeAll' ? HookBeforeAllCallback :
+  T extends 'beforeEach' ? HookBeforeEachCallback :
+  T extends 'beforeCommit' ? HookBeforeCommitCallback :
+  T extends 'beforePush' ? HookBeforePushCallback :
+  never

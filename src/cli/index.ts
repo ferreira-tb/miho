@@ -49,14 +49,18 @@ async function init() {
     return;
   }
 
+  let packagesBumped: number = 0;
   if (argv.ask) {
     await prompt(miho, packages);
   } else {
-    const amount = await miho.bumpAll();
-    miho.l`${chalk.green.bold(`${amount} package(s) bumped.`)}`;
+    packagesBumped = await miho.bumpAll();
+    miho.l`${chalk.green.bold(`${packagesBumped} package(s) bumped.`)}`;
   }
 
-  if (miho.shouldCommit()) {
+  if (
+    (typeof config.commit?.message === 'string' && packagesBumped > 0) ||
+    config.commit?.all === true
+  ) {
     miho.l(LogLevel.NORMAL)`Committing files...`;
     await miho.commit();
   }
