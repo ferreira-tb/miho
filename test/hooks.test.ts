@@ -14,6 +14,8 @@ expect.extend({
 });
 
 describe('Miho.prototype.constructor', () => {
+  const options = getDefaultOptions(testName);
+
   it('should resolve hooks', async () => {
     const beforeEach = vi.fn(() => void 0);
     const afterEach = vi.fn(() => void 0);
@@ -29,7 +31,7 @@ describe('Miho.prototype.constructor', () => {
       }
     });
 
-    await miho.search();
+    await miho.search(options);
     await miho.bumpAll();
 
     expect(beforeEach).toHaveBeenCalled();
@@ -40,8 +42,10 @@ describe('Miho.prototype.constructor', () => {
 });
 
 describe('Miho.prototype.on', () => {
+  const options = getDefaultOptions(testName);
+
   it('should return miho', () => {
-    const miho = new Miho();
+    const miho = new Miho(options);
     const returnValue = miho.on('beforeEach', () => void 0);
     expect(returnValue).toBeInstanceOf(Miho);
   });
@@ -200,7 +204,7 @@ describe('Miho.prototype.off', () => {
   const options = getDefaultOptions(testName);
 
   it('should return miho', () => {
-    const miho = new Miho();
+    const miho = new Miho(options);
     const returnValue = miho.off('beforeEach', () => void 0);
     expect(returnValue).toBeInstanceOf(Miho);
   });
@@ -223,16 +227,20 @@ describe('Miho.prototype.off', () => {
 });
 
 describe('Miho.prototype.addListener', () => {
+  const options = getDefaultOptions(testName);
+
   it('should return miho', () => {
-    const miho = new Miho();
+    const miho = new Miho(options);
     const returnValue = miho.addListener('beforeEach', () => void 0);
     expect(returnValue).toBeInstanceOf(Miho);
   });
 });
 
 describe('Miho.prototype.removeListener', () => {
+  const options = getDefaultOptions(testName);
+
   it('should return miho', () => {
-    const miho = new Miho();
+    const miho = new Miho(options);
     const returnValue = miho.removeListener('beforeEach', () => void 0);
     expect(returnValue).toBeInstanceOf(Miho);
   });
@@ -242,7 +250,7 @@ describe('Miho.prototype.removeAllListeners', () => {
   const options = getDefaultOptions(testName);
 
   it('should return miho', () => {
-    const miho = new Miho();
+    const miho = new Miho(options);
     const returnValue = miho.removeAllListeners();
 
     expect(returnValue).toBeInstanceOf(Miho);
