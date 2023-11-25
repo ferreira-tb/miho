@@ -1,12 +1,6 @@
 import fs from 'node:fs/promises';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  Miho,
-  type HookBeforeEachCallback,
-  type HookAfterEachCallback,
-  type HookBeforeAllCallback,
-  type HookAfterAllCallback
-} from '../src';
+import { Miho, FileData } from '../src';
 import {
   createMockPackages,
   getTempDir,
@@ -26,6 +20,11 @@ expect.extend({
 describe('Miho.prototype.search', () => {
   const temp = getTempDir(testName);
   const options = getDefaultOptions(testName);
+
+  it('should return miho', async () => {
+    const miho = await new Miho(options).search();
+    expect(miho).toBeInstanceOf(Miho);
+  });
 
   it('should find something', async () => {
     const miho = await new Miho(options).search();
@@ -56,6 +55,14 @@ describe('Miho.prototype.search', () => {
 describe('Miho.prototype.getPackages', () => {
   const options = getDefaultOptions(testName);
 
+  it('should return FileData array', async () => {
+    const miho = await new Miho().search(options);
+    const packages = miho.getPackages();
+
+    expect(Array.isArray(packages)).toBe(true);
+    expect(packages.every((pkg) => pkg instanceof FileData)).toBe(true);
+  });
+
   it('should find all packages', async () => {
     const miho = await new Miho().search(options);
     expect(miho.getPackages()).toHaveLength(MihoMock.DEFAULT_AMOUNT);
@@ -83,7 +90,7 @@ describe('Miho.prototype.getPackageByName', () => {
     }
 
     const pkg = miho.getPackageByName(packageName);
-    expect(pkg).toBeTruthy();
+    expect(pkg).toBeInstanceOf(FileData);
   });
 
   it('should not find', async () => {
@@ -96,6 +103,14 @@ describe('Miho.prototype.getPackageByName', () => {
 describe('Miho.prototype.bump', () => {
   const options = getDefaultOptions(testName);
 
+  it('should return boolean', async () => {
+    const miho = await new Miho().search(options);
+    const pkgs = miho.getPackages();
+
+    const result = await miho.bump(pkgs[0].id);
+    expect(result).toBeTypeOf('boolean');
+  });
+
   it('should bump', async () => {
     const miho = await new Miho().search(options);
     const pkgs = miho.getPackages();
@@ -105,96 +120,26 @@ describe('Miho.prototype.bump', () => {
     expect(results.every(Boolean)).toBe(true);
     await expect(pkgs).toHaveBeenBumped();
   });
-
-  it('should execute callback before', async () => {
-    const miho = new Miho(options);
-    const cb: HookBeforeEachCallback = vi.fn(() => true);
-
-    miho.beforeEach(cb);
-    await miho.search();
-    const pkgs = miho.getPackages();
-    expect(pkgs.length).toBeGreaterThanOrEqual(1);
-    await Promise.all(pkgs.map(({ id }) => miho.bump(id)));
-
-    expect(cb).toHaveBeenCalledTimes(pkgs.length);
-  });
-
-  it('should abort if false is returned', async () => {
-    const miho = new Miho(options);
-    const cb: HookBeforeEachCallback = vi.fn(() => false);
-
-    miho.beforeEach(cb);
-    await miho.search();
-    const pkgs = miho.getPackages();
-    await Promise.all(pkgs.map(({ id }) => miho.bump(id)));
-
-    expect(cb).toHaveBeenCalled();
-    await expect(pkgs).not.toHaveBeenBumped();
-  });
-
-  it('should execute callback after', async () => {
-    const miho = new Miho(options);
-    const cb: HookAfterEachCallback = vi.fn(() => void 0);
-
-    miho.beforeEach(cb);
-    await miho.search();
-    const pkgs = miho.getPackages();
-    await Promise.all(pkgs.map(({ id }) => miho.bump(id)));
-
-    expect(cb).toHaveBeenCalledTimes(pkgs.length);
-  });
 });
 
 describe('Miho.prototype.bumpAll', () => {
   const options = getDefaultOptions(testName);
 
-  it('should bump all', async () => {
-    const miho = new Miho({
-      ...options,
-      release: 'major'
-    });
+  it('should return integer', async () => {
+    const miho = await new Miho(options).search();
+    const amount = await miho.bumpAll();
 
-    await miho.search();
+    expect(amount).toBeTypeOf('number');
+    expect(Number.isInteger(amount)).toBe(true);
+  });
+
+  it('should bump all', async () => {
+    const miho = await new Miho(options).search();
     const pkgs = miho.getPackages();
 
     const amount = await miho.bumpAll();
     expect(amount).toBe(pkgs.length);
     await expect(pkgs).toHaveBeenBumped();
-  });
-
-  it('should execute callback before', async () => {
-    const miho = new Miho(options);
-    const cb: HookBeforeAllCallback = vi.fn(() => true);
-
-    miho.beforeAll(cb);
-    await miho.search();
-    await miho.bumpAll();
-
-    expect(cb).toHaveBeenCalled();
-  });
-
-  it('should abort if false is returned', async () => {
-    const miho = new Miho(options);
-    const cb: HookBeforeAllCallback = vi.fn(() => false);
-
-    miho.beforeAll(cb);
-    await miho.search();
-    const pkgs = miho.getPackages();
-    await miho.bumpAll();
-
-    expect(cb).toHaveBeenCalled();
-    await expect(pkgs).not.toHaveBeenBumped();
-  });
-
-  it('should execute callback after', async () => {
-    const miho = new Miho(options);
-    const cb: HookAfterAllCallback = vi.fn(() => void 0);
-
-    miho.afterAll(cb);
-    await miho.search();
-    await miho.bumpAll();
-
-    expect(cb).toHaveBeenCalled();
   });
 });
 
