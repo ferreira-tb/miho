@@ -68,8 +68,10 @@ Miho will default to `patch` if you not specify a release type.
 
 Commit all modififed files, not only the packages. See [`git-commit`](https://git-scm.com/docs/git-commit#Documentation/git-commit.txt--a) for details.
 
+You can omit [`-c`](#commit) if a custom message is not needed.
+
 ```bash
-npx miho patch -c -a
+npx miho patch -a
 ```
 
 ### `--ask`
@@ -168,6 +170,10 @@ npx miho premajor -p beta -r -o.test=patch
 
 Prerelease identifier. Must be used with `premajor`, `preminor` or `prepatch`.
 
+```bash
+npx miho preminor --preid alpha
+```
+
 ### `--push`
 
 | Alias |  Usage   |
@@ -177,7 +183,7 @@ Prerelease identifier. Must be used with `premajor`, `preminor` or `prepatch`.
 Push the commit. See [`git-push`](https://git-scm.com/docs/git-push) for details.
 
 ```bash
-npx miho preminor -p alpha
+npx miho -a -p
 ```
 
 ### `--recursive`
