@@ -51,7 +51,7 @@ async function main() {
 
   let packagesBumped: number = 0;
   if (argv.ask) {
-    await prompt(miho, packages);
+    packagesBumped = await prompt(miho, packages);
   } else {
     packagesBumped = await miho.bumpAll();
     miho.l`${chalk.green.bold(`${packagesBumped} package(s) bumped.`)}`;
