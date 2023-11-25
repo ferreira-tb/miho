@@ -1,4 +1,4 @@
-import { $ } from 'execa';
+import { execa } from 'execa';
 import { beforeEach, expect, it } from 'vitest';
 import { Miho } from '../src';
 import {
@@ -25,6 +25,13 @@ it('should bump', async () => {
   const miho = await new Miho(options).search();
   const pkgs = miho.getPackages();
 
-  await $`pnpm exec miho patch -r ${include} --no-ask`;
+  await execa('pnpm', [
+    'exec',
+    'miho',
+    'patch',
+    '-r',
+    `${include}`,
+    '--no-ask'
+  ]);
   await expect(pkgs).toHaveBeenBumped();
 });
