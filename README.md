@@ -33,6 +33,11 @@ const miho = new Miho({
   recursive: true,
   exclude: ['testdir/**'],
   filter: [/test/],
+  commit: {
+    message: 'a commit message',
+    all: true,
+    push: true
+  },
   overrides: {
     'main-project': 'major',
     'my-other-project': {

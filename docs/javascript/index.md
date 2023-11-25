@@ -15,6 +15,11 @@ const miho = new Miho({
   recursive: true,
   exclude: ['testdir/**'],
   filter: [/test/],
+  commit: {
+    message: 'a commit message',
+    all: true,
+    push: true
+  },
   overrides: {
     'main-project': 'major',
     'my-other-project': {
@@ -102,7 +107,27 @@ Bumps all packages found by Miho.
 
 Returns the amount of packages successfully bumped.
 
+### commit
+
+```ts
+interface CommitOptions {
+  all: boolean;
+  message: string;
+  'no-verify': boolean;
+  push: boolean;
+}
+
+interface Miho {
+  commit(options?: Partial<CommitOptions>): Promise<void>;
+}
+```
+
+Commit the modified packages.
+
+This will throw an error if called while no package has been modified.
+
 ### getPackageByName
+
 ```ts
 interface Miho {
   getPackageByName(): FileData | null;

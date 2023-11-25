@@ -129,7 +129,10 @@ export class Miho {
     return Boolean(this.#commit) && this.#updatedPackages.size > 0;
   }
 
-  public async commit() {
+  /** Commit the modified packages. */
+  public async commit(options: Partial<CommitOptions> = {}): Promise<void> {
+    this.#resolveCommitOptions(options);
+
     if (!this.#commit) {
       throw new Error('Cannot commit: options not set.');
     } else if (this.#updatedPackages.size === 0 && !this.#commit.all) {
