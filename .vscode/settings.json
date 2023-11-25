@@ -8,7 +8,7 @@
     }
   ],
   "vsicons.associations.folders": [
-    { "icon": "api", "extensions": ["javascript-api"], "format": "svg" }
+    { "icon": "js", "extensions": ["javascript"], "format": "svg" }
   ],
   "conventionalCommits.promptScopes": false,
   "prettier.requireConfig": true,
