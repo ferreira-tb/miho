@@ -7,12 +7,13 @@ import type { MihoOptions, Nullish } from './types';
  * @ignore
  */
 export const defaultConfig: MihoOptions = {
-  preid: 'alpha',
-  release: 'patch',
-  recursive: false,
-  include: '**/',
   exclude: [],
   filter: [],
+  include: '**/',
+  overrides: {},
+  preid: 'alpha',
+  recursive: false,
+  release: 'patch',
   silent: false,
   verbose: false
 };

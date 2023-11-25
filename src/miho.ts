@@ -11,7 +11,7 @@ import {
   LogLevel
 } from './utils';
 import type {
-  GetPackagesOptions,
+  MihoGetPackagesOptions,
   MihoHooks,
   MihoOptions,
   MihoHookCallback,
@@ -124,7 +124,7 @@ export class Miho {
    *
    * @returns Snapshot of the packages at the time they were found. Modifying any property will have no effect on them.
    */
-  public getPackages(options?: GetPackagesOptions): FileData[] {
+  public getPackages(options?: MihoGetPackagesOptions): FileData[] {
     let packages: FileData[] = Array.from(this.#packages.entries()).map(
       ([id, pkg]) => new FileData(id, pkg)
     );

@@ -31,7 +31,7 @@ export default defineConfig({
 Read the [Javascript API](./javascript/index.md#options) section for more details about the available options.
 
 ::: tip
-Other extensions, like `.ts` and `.mjs`, are also supported.
+Other extensions, like `.ts`, are also supported.
 :::
 
 ## CommonJS

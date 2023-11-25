@@ -40,6 +40,6 @@ export interface MihoOptions extends MihoInternalOptions {
   hooks?: Partial<MihoHooks>;
 }
 
-export type GetPackagesOptions = {
+export type MihoGetPackagesOptions = {
   filter?: (pkg: FileData) => boolean;
 };

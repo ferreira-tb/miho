@@ -33,7 +33,11 @@ const miho = new Miho({
   exclude: ['testdir/**'],
   filter: [/test/],
   overrides: {
-    'that-project': 'major'
+    'main-project': 'major',
+    'my-other-project': {
+      release: 'preminor',
+      preid: 'beta'
+    }
   }
 });
 
@@ -43,6 +47,11 @@ await miho.search(options);
 // This also returns an id identifying each package,
 // which can eventually be used to bump them individually.
 console.log(miho.getPackages());
+
+// Register hooks.
+miho.beforeEach(async ({ data }) => {
+  await doSomethingAsync(data);
+});
 
 // Bump a package by its id.
 await miho.bump(package.id);

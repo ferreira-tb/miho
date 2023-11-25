@@ -53,6 +53,10 @@ npx miho 8
 8.0.0
 ```
 
+::: tip Default value
+Miho will default to `patch` if you not specify a release type.
+:::
+
 ## Commands
 
 ### `--all`

@@ -9,17 +9,6 @@ export interface CliCommitOptions extends Omit<CommitOptions, 'message'> {
 
 export interface CliOptions extends PackageOptions, CliCommitOptions {
   /**
-   * Recursively bumps all packages in the monorepo.
-   * @default false
-   */
-  recursive: boolean;
-  /**
-   * Glob pattern indicating where to search for packages.
-   *
-   * By default, Miho will search the current directory.
-   */
-  include: string | string[];
-  /**
    * Glob patterns indicating where to **NOT** search for packages.
    * `.git` and `node_modules` are **ALWAYS** excluded.
    */
@@ -28,6 +17,25 @@ export interface CliOptions extends PackageOptions, CliCommitOptions {
    * Package names to filter.
    */
   filter: (string | RegExp)[];
+  /**
+   * Glob pattern indicating where to search for packages.
+   *
+   * By default, Miho will search the current directory.
+   */
+  include: string | string[];
+  /**
+   * Each key represents the name of a package.
+   * From here you can configure each one individually.
+   */
+  overrides: Record<
+    string,
+    PackageOptions['release'] | Partial<PackageOptions>
+  >;
+  /**
+   * Recursively bumps all packages in the monorepo.
+   * @default false
+   */
+  recursive: boolean;
   /**
    * Omit unimportant logs.
    * @default false
@@ -38,14 +46,6 @@ export interface CliOptions extends PackageOptions, CliCommitOptions {
    * @default false
    */
   verbose: boolean;
-  /**
-   * Each key represents the name of a package.
-   * From here you can configure each one individually.
-   */
-  overrides?: Record<
-    string,
-    PackageOptions['release'] | Partial<PackageOptions>
-  >;
 }
 
 export type CliFlag = Record<

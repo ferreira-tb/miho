@@ -16,7 +16,11 @@ const miho = new Miho({
   exclude: ['testdir/**'],
   filter: [/test/],
   overrides: {
-    'that-project': 'major'
+    'main-project': 'major',
+    'my-other-project': {
+      release: 'preminor',
+      preid: 'beta'
+    }
   }
 });
 
@@ -27,6 +31,11 @@ await miho.search(options);
 // which can eventually be used to bump them individually.
 console.log(miho.getPackages());
 
+// Register hooks.
+miho.beforeEach(async ({ data }) => {
+  await doSomethingAsync(data);
+});
+
 // Bump a package by its id.
 await miho.bump(package.id);
 
@@ -34,78 +43,33 @@ await miho.bump(package.id);
 await miho.bumpAll();
 ```
 
-## Miho
+## Options
+
+Most of these options are already explained in the [CLI](../cli/index.md) section, so it's recommended that you take a look.
 
 ```ts
-interface MihoConstructor {
-  new (options?: Partial<MihoOptions>): Miho;
-}
-```
-
-### Options
-
-```ts
-interface PackageOptions {
-  /**
-   * This option will be applied to every package found by Miho.
-   * If this is a number, Miho will try to coerce it to a valid version.
-   * You can override this for individual packages in the config file.
-   * @default 'patch'
-   */
-  release: string | number;
-  /**
-   * Prerelease identifier, like the `beta` in `1.0.0-beta.1`.
-   * @default 'alpha'
-   */
-  preid: string;
-}
-
-interface CliOptions extends PackageOptions {
-  /**
-   * Recursively bumps all packages in the monorepo.
-   * @default false
-   */
-  recursive: boolean;
-  /**
-   * Glob pattern indicating where to search for packages.
-   * By default, Miho will search the current directory.
-   */
-  include: string | string[];
-  /**
-   * Glob patterns indicating where to NOT search for packages.
-   * `.git` and `node_modules` are ALWAYS excluded.
-   */
+interface MihoOptions {
+  commit?: {
+    message: string;
+    all: boolean;
+    'no-verify': boolean;
+  };
   exclude: string | string[];
-  /**
-   * Package names to filter.
-   */
   filter: (string | RegExp)[];
-  /**
-   * Omit unimportant logs.
-   * @default false
-   */
+  hooks?: Partial<MihoHooks>;
+  include: string | string[];
+  overrides?: Record<string, MihoOptions['release'] | Partial<PackageOptions>>;
+  preid: string;
+  recursive: boolean;
+  release: string | number;
   silent: boolean;
-  /**
-   * Log additional info. May be useful for debugging.
-   * @default false
-   */
   verbose: boolean;
-  /**
-   * Each key represents the name of a package.
-   * From here you can configure each one individually.
-   */
-  overrides?: Record<
-    string,
-    PackageOptions['release'] | Partial<PackageOptions>
-  >;
-}
-
-interface MihoOptions extends CliOptions {
-  readonly hooks?: Partial<MihoHooks>;
 }
 ```
 
+::: tip Hooks
 Check the [Hooks](../hooks/index.md) section for more details on hooks.
+:::
 
 ## Methods
 
@@ -141,8 +105,12 @@ Returns the amount of packages successfully bumped.
 ### getPackages
 
 ```ts
+type MihoGetPackagesOptions = {
+  filter?: (pkg: FileData) => boolean;
+};
+
 interface Miho {
-  getPackages(): FileData[];
+  getPackages(options?: MihoGetPackagesOptions): FileData[];
 }
 ```
 
