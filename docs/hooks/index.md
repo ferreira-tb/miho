@@ -5,9 +5,26 @@ outline: [2, 3]
 # Hooks
 
 ```ts
-interface HookCallbackParameters<T> {
-  miho: Miho;
-  data: T;
+miho.on('beforeEach', async (event) => {
+  const { miho, data } = event;
+  const result = await doSomethingAsync(miho, data);
+  if (!result) event.preventDefault();
+});
+```
+
+::: tip Aborting
+Cancelable events can be aborted calling `event.preventDefault()`
+:::
+
+## Event
+
+All listeners are called with an instance of `MihoEvent` as its first argument.
+
+```ts
+interface MihoEvent<T extends keyof MihoHooks> extends Event {
+  readonly type: T;
+  readonly miho: Miho;
+  readonly data: MihoEventData<T>;
 }
 ```
 
@@ -15,128 +32,66 @@ interface HookCallbackParameters<T> {
 
 ### afterAll
 
-```ts
-type HookAfterAllCallback = (
-  data: HookCallbackParameters<FileData[]>
-) => MaybePromise<void>;
+| Data         | Cancelable |
+| :----------- | :--------: |
+| `FileData[]` |  `false`   |
 
-interface Miho {
-  afterAll(cb: MaybeArray<HookAfterAllCallback>): Miho;
-}
-```
-
-Register one or more callbacks to be called after [`bumpAll()`](#bumpall).
-
-```ts
-miho.afterAll(async (data) => {
-  await doSomethingAsync(data);
-});
-```
+Register a listener to be called after [`bumpAll()`](#bumpall).
 
 ### afterEach
 
-```ts
-type HookAfterEachCallback = (
-  data: HookCallbackParameters<FileData>
-) => MaybePromise<void>;
+| Data       | Cancelable |
+| :--------- | :--------: |
+| `FileData` |  `false`   |
 
-interface Miho {
-  afterEach(cb: MaybeArray<HookAfterEachCallback>): Miho;
-}
-```
-
-Register one or more callbacks to be called after each [`bump()`](#bump).
+Register a listener to be called after each [`bump()`](#bump).
 
 ### beforeAll
 
-```ts
-type HookBeforeAllCallback = (
-  data: HookCallbackParameters<FileData[]>
-) => MaybePromise<boolean | void>;
+| Data         | Cancelable |
+| :----------- | :--------: |
+| `FileData[]` |   `true`   |
 
-interface Miho {
-  beforeAll(cb: MaybeArray<HookBeforeAllCallback>): Miho;
-}
-```
-
-Register one or more callbacks to be called before [`bumpAll()`](#bumpall).
-
-If `false` is returned, the operation will be aborted.
+Register a listener to be called before [`bumpAll()`](#bumpall).
 
 ### beforeEach
 
-```ts
-type HookBeforeEachCallback = (
-  data: HookCallbackParameters<FileData>
-) => MaybePromise<boolean | void>;
+| Data       | Cancelable |
+| :--------- | :--------: |
+| `FileData` |   `true`   |
 
-interface Miho {
-  beforeEach(cb: MaybeArray<HookBeforeEachCallback>): Miho;
-}
-```
-
-Register one or more callbacks to be called before each [`bump()`](#bump).
-
-If `false` is returned, the operation will be aborted.
+Register a listener to be called before each [`bump()`](#bump).
 
 ## Commit
 
 ### afterCommit
 
-```ts
-type HookAfterCommitCallback = (
-  data: HookCallbackParameters<FileData[]>
-) => MaybePromise<void>;
+| Data         | Cancelable |
+| :----------- | :--------: |
+| `FileData[]` |  `false`   |
 
-interface Miho {
-  afterCommit(cb: MaybeArray<HookAfterCommitCallback>): Miho;
-}
-```
-
-Register one or more callbacks to be called after committing.
+Register a listener to be called after committing.
 
 ### afterPush
 
-```ts
-type HookAfterPushCallback = (
-  data: HookCallbackParameters<FileData[]>
-) => MaybePromise<void>;
+| Data         | Cancelable |
+| :----------- | :--------: |
+| `FileData[]` |  `false`   |
 
-interface Miho {
-  afterPush(cb: MaybeArray<HookAfterPushCallback>): Miho;
-}
-```
-
-Register one or more callbacks to be called after pushing the commit.
+Register a listener to be called after pushing the commit.
 
 ### beforeCommit
 
-```ts
-type HookBeforeCommitCallback = (
-  data: HookCallbackParameters<FileData[]>
-) => MaybePromise<boolean | void>;
+| Data         | Cancelable |
+| :----------- | :--------: |
+| `FileData[]` |   `true`   |
 
-interface Miho {
-  beforeCommit(cb: MaybeArray<HookBeforeCommitCallback>): Miho;
-}
-```
-
-Register one or more callbacks to be called before committing.
-
-If `false` is returned, the operation will be aborted.
+Register a listener to be called before committing.
 
 ### beforePush
 
-```ts
-type HookBeforePushCallback = (
-  data: HookCallbackParameters<FileData[]>
-) => MaybePromise<boolean | void>;
+| Data         | Cancelable |
+| :----------- | :--------: |
+| `FileData[]` |   `true`   |
 
-interface Miho {
-  beforePush(cb: MaybeArray<HookBeforePushCallback>): Miho;
-}
-```
-
-Register one or more callbacks to be called before pushing the commit.
-
-If `false` is returned, the operation will be aborted.
+Register a listener to be called before pushing the commit.

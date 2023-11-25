@@ -107,26 +107,6 @@ Bumps all packages found by Miho.
 
 Returns the amount of packages successfully bumped.
 
-### clearAllHooks
-
-```ts
-interface Miho {
-  clearAllHooks(): Miho;
-}
-```
-
-Removes all callbacks.
-
-### clearHooks
-
-```ts
-interface Miho {
-  clearHooks<T extends keyof MihoHooks>(hookName: T | T[]): Miho;
-}
-```
-
-Removes all callbacks associated with one or more hooks.
-
 ### commit
 
 ```ts
@@ -170,26 +150,37 @@ Returns information on the packages found by Miho.
 
 The `FileData` objects are just a snapshot of the packages at the time they were found. Modifying any property will have no effect on them.
 
-### resolveHooks
+### off
 
 ```ts
 interface Miho {
-  resolveHooks(hooks: Partial<MihoHooks>): Miho;
+  off<T extends keyof MihoHooks>(hookName: T, listener: MihoHooks[T]): Miho;
 }
 ```
 
-Register multiple hooks simultaneously.
+Its behavior is similar to Node's [`off`](https://nodejs.org/dist/latest/docs/api/events.html#emitterremovelistenereventname-listener). However, Miho is not a [`EventEmitter`](https://nodejs.org/dist/latest/docs/api/events.html#class-eventemitter).
 
-Read the [hooks](../hooks/index.md#hooks) section for more details.
+### on
 
 ```ts
-miho.resolveHooks({
-  beforeEach: ({ data }) => data.id === 1,
-  afterEach: ({ data }) => console.log(data),
-  beforeAll: ({ data }) => data.every(({ id }) => id > 1),
-  afterAll: ({ data }) => data.forEach((pkg) => console.log(pkg))
-});
+interface Miho {
+  on<T extends keyof MihoHooks>(hookName: T, listener: MihoHooks[T]): Miho;
+}
 ```
+
+Its behavior is similar to Node's [`on`](https://nodejs.org/dist/latest/docs/api/events.html#emitteroneventname-listener). However, Miho is not a [`EventEmitter`](https://nodejs.org/dist/latest/docs/api/events.html#class-eventemitter).
+
+### removeAllListeners
+
+```ts
+interface Miho {
+  removeAllListeners<T extends keyof MihoHooks>(hookName?: T | T[]): Miho;
+}
+```
+
+Removes all listeners associated with one or more hooks.
+
+If no hook name is specified, listeners from all hooks will be removed.
 
 ### search
 

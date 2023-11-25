@@ -11,7 +11,7 @@ import { LogLevel } from '../utils';
 import { createOptions } from './options';
 import type { CliArguments } from '../types';
 
-async function init() {
+async function main() {
   const argv = await yargs(hideBin(process.argv))
     .scriptName('miho')
     .alias('h', 'help')
@@ -66,7 +66,7 @@ async function init() {
   }
 }
 
-init().catch((err: unknown) => {
+main().catch((err: unknown) => {
   console.error(err);
   process.exit(1);
 });

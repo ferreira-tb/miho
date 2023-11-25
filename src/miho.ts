@@ -3,32 +3,29 @@ import type { Options as ExecaOptions } from 'execa';
 import { MihoPackage, FileData } from './files';
 import { defaultConfig } from './config';
 import { GitCommit } from './git';
+import { MihoEmitter, MihoEvent } from './hooks';
 import {
   FileType,
   MihoIgnore,
   isNotBlank,
-  HookCallbackMap,
   isTemplateArray,
   LogLevel
 } from './utils';
 import type {
   MihoGetPackagesOptions,
-  MihoHooks,
   MihoOptions,
-  MihoHookCallback,
-  HookCallbackParameters,
   MihoInternalOptions,
   CommitOptions
 } from './types';
 
-export class Miho {
+export class Miho extends MihoEmitter {
   #config: Partial<MihoInternalOptions> = {};
   #commit: GitCommit = new GitCommit();
   readonly #packages = new Map<number, MihoPackage>();
   readonly #updatedPackages = new Map<number, MihoPackage>();
-  readonly #hookCallbackMap = new HookCallbackMap();
 
   constructor(options: Partial<MihoOptions> = {}) {
+    super();
     this.#resolveMihoOptions(options);
   }
 
@@ -37,18 +34,6 @@ export class Miho {
    * @ignore
    */
   public readonly l = this.#createLogger();
-
-  // Bump lifecycle
-  public readonly afterAll = this.#createHookRegisterFn('afterAll');
-  public readonly afterEach = this.#createHookRegisterFn('afterEach');
-  public readonly beforeAll = this.#createHookRegisterFn('beforeAll');
-  public readonly beforeEach = this.#createHookRegisterFn('beforeEach');
-
-  // Commit lifecycle
-  public readonly afterCommit = this.#createHookRegisterFn('afterCommit');
-  public readonly afterPush = this.#createHookRegisterFn('afterPush');
-  public readonly beforeCommit = this.#createHookRegisterFn('beforeCommit');
-  public readonly beforePush = this.#createHookRegisterFn('beforePush');
 
   /** Search for all packages that meet the requirements. */
   public async search(options: Partial<MihoOptions> = {}): Promise<this> {
@@ -87,20 +72,25 @@ export class Miho {
   public async bump(id: number): Promise<boolean> {
     const pkg = this.#packages.get(id);
     if (pkg) {
-      for (const cb of this.#yieldHookCallbacks('beforeEach')) {
-        const returnValue = await cb(
-          this.#createHookParameters(new FileData(id, pkg))
-        );
-        if (returnValue === false) return false;
-      }
+      const defaultPrevented = await this.executeHook(
+        new MihoEvent('beforeEach', {
+          miho: this,
+          data: new FileData(id, pkg),
+          cancelable: true
+        })
+      );
+      if (defaultPrevented) return false;
 
       await pkg.bump();
       this.#packages.delete(id);
       this.#updatedPackages.set(id, pkg);
 
-      for (const cb of this.#yieldHookCallbacks('afterEach')) {
-        await cb(this.#createHookParameters(new FileData(id, pkg)));
-      }
+      await this.executeHook(
+        new MihoEvent('afterEach', {
+          miho: this,
+          data: new FileData(id, pkg)
+        })
+      );
     }
 
     return true;
@@ -112,18 +102,25 @@ export class Miho {
    */
   public async bumpAll(): Promise<number> {
     const packages = this.getPackages();
-    for (const cb of this.#yieldHookCallbacks('beforeAll')) {
-      const returnValue = await cb(this.#createHookParameters(packages));
-      if (returnValue === false) return 0;
-    }
+    const defaultPrevented = await this.executeHook(
+      new MihoEvent('beforeAll', {
+        miho: this,
+        data: packages,
+        cancelable: true
+      })
+    );
+    if (defaultPrevented) return 0;
 
     const results = await Promise.all(
       Array.from(this.#packages.keys()).map(this.bump.bind(this))
     );
 
-    for (const cb of this.#yieldHookCallbacks('afterAll')) {
-      await cb(this.#createHookParameters(packages));
-    }
+    await this.executeHook(
+      new MihoEvent('afterAll', {
+        miho: this,
+        data: packages
+      })
+    );
 
     return results.filter(Boolean).length;
   }
@@ -143,30 +140,26 @@ export class Miho {
     const entries = Array.from(this.#updatedPackages.entries());
     const data = entries.map(([id, pkg]) => new FileData(id, pkg));
 
-    for (const cb of this.#yieldHookCallbacks('beforeCommit')) {
-      const returnValue = await cb(this.#createHookParameters(data));
-      if (returnValue === false) return;
-    }
+    const defaultPrevented = await this.executeHook(
+      new MihoEvent('beforeCommit', { miho: this, data, cancelable: true })
+    );
+    if (defaultPrevented) return;
 
     const packages = entries.map(([, pkg]) => pkg);
     await this.#commit.commit(packages, execaOptions);
     this.#updatedPackages.clear();
 
-    for (const cb of this.#yieldHookCallbacks('afterCommit')) {
-      await cb(this.#createHookParameters(data));
-    }
+    await this.executeHook(new MihoEvent('afterCommit', { miho: this, data }));
 
     if (this.#commit.push) {
-      for (const cb of this.#yieldHookCallbacks('beforePush')) {
-        const returnValue = await cb(this.#createHookParameters(data));
-        if (returnValue === false) return;
-      }
+      const defaultPrevented = await this.executeHook(
+        new MihoEvent('beforePush', { miho: this, data, cancelable: true })
+      );
+      if (defaultPrevented) return;
 
       await this.#commit.pushCommit(execaOptions);
 
-      for (const cb of this.#yieldHookCallbacks('afterPush')) {
-        await cb(this.#createHookParameters(data));
-      }
+      await this.executeHook(new MihoEvent('afterPush', { miho: this, data }));
     }
   }
 
@@ -193,35 +186,11 @@ export class Miho {
     return packages.find(({ name }) => name === packageName) ?? null;
   }
 
-  /** Register multiple hooks simultaneously. */
-  public resolveHooks<T extends keyof MihoHooks>(
-    hooks: Partial<MihoHooks>
-  ): this {
-    Object.entries(hooks).forEach(([key, value]: [T, MihoHooks[T]]) => {
-      this.#hookCallbackMap.set(key, value);
-    });
-
-    return this;
-  }
-
-  /** Removes all callbacks. */
-  public clearAllHooks(): this {
-    this.#hookCallbackMap.clear();
-    return this;
-  }
-
-  /** Removes all callbacks associated with one or more hooks. */
-  public clearHooks<T extends keyof MihoHooks>(hookName: T | T[]): this {
-    const hooks = Array.isArray(hookName) ? hookName : [hookName];
-    hooks.forEach((hook) => void this.#hookCallbackMap.delete(hook));
-    return this;
-  }
-
   #resolveMihoOptions(options: Partial<MihoOptions>) {
     const { hooks, commit, ...config } = options;
     this.#config = { ...this.#config, ...config };
     if (commit) this.#resolveCommitOptions(commit);
-    if (hooks) this.resolveHooks(hooks);
+    if (hooks) this.resolveListeners(hooks);
   }
 
   #resolveCommitOptions(options: Partial<CommitOptions>) {
@@ -240,25 +209,6 @@ export class Miho {
     patterns = patterns.filter((i) => i.length > 0);
     if (patterns.length === 0) return defaultConfig.include;
     return patterns;
-  }
-
-  #createHookRegisterFn<T extends keyof MihoHooks>(hookName: T) {
-    return (cb: MihoHooks[T]) => {
-      this.#hookCallbackMap.set(hookName, cb);
-      return this;
-    };
-  }
-
-  #createHookParameters<T>(data: T): HookCallbackParameters<T> {
-    return {
-      miho: this,
-      data
-    };
-  }
-
-  *#yieldHookCallbacks<T extends keyof MihoHooks>(hookName: T) {
-    const cbs = this.#hookCallbackMap.get(hookName) as MihoHookCallback<T>[];
-    for (const cb of cbs) yield cb;
   }
 
   #createLogger(logLevel: LogLevel = LogLevel.HIGH) {
