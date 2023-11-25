@@ -15,7 +15,8 @@ outline: [2, 3]
 |   [`--include`](#include)   | `-i`  | Glob patterns indicating where to search for packages.              |
 | [`--no-verify`](#no-verify) | `-n`  | Bypass `pre-commit` and `commit-msg` hooks.                         |
 | [`--overrides`](#overrides) | `-o`  | Allow to configure each package individually.                       |
-|     [`--preid`](#preid)     | `-p`  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.           |
+|     [`--preid`](#preid)     | none  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.           |
+|      [`--push`](#push)      | `-p`  | Push the commit.                                                    |
 | [`--recursive`](#recursive) | `-r`  | Recursively bumps all packages in the monorepo.                     |
 |    [`--silent`](#silent)    | none  | Omit unimportant logs.                                              |
 |   [`--verbose`](#verbose)   | none  | Log additional info. May be useful for debugging.                   |
@@ -163,9 +164,17 @@ npx miho premajor -p beta -r -o.test=patch
 
 | Alias |      Usage       |
 | :---- | :--------------: |
-| `-p`  | `--preid <name>` |
+| none  | `--preid <name>` |
 
-Prerelease identifier. Only relevant when the release type is `premajor`, `preminor` or `prepatch`.
+Prerelease identifier. Must be used with `premajor`, `preminor` or `prepatch`.
+
+### `--push`
+
+| Alias |  Usage   |
+| :---- | :------: |
+| `-p`  | `--push` |
+
+Push the commit. See [`git-push`](https://git-scm.com/docs/git-push) for details.
 
 ```bash
 npx miho preminor -p alpha

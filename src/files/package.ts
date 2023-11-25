@@ -87,18 +87,6 @@ export class MihoPackage {
     await fs.writeFile(this.#fullpath, jsonString, 'utf-8');
   }
 
-  get packageName() {
-    return this.#packageName;
-  }
-
-  get version() {
-    return this.#version;
-  }
-
-  get newVersion() {
-    return this.#newVersion;
-  }
-
   public static async create(
     miho: Miho,
     pathObj: Path,
@@ -143,5 +131,21 @@ export class MihoPackage {
   static #isReleaseType(value: unknown): value is ReleaseType {
     if (typeof value !== 'string') return false;
     return semver.RELEASE_TYPES.some((r) => r === value);
+  }
+
+  get packageName() {
+    return this.#packageName;
+  }
+
+  get version() {
+    return this.#version;
+  }
+
+  get newVersion() {
+    return this.#newVersion;
+  }
+
+  get fullpath() {
+    return this.#fullpath;
   }
 }

@@ -71,6 +71,28 @@ describe('Miho.prototype.getPackages', () => {
   });
 });
 
+describe('Miho.prototype.getPackageByName', () => {
+  const options = getDefaultOptions(testName);
+
+  it('should find', async () => {
+    const miho = await new Miho().search(options);
+    const pkgs = miho.getPackages();
+    const packageName = pkgs[2].name;
+    if (!packageName) {
+      throw new TypeError('No package name to search for.');
+    }
+
+    const pkg = miho.getPackageByName(packageName);
+    expect(pkg).toBeTruthy();
+  });
+
+  it('should not find', async () => {
+    const miho = await new Miho().search(options);
+    const pkg = miho.getPackageByName('awesome-miho-explosion');
+    expect(pkg).toBeNull();
+  });
+});
+
 describe('Miho.prototype.bump', () => {
   const options = getDefaultOptions(testName);
 
@@ -206,7 +228,7 @@ describe('Miho.prototype.resolveHooks', () => {
 describe('Miho.prototype.l', () => {
   const options = getDefaultOptions(testName);
 
-  it('should not throw', () => {
+  it('should not explode', () => {
     const miho = new Miho(options);
     const spy = vi.spyOn(miho, 'l').mockImplementation(() => void 0);
 

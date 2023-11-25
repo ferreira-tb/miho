@@ -5,9 +5,6 @@ import type {
   CommitOptions
 } from '../types';
 
-const normalizeArgvBoolean = createBooleanNormalizer<MihoOptions>();
-const normalizeArgvString = createStringNormalizer<MihoOptions>();
-
 export function normalize(argv: CliArguments): Partial<MihoOptions> {
   const options: Partial<MihoOptions> = {};
   options.commit = normalizeCommit(argv);
@@ -15,6 +12,9 @@ export function normalize(argv: CliArguments): Partial<MihoOptions> {
   if (argv._[0]) {
     options.release = argv._[0];
   }
+
+  const normalizeArgvBoolean = createBooleanNormalizer<MihoOptions>();
+  const normalizeArgvString = createStringNormalizer<MihoOptions>();
 
   normalizeArgvBoolean(options, 'recursive', argv.recursive);
   normalizeArgvBoolean(options, 'silent', argv.silent);
@@ -61,6 +61,8 @@ function normalizeCommit(argv: CliArguments): Partial<CommitOptions> {
 
   normalizeCommitBoolean(commit, 'all', argv.all);
   normalizeCommitBoolean(commit, 'no-verify', argv['no-verify']);
+  normalizeCommitBoolean(commit, 'push', argv.push);
+
   normalizeCommitString(commit, 'message', argv.commit);
 
   return commit;

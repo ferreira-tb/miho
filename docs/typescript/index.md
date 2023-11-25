@@ -2,7 +2,7 @@
 outline: [2, 3]
 ---
 
-# Typescript Utilities
+# Typescript
 
 ## Utility Types
 

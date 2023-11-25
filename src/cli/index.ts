@@ -55,6 +55,11 @@ async function init() {
     const amount = await miho.bumpAll();
     miho.l`${chalk.green.bold(`${amount} package(s) bumped.`)}`;
   }
+
+  if (miho.shouldCommit()) {
+    miho.l(LogLevel.NORMAL)`Committing files...`;
+    await miho.commit();
+  }
 }
 
 init().catch((err: unknown) => {

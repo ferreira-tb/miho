@@ -1,7 +1,7 @@
 import { glob } from 'glob';
 import { MihoPackage, FileData } from './files';
 import { defaultConfig } from './config';
-import { Commit } from './git';
+import { GitCommit } from './git';
 import {
   FileType,
   MihoIgnore,
@@ -23,8 +23,9 @@ import type {
 
 export class Miho {
   #config: Partial<MihoInternalOptions> = {};
-  #commit: Nullish<Commit>;
+  #commit: Nullish<GitCommit>;
   readonly #packages = new Map<number, MihoPackage>();
+  readonly #updatedPackages = new Map<number, MihoPackage>();
   readonly #hookCallbackMap = new HookCallbackMap();
 
   constructor(options: Partial<MihoOptions> = {}) {
@@ -88,6 +89,7 @@ export class Miho {
 
       await pkg.bump();
       this.#packages.delete(id);
+      this.#updatedPackages.set(id, pkg);
 
       for (const cb of this.#yieldHookCallbacks('afterEach')) {
         await cb(this.#createHookParameters(new FileData(id, pkg)));
@@ -120,6 +122,25 @@ export class Miho {
   }
 
   /**
+   * @internal
+   * @ignore
+   */
+  public shouldCommit() {
+    return Boolean(this.#commit) && this.#updatedPackages.size > 0;
+  }
+
+  public async commit() {
+    if (!this.#commit) {
+      throw new Error('Cannot commit: options not set.');
+    } else if (this.#updatedPackages.size === 0 && !this.#commit.all) {
+      throw new Error('Nothing to commit.');
+    }
+
+    await this.#commit.commit(Array.from(this.#updatedPackages.values()));
+    this.#updatedPackages.clear();
+  }
+
+  /**
    * Returns information on the packages found by Miho.
    *
    * @returns Snapshot of the packages at the time they were found. Modifying any property will have no effect on them.
@@ -134,6 +155,12 @@ export class Miho {
     }
 
     return packages;
+  }
+
+  /** Find a package by its name among the ones previously found by Miho. */
+  public getPackageByName(packageName: string): FileData | null {
+    const packages = this.getPackages();
+    return packages.find(({ name }) => name === packageName) ?? null;
   }
 
   /** Register multiple hooks simultaneously. */
@@ -156,7 +183,7 @@ export class Miho {
 
   #resolveCommitOptions(options: Partial<CommitOptions>) {
     if (typeof options.message === 'string' || options.all === true) {
-      this.#commit = new Commit({
+      this.#commit = new GitCommit({
         ...(this.#commit ? { ...this.#commit } : {}),
         ...options
       });

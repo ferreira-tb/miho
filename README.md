@@ -15,7 +15,8 @@ Easily bump your package.json version.
 |   [`--include`](https://tb.dev.br/miho/cli#include)   | `-i`  | Glob patterns indicating where to search for packages.              |
 | [`--no-verify`](https://tb.dev.br/miho/cli#no-verify) | `-n`  | Bypass `pre-commit` and `commit-msg` hooks.                         |
 | [`--overrides`](https://tb.dev.br/miho/cli#overrides) | `-o`  | Allow to configure each package individually.                       |
-|     [`--preid`](https://tb.dev.br/miho/cli#preid)     | `-p`  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.           |
+|     [`--preid`](https://tb.dev.br/miho/cli#preid)     | none  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.           |
+|      [`--push`](https://tb.dev.br/miho/cli#push)      | `-p`  | Push the commit.                                                    |
 | [`--recursive`](https://tb.dev.br/miho/cli#recursive) | `-r`  | Recursively bumps all packages in the monorepo.                     |
 |    [`--silent`](https://tb.dev.br/miho/cli#silent)    | none  | Omit unimportant logs.                                              |
 |   [`--verbose`](https://tb.dev.br/miho/cli#verbose)   | none  | Log additional info. May be useful for debugging.                   |

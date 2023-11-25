@@ -4,7 +4,7 @@ export function createOptions() {
   const options: CliFlag = {
     all: {
       desc: 'Commit all modififed files, not only the packages.',
-      type: 'string',
+      type: 'boolean',
       alias: 'a'
     },
     ask: {
@@ -44,7 +44,11 @@ export function createOptions() {
     },
     preid: {
       desc: 'Prerelease identifier.',
-      type: 'string',
+      type: 'string'
+    },
+    push: {
+      desc: 'Push the commit.',
+      type: 'boolean',
       alias: 'p'
     },
     recursive: {

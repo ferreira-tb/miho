@@ -102,6 +102,15 @@ Bumps all packages found by Miho.
 
 Returns the amount of packages successfully bumped.
 
+### getPackageByName
+```ts
+interface Miho {
+  getPackageByName(): FileData | null;
+}
+```
+
+Find a package by its name among the ones previously found by Miho.
+
 ### getPackages
 
 ```ts
