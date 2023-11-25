@@ -1,4 +1,4 @@
-import { execa } from 'execa';
+import { execa, type Options as ExecaOptions } from 'execa';
 import type { MihoPackage } from '../files';
 import type { CommitOptions, PartialNullish } from '../types';
 import { isNotBlank } from '../utils';
@@ -9,6 +9,8 @@ export class GitCommit implements CommitOptions {
   public readonly message: string;
   public readonly 'no-verify': boolean;
   public readonly push: boolean;
+
+  readonly #execaOptions: ExecaOptions = { stderr: 'inherit' };
 
   constructor(options: PartialNullish<CommitOptions> = {}) {
     this.message = isNotBlank(options.message)
@@ -36,7 +38,10 @@ export class GitCommit implements CommitOptions {
       });
     }
 
-    await execa('git', ['commit', ...args]);
-    if (this.push) await execa('git', ['push']);
+    await execa('git', ['commit', ...args], this.#execaOptions);
+  }
+
+  public async pushCommit() {
+    await execa('git', ['push'], this.#execaOptions);
   }
 }

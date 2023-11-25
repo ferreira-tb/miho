@@ -17,13 +17,12 @@ import type {
   MihoHookCallback,
   HookCallbackParameters,
   MihoInternalOptions,
-  Nullish,
   CommitOptions
 } from './types';
 
 export class Miho {
   #config: Partial<MihoInternalOptions> = {};
-  #commit: Nullish<GitCommit>;
+  #commit: GitCommit = new GitCommit();
   readonly #packages = new Map<number, MihoPackage>();
   readonly #updatedPackages = new Map<number, MihoPackage>();
   readonly #hookCallbackMap = new HookCallbackMap();
@@ -38,10 +37,17 @@ export class Miho {
    */
   public readonly l = this.#createLogger();
 
-  public readonly beforeAll = this.#createHookRegisterFn('beforeAll');
+  // Bump lifecycle
   public readonly afterAll = this.#createHookRegisterFn('afterAll');
-  public readonly beforeEach = this.#createHookRegisterFn('beforeEach');
   public readonly afterEach = this.#createHookRegisterFn('afterEach');
+  public readonly beforeAll = this.#createHookRegisterFn('beforeAll');
+  public readonly beforeEach = this.#createHookRegisterFn('beforeEach');
+
+  // Commit lifecycle
+  public readonly afterCommit = this.#createHookRegisterFn('afterCommit');
+  public readonly afterPush = this.#createHookRegisterFn('afterPush');
+  public readonly beforeCommit = this.#createHookRegisterFn('beforeCommit');
+  public readonly beforePush = this.#createHookRegisterFn('beforePush');
 
   /** Search for all packages that meet the requirements. */
   public async search(options: Partial<MihoOptions> = {}): Promise<this> {
@@ -121,26 +127,42 @@ export class Miho {
     return results.filter(Boolean).length;
   }
 
-  /**
-   * @internal
-   * @ignore
-   */
-  public shouldCommit() {
-    return Boolean(this.#commit) && this.#updatedPackages.size > 0;
-  }
-
   /** Commit the modified packages. */
   public async commit(options: Partial<CommitOptions> = {}): Promise<void> {
     this.#resolveCommitOptions(options);
 
-    if (!this.#commit) {
-      throw new Error('Cannot commit: options not set.');
-    } else if (this.#updatedPackages.size === 0 && !this.#commit.all) {
+    if (this.#updatedPackages.size === 0 && !this.#commit.all) {
       throw new Error('Nothing to commit.');
     }
 
-    await this.#commit.commit(Array.from(this.#updatedPackages.values()));
+    const entries = Array.from(this.#updatedPackages.entries());
+    const data = entries.map(([id, pkg]) => new FileData(id, pkg));
+
+    for (const cb of this.#yieldHookCallbacks('beforeCommit')) {
+      const returnValue = await cb(this.#createHookParameters(data));
+      if (returnValue === false) return;
+    }
+
+    const packages = entries.map(([, pkg]) => pkg);
+    await this.#commit.commit(packages);
     this.#updatedPackages.clear();
+
+    for (const cb of this.#yieldHookCallbacks('afterCommit')) {
+      await cb(this.#createHookParameters(data));
+    }
+
+    if (this.#commit.push) {
+      for (const cb of this.#yieldHookCallbacks('beforePush')) {
+        const returnValue = await cb(this.#createHookParameters(data));
+        if (returnValue === false) return;
+      }
+
+      await this.#commit.pushCommit();
+
+      for (const cb of this.#yieldHookCallbacks('afterPush')) {
+        await cb(this.#createHookParameters(data));
+      }
+    }
   }
 
   /**
@@ -177,6 +199,19 @@ export class Miho {
     return this;
   }
 
+  /** Removes all callbacks. */
+  public clearAllHooks(): this {
+    this.#hookCallbackMap.clear();
+    return this;
+  }
+
+  /** Removes all callbacks associated with one or more hooks. */
+  public clearHooks<T extends keyof MihoHooks>(hookName: T | T[]): this {
+    const hooks = Array.isArray(hookName) ? hookName : [hookName];
+    hooks.forEach((hook) => void this.#hookCallbackMap.delete(hook));
+    return this;
+  }
+
   #resolveMihoOptions(options: Partial<MihoOptions>) {
     const { hooks, commit, ...config } = options;
     this.#config = { ...this.#config, ...config };
@@ -185,14 +220,10 @@ export class Miho {
   }
 
   #resolveCommitOptions(options: Partial<CommitOptions>) {
-    if (typeof options.message === 'string' || options.all === true) {
-      this.#commit = new GitCommit({
-        ...(this.#commit ? { ...this.#commit } : {}),
-        ...options
-      });
-    } else {
-      this.#commit = null;
-    }
+    this.#commit = new GitCommit({
+      ...this.#commit,
+      ...options
+    });
   }
 
   #resolvePatterns() {

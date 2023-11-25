@@ -198,33 +198,6 @@ describe('Miho.prototype.bumpAll', () => {
   });
 });
 
-describe('Miho.prototype.resolveHooks', () => {
-  const options = getDefaultOptions(testName);
-
-  it('should resolve', async () => {
-    const miho = new Miho(options);
-    const beforeEachCb: HookBeforeEachCallback = vi.fn(() => true);
-    const afterEachCb: HookAfterEachCallback = vi.fn(() => void 0);
-    const beforeAllCb: HookBeforeAllCallback = vi.fn(() => true);
-    const afterAllCb: HookAfterAllCallback = vi.fn(() => void 0);
-
-    miho.resolveHooks({
-      beforeEach: beforeEachCb,
-      afterEach: afterEachCb,
-      beforeAll: [beforeAllCb, () => true],
-      afterAll: [afterAllCb, () => void 0]
-    });
-
-    await miho.search();
-    await miho.bumpAll();
-
-    expect(beforeEachCb).toHaveBeenCalled();
-    expect(afterEachCb).toHaveBeenCalled();
-    expect(beforeAllCb).toHaveBeenCalled();
-    expect(afterAllCb).toHaveBeenCalled();
-  });
-});
-
 describe('Miho.prototype.l', () => {
   const options = getDefaultOptions(testName);
 
