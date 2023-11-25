@@ -19,6 +19,7 @@ import type {
 } from './types';
 
 export class Miho extends MihoEmitter {
+  #id = 0;
   #config: Partial<MihoInternalOptions> = {};
   #commit: GitCommit = new GitCommit();
   readonly #packages = new Map<number, MihoPackage>();
@@ -55,9 +56,8 @@ export class Miho extends MihoEmitter {
       })
     );
 
-    let id = 0;
     result.filter(Boolean).forEach((pkg: MihoPackage) => {
-      this.#packages.set(++id, pkg);
+      this.#packages.set(++this.#id, pkg);
     });
 
     return this;
