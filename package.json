@@ -25,7 +25,7 @@
     "*.{?(c|m)@(j|t)s,css,vue,md,json}": "prettier --write"
   },
   "scripts": {
-    "build": "npx . -l build",
+    "build": "node --loader ts-node/esm scripts/build.ts",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs && pnpm docs:typedoc",
     "docs:preview": "vitepress preview docs",
