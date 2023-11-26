@@ -22,13 +22,21 @@ import { defineConfig } from 'miho';
 export default defineConfig({
   release: 'patch',
   recursive: false,
+  jobs: {
+    build: async () => {
+      await doSomething();
+    },
+    publish: async () => {
+      await doAnotherThing();
+    }
+  },
   overrides: {
     'project-1': 'minor'
   }
 });
 ```
 
-Read the [Javascript API](./javascript/index.md#options) section for more details about the available options.
+Read the [Javascript API](./javascript/index.md#options) section for more details on the available options. You can also see [Miho's own config file](https://github.com/ferreira-tb/miho/blob/main/miho.config.ts#L1C2-L1C2).
 
 ::: tip
 Other extensions, like `.ts`, are also supported.

@@ -1,13 +1,21 @@
+import {
+  detectPackageManager,
+  isPackageManager
+} from '../utils/package-manager';
 import type {
   CliArguments,
   PickByValue,
   MihoOptions,
-  CommitOptions
+  CommitOptions,
+  JobOptions
 } from '../types';
 
-export function normalize(argv: CliArguments): Partial<MihoOptions> {
+export async function normalize(
+  argv: CliArguments
+): Promise<Partial<MihoOptions>> {
   const options: Partial<MihoOptions> = {};
   options.commit = normalizeCommit(argv);
+  options.jobs = normalizeJobs(argv);
 
   if (argv._[0]) {
     options.release = argv._[0];
@@ -22,13 +30,19 @@ export function normalize(argv: CliArguments): Partial<MihoOptions> {
 
   normalizeArgvString(options, 'preid', argv.preid);
 
+  if (!isPackageManager(argv.packageManager)) {
+    options.packageManager = await detectPackageManager();
+  } else {
+    options.packageManager = argv.packageManager;
+  }
+
   if (Array.isArray(argv.exclude)) {
-    options.exclude = argv.exclude.map((i) => i.toString());
+    options.exclude = argv.exclude.map(toString);
   }
 
   if (Array.isArray(argv.filter)) {
     options.filter = argv.filter.map((i) => {
-      const value = i.toString();
+      const value = toString(i);
       if (/^\/.*\/$/.test(value)) {
         try {
           const regex = value.replace(/^\/|\/$/g, '');
@@ -43,7 +57,7 @@ export function normalize(argv: CliArguments): Partial<MihoOptions> {
   }
 
   if (Array.isArray(argv.include)) {
-    options.include = argv.include.map((i) => i.toString());
+    options.include = argv.include.map(toString);
   }
 
   if (argv.overrides && typeof argv.overrides === 'object') {
@@ -60,12 +74,40 @@ function normalizeCommit(argv: CliArguments): Partial<CommitOptions> {
   const commit: Partial<CommitOptions> = {};
 
   normalizeCommitBoolean(commit, 'all', argv.all);
-  normalizeCommitBoolean(commit, 'no-verify', argv['no-verify']);
+  normalizeCommitBoolean(commit, 'noVerify', argv.noVerify);
   normalizeCommitBoolean(commit, 'push', argv.push);
 
   normalizeCommitString(commit, 'message', argv.commit);
 
   return commit;
+}
+
+function normalizeJobs(argv: CliArguments): Partial<JobOptions> {
+  const normalizeJobBoolean = createBooleanNormalizer<JobOptions>();
+  const normalizeJobString = createStringNormalizer<JobOptions>();
+
+  const jobs: Partial<JobOptions> = {};
+
+  normalizeJobBoolean(jobs, 'dryRun', argv.dryRun);
+  normalizeJobString(jobs, 'only', argv.only);
+
+  if (Array.isArray(argv.skip)) {
+    jobs.skip = argv.skip.map(toString);
+  }
+
+  if (typeof argv.build === 'boolean') {
+    jobs.build = argv.build;
+  }
+
+  if (typeof argv.publish === 'boolean') {
+    jobs.publish = argv.publish;
+  }
+
+  if (typeof argv.test === 'boolean') {
+    jobs.test = argv.test;
+  }
+
+  return jobs;
 }
 
 function createBooleanNormalizer<T>() {
@@ -90,4 +132,8 @@ function createStringNormalizer<T>() {
       options[key] = value as any;
     }
   };
+}
+
+function toString(value: unknown) {
+  return String(value);
 }

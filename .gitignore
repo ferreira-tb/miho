@@ -32,3 +32,5 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+config.json

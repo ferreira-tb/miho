@@ -12,10 +12,21 @@ export function createOptions() {
       type: 'boolean',
       default: true
     },
+    build: {
+      desc: 'Build the project.',
+      type: 'boolean',
+      alias: 'b'
+    },
     commit: {
       desc: 'Commit the modified packages.',
       type: 'string',
       alias: 'c'
+    },
+    dryRun: {
+      desc: 'Skip all jobs.',
+      type: 'boolean',
+      alias: ['dry-run', 'dry'],
+      default: false
     },
     exclude: {
       desc: 'Glob patterns indicating where to NOT search for packages.',
@@ -32,19 +43,33 @@ export function createOptions() {
       type: 'array',
       alias: 'i'
     },
-    'no-verify': {
+    noVerify: {
       desc: 'Bypass pre-commit and commit-msg hooks.',
       type: 'boolean',
-      alias: 'n'
+      alias: ['n', 'no-verify']
+    },
+    only: {
+      desc: 'Execute only one job.',
+      type: 'string',
+      alias: 'l'
     },
     overrides: {
       desc: 'Allow to configure each package individually.',
       type: 'string',
       alias: 'o'
     },
+    packageManager: {
+      desc: 'Package manager being used.',
+      type: 'string',
+      alias: ['pm', 'package-manager']
+    },
     preid: {
       desc: 'Prerelease identifier.',
       type: 'string'
+    },
+    publish: {
+      desc: 'Publish the package.',
+      type: 'boolean'
     },
     push: {
       desc: 'Push the commit.',
@@ -59,6 +84,16 @@ export function createOptions() {
     silent: {
       desc: 'Omit unimportant logs.',
       type: 'boolean'
+    },
+    skip: {
+      desc: 'Skip one or more jobs.',
+      type: 'array',
+      alias: 's'
+    },
+    test: {
+      desc: 'Run tests.',
+      type: 'boolean',
+      alias: 't'
     },
     verbose: {
       desc: 'Log additional info. May be useful for debugging.',

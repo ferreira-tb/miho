@@ -2,7 +2,7 @@
   "vsicons.associations.files": [
     {
       "icon": "tsconfig",
-      "extensions": ["tsconfig.rollup.json"],
+      "extensions": ["tsconfig.miho.json", "tsconfig.rollup.json"],
       "filename": true,
       "format": "svg"
     }

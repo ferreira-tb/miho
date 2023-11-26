@@ -1,6 +1,6 @@
 {
   "name": "miho",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "description": "Easily bump your package version",
   "license": "MIT",
   "type": "module",
@@ -39,7 +39,8 @@
     "test": "vitest",
     "test:coverage": "vitest --coverage",
     "test:ui": "vitest --ui --watch --coverage.enabled=true",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "c12": "^1.5.1",
@@ -52,6 +53,7 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "@octokit/core": "^5.0.2",
     "@rollup/plugin-typescript": "^11.1.5",
     "@types/node": "^20.10.0",
     "@types/prompts": "^2.4.9",

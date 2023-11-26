@@ -1,6 +1,7 @@
 import process from 'node:process';
 import { loadConfig as load } from 'c12';
-import type { MihoOptions, Nullish } from './types';
+import { PackageManager } from './utils';
+import type { MihoOptions } from './types';
 
 /**
  * @internal
@@ -11,6 +12,7 @@ export const defaultConfig: MihoOptions = {
   filter: [],
   include: '**/',
   overrides: {},
+  packageManager: PackageManager.NPM,
   preid: 'alpha',
   recursive: false,
   release: 'patch',
@@ -22,7 +24,9 @@ export const defaultConfig: MihoOptions = {
  * @internal
  * @ignore
  */
-export async function loadConfig(overrides: Partial<MihoOptions> = {}) {
+export async function loadConfig(
+  overrides: Partial<MihoOptions> = {}
+): Promise<Partial<MihoOptions>> {
   const { config } = await load<Partial<MihoOptions>>({
     name: 'miho',
     cwd: process.cwd(),
@@ -31,7 +35,7 @@ export async function loadConfig(overrides: Partial<MihoOptions> = {}) {
     overrides
   });
 
-  return (config as Nullish<MihoOptions>) ?? defaultConfig;
+  return config ?? defaultConfig;
 }
 
 export function defineConfig(config: Partial<MihoOptions> = {}) {

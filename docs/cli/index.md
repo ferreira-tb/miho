@@ -4,23 +4,30 @@ outline: [2, 3]
 
 # CLI
 
-|           Command           | Alias | Description                                                    |
-| :-------------------------: | :---- | :------------------------------------------------------------- |
-|       [`--all`](#all)       | `-a`  | Commit all modified files, not only the packages.              |
-|       [`--ask`](#ask)       | none  | Whether Miho should ask for confirmation before bumping.       |
-|    [`--commit`](#commit)    | `-c`  | Commit the modified packages.                                  |
-|   [`--exclude`](#exclude)   | `-x`  | Glob patterns indicating where to **NOT** search for packages. |
-|    [`--filter`](#filter)    | `-f`  | Package names to filter. May be regex.                         |
-|      [`--help`](#help)      | `-h`  | Show usage information.                                        |
-|   [`--include`](#include)   | `-i`  | Glob patterns indicating where to search for packages.         |
-| [`--no-verify`](#no-verify) | `-n`  | Bypass `pre-commit` and `commit-msg` hooks.                    |
-| [`--overrides`](#overrides) | `-o`  | Allow to configure each package individually.                  |
-|     [`--preid`](#preid)     | none  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.      |
-|      [`--push`](#push)      | `-p`  | Push the commit.                                               |
-| [`--recursive`](#recursive) | `-r`  | Recursively bumps all packages in the monorepo.                |
-|    [`--silent`](#silent)    | none  | Omit unimportant logs.                                         |
-|   [`--verbose`](#verbose)   | none  | Log additional info. May be useful for debugging.              |
-|   [`--version`](#version)   | `-v`  | Show current version.                                          |
+|                 Command                 | Alias   | Description                                                    |
+| :-------------------------------------: | :------ | :------------------------------------------------------------- |
+|             [`--all`](#all)             | `-a`    | Commit all modified files, not only the packages.              |
+|             [`--ask`](#ask)             | none    | Whether Miho should ask for confirmation before bumping.       |
+|           [`--build`](#build)           | `-b`    | Build the project.                                             |
+|          [`--commit`](#commit)          | `-c`    | Commit the modified packages.                                  |
+|         [`--dry-run`](#dry-run)         | `--dry` | Skip all jobs.                                                 |
+|         [`--exclude`](#exclude)         | `-x`    | Glob patterns indicating where to **NOT** search for packages. |
+|          [`--filter`](#filter)          | `-f`    | Package names to filter. May be regex.                         |
+|            [`--help`](#help)            | `-h`    | Show usage information.                                        |
+|         [`--include`](#include)         | `-i`    | Glob patterns indicating where to search for packages.         |
+|       [`--no-verify`](#no-verify)       | `-n`    | Bypass `pre-commit` and `commit-msg` hooks.                    |
+|            [`--only`](#only)            | `-l`    | Execute only one job.                                          |
+|       [`--overrides`](#overrides)       | `-o`    | Allow to configure each package individually.                  |
+| [`--package-manager`](#package-manager) | `--pm`  | Package manager being used.                                    |
+|           [`--preid`](#preid)           | none    | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.      |
+|         [`--publish`](#publish)         | none    | Publish the package.                                           |
+|            [`--push`](#push)            | `-p`    | Push the commit.                                               |
+|       [`--recursive`](#recursive)       | `-r`    | Recursively bumps all packages in the monorepo.                |
+|          [`--silent`](#silent)          | none    | Omit unimportant logs.                                         |
+|            [`--skip`](#skip)            | `-s`    | Skip one or more jobs.                                         |
+|            [`--test`](#test)            | `-t`    | Run tests.                                                     |
+|         [`--verbose`](#verbose)         | none    | Log additional info. May be useful for debugging.              |
+|         [`--version`](#version)         | `-v`    | Show current version.                                          |
 
 ## Release
 
@@ -58,6 +65,14 @@ npx miho 8
 Miho will default to `patch` if you not specify a release type.
 :::
 
+## Pipeline
+
+You can leverage Miho to configure a simple yet efficient pipeline for your project. For this purpose, commands like [`--build`](#build) and [`--publish`](#publish) can be used.
+
+By default, the order of execution is (left to right):
+
+`bump` => `build` => `test` => `commit` => `publish`
+
 ## Commands
 
 ### `--all`
@@ -84,25 +99,51 @@ You can adjust this behavior using the `--no-ask` command. This way, Miho won't 
 npx miho patch --no-ask
 ```
 
+### `--build`
+
+| Alias |   Usage   |
+| :---- | :-------: |
+| `-b`  | `--build` |
+
+After the `bump` job, run the `build` script defined in the root `package.json`.
+
+You can provide a custom function using the [config file](../index.md#config-file).
+
+```bash
+npx miho patch -r -b -c "looks good"
+```
+
 ### `--commit`
 
 | Alias |        Usage         |
 | :---- | :------------------: |
 | `-c`  | `--commit [message]` |
 
-Commit the modified packages.
+After the `test` job, commit the modified packages.
 
 If omitted, the message defaults to `chore: bump version`.
 
 ```bash
-npx miho patch -c "a commit message"
+npx miho patch -c "commit message"
+```
+
+### `--dry-run`
+
+| Alias   |    Usage    |
+| :------ | :---------: |
+| `--dry` | `--dry-run` |
+
+Skip all jobs.
+
+```bash
+npx miho --dry
 ```
 
 ### `--exclude`
 
-| Alias |           Usage           |
-| :---- | :-----------------------: |
-| `-x`  | `--exclude [patterns...]` |
+| Alias |          Usage           |
+| :---- | :----------------------: |
+| `-x`  | `--exclude [patterns..]` |
 
 Glob patterns indicating where Miho should **not** look for packages.
 
@@ -112,9 +153,9 @@ npx miho patch -r -x foo/**
 
 ### `--filter`
 
-| Alias |         Usage         |
-| :---- | :-------------------: |
-| `-f`  | `--filter [names...]` |
+| Alias |        Usage         |
+| :---- | :------------------: |
+| `-f`  | `--filter [names..]` |
 
 Package names that should be filtered. Strings in the format `/abc/` will be treated as regex.
 
@@ -132,9 +173,9 @@ Show usage information.
 
 ### `--include`
 
-| Alias |           Usage           |
-| :---- | :-----------------------: |
-| `-i`  | `--include [patterns...]` |
+| Alias |          Usage           |
+| :---- | :----------------------: |
+| `-i`  | `--include [patterns..]` |
 
 Glob patterns indicating where to search for packages. By default, Miho will search the [current working directory](https://nodejs.org/dist/latest/docs/api/process.html#processcwd) (and also subdirectories, if [`--recursive`](#recursive)).
 
@@ -150,6 +191,20 @@ npx miho major -r -i foo/**
 
 By default, the [`pre-commit`](https://git-scm.com/docs/githooks#_pre_commit) and [`commit-msg`](https://git-scm.com/docs/githooks#_commit_msg) hooks are run. When any of `--no-verify` or `-n` is given, these are bypassed. See [`git-commit`](https://git-scm.com/docs/git-commit#Documentation/git-commit.txt--n) for details.
 
+### `--only`
+
+| Alias |     Usage      |
+| :---- | :------------: |
+| none  | `--only <job>` |
+
+Execute only one job.
+
+Possible value is one of those used for [`--skip`](#skip).
+
+```bash
+npx miho --only build
+```
+
 ### `--overrides`
 
 | Alias |               Usage               |
@@ -162,6 +217,16 @@ Allows each package to be configured individually. Note that it is more appropri
 npx miho premajor -p beta -r -o.foo=patch
 ```
 
+### `--package-manager`
+
+| Alias  |           Usage            |
+| :----- | :------------------------: |
+| `--pm` | `--package-manager <name>` |
+
+Package manager being used. Defaults to `npm`.
+
+If omitted, Miho will try to guess the package manager by looking at the `packageManager` key of the root `package.json`. If no such key is found, it will try to search for lock files, like `package-lock.json`, `pnpm-lock.json` and `yarn.lock`.
+
 ### `--preid`
 
 | Alias |      Usage       |
@@ -173,6 +238,18 @@ Prerelease identifier. Must be used with `premajor`, `preminor` or `prepatch`.
 ```bash
 npx miho preminor --preid alpha
 ```
+
+### `--publish`
+
+| Alias |    Usage    |
+| :---- | :---------: |
+| none  | `--publish` |
+
+After the `commit` job, execute the `publish` command (e.g. [`npm publish`](https://docs.npmjs.com/cli/v8/commands/npm-publish)).
+
+Miho is aware of your package manager and will adapt accordingly. However, you can also explicitly define it using the [`--package-manager`](#package-manager) command.
+
+You can provide a custom function using the [config file](../index.md#config-file).
 
 ### `--push`
 
@@ -211,8 +288,32 @@ If the search is not recursive, this option is ignored. Miho will only search th
 Omit unimportant logs. Takes precedence over [`--verbose`](#verbose).
 
 ```bash
-npx miho major --r --silent
+npx miho major -r --silent
 ```
+
+### `--skip`
+
+| Alias |       Usage       |
+| :---- | :---------------: |
+| `-s`  | `--skip [jobs..]` |
+
+Skip one or more jobs.
+
+Possible values are `build`, `bump`, `commit`, `publish` and `test`.
+
+```bash
+npx miho patch -s commit publish
+```
+
+### `--test`
+
+| Alias |  Usage   |
+| :---- | :------: |
+| `-t`  | `--test` |
+
+After the `build` job, run the `test` script defined in the root `package.json`.
+
+You can provide a custom function using the [config file](../index.md#config-file).
 
 ### `--verbose`
 
