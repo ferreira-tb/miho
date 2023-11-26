@@ -2,12 +2,18 @@ import type { Options, Arguments } from 'yargs';
 import type { PackageOptions } from './index';
 import type { CommitOptions } from './git';
 import type { WithRequired } from './utils';
+import type { PackageManager } from '../utils/enum';
 
 export interface CliCommitOptions extends Omit<CommitOptions, 'message'> {
   commit: string;
 }
 
 export interface CliOptions extends PackageOptions, CliCommitOptions {
+  /**
+   * Skip all steps.
+   * @default false
+   */
+  dryRun: boolean;
   /**
    * Glob patterns indicating where to **NOT** search for packages.
    * `.git` and `node_modules` are **ALWAYS** excluded.
@@ -31,6 +37,11 @@ export interface CliOptions extends PackageOptions, CliCommitOptions {
     string,
     PackageOptions['release'] | Partial<PackageOptions>
   >;
+  /**
+   * Package manager being used.
+   * @default 'npm'
+   */
+  packageManager: PackageManager;
   /**
    * Recursively bumps all packages in the monorepo.
    * @default false

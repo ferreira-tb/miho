@@ -13,7 +13,7 @@ export interface CommitOptions {
    * @default false
    * @see https://git-scm.com/docs/git-commit#Documentation/git-commit.txt---no-verify
    */
-  'no-verify': boolean;
+  noVerify: boolean;
   /**
    * Push the commit.
    * @default false

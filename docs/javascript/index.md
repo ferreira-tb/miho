@@ -193,3 +193,48 @@ interface Miho {
 ```
 
 Search for all packages that meet the requirements. If `options` is defined, it will override those previously given to the constructor.
+
+## Functions
+
+These are top level functions exported by Miho.
+
+### defineConfig
+
+```ts
+import { defineConfig } from 'miho';
+
+export default defineConfig({
+  release: 'patch',
+  recursive: false,
+  commit: {
+    message: 'a commit message',
+    all: true,
+    push: true
+  }
+});
+```
+
+Read [config file](../index.md#config-file) for details.
+
+### detectPackageManager
+
+```ts
+interface DetectPackageManagerOptions {
+  /**
+   * Current working directory.
+   * @default process.cwd()
+   */
+  cwd?: string;
+  /**
+   * Default package manager.
+   * @default 'npm'
+   */
+  default?: PackageManager;
+}
+
+declare function detectPackageManager(
+  options?: DetectPackageManagerOptions
+): Promise<PackageManager>;
+```
+
+Detects the package manager being used. Read [`--package-manager`](../cli/index.md#package-manager) for more details.

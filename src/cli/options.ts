@@ -17,6 +17,12 @@ export function createOptions() {
       type: 'string',
       alias: 'c'
     },
+    dryRun: {
+      desc: 'Skip all steps.',
+      type: 'boolean',
+      alias: ['dry-run', 'dry'],
+      default: false
+    },
     exclude: {
       desc: 'Glob patterns indicating where to NOT search for packages.',
       type: 'array',
@@ -32,15 +38,20 @@ export function createOptions() {
       type: 'array',
       alias: 'i'
     },
-    'no-verify': {
+    noVerify: {
       desc: 'Bypass pre-commit and commit-msg hooks.',
       type: 'boolean',
-      alias: 'n'
+      alias: ['n', 'no-verify']
     },
     overrides: {
       desc: 'Allow to configure each package individually.',
       type: 'string',
       alias: 'o'
+    },
+    packageManager: {
+      desc: 'Package manager being used.',
+      type: 'string',
+      alias: ['pm', 'package-manager']
     },
     preid: {
       desc: 'Prerelease identifier.',
@@ -82,8 +93,9 @@ export const enum SkipChoices {
   TEST = 'test'
 }
 
-export function createSkipChecker(skip: unknown) {
+export function createSkipChecker(skip: unknown, dryRun: unknown) {
   return function (choice: SkipChoices) {
+    if (dryRun === true) return true;
     if (!Array.isArray(skip)) return false;
     return skip.includes(choice);
   };

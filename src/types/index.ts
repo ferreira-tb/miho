@@ -9,7 +9,7 @@ export type * from './hooks';
 export type * from './package';
 export type * from './utils';
 
-export type CliOnly = 'ask' | 'skip';
+export type CliOnly = 'ask' | 'dryRun' | 'skip';
 export type CliHasDifferentType = 'exclude' | 'include';
 
 export type InterchangeableCliOptions = Omit<

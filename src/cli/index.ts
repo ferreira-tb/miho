@@ -19,7 +19,7 @@ async function main() {
     .options(createOptions())
     .parse();
 
-  const options = normalize(argv as unknown as CliArguments);
+  const options = await normalize(argv as unknown as CliArguments);
   const config = await loadConfig(options);
   const miho = await new Miho(config).search();
 
@@ -50,7 +50,7 @@ async function main() {
   }
 
   const skip = Array.isArray(argv.skip) ? (argv.skip as string[]) : null;
-  const shouldSkip = createSkipChecker(skip);
+  const shouldSkip = createSkipChecker(skip, argv.dryRun);
 
   let packagesBumped: number = 0;
 

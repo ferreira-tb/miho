@@ -7,7 +7,7 @@ import { CommitCommand, CommitDefaults } from './enum';
 export class GitCommit implements CommitOptions {
   public readonly all: boolean;
   public readonly message: string;
-  public readonly 'no-verify': boolean;
+  public readonly noVerify: boolean;
   public readonly push: boolean;
 
   constructor(options: PartialNullish<CommitOptions> = {}) {
@@ -16,14 +16,14 @@ export class GitCommit implements CommitOptions {
       : CommitDefaults.DEFAULT_MESSAGE;
 
     this.all = options.all ?? false;
-    this['no-verify'] = options['no-verify'] ?? false;
+    this.noVerify = options.noVerify ?? false;
     this.push = options.push ?? false;
   }
 
   public async commit(packages: MihoPackage[], execaOptions?: ExecaOptions) {
     const args: string[] = [CommitCommand.MESSAGE, this.message];
 
-    if (this['no-verify']) {
+    if (this.noVerify) {
       args.push(CommitCommand.NO_VERIFY);
     }
 

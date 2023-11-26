@@ -63,7 +63,15 @@ const movie: MovieWithoutStars = {
 
 Like [`Pick`](https://www.typescriptlang.org/docs/handbook/utility-types.html#picktype-keys), but constructs the type based on the values.
 
-### WithRequired\<T>
+### WithPartial\<T, K>
+
+```ts
+type WithPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+```
+
+Constructs a type consisting of some properties of `T` set to partial.
+
+### WithRequired\<T, K>
 
 ```ts
 type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;

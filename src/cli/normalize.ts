@@ -1,3 +1,7 @@
+import {
+  detectPackageManager,
+  isPackageManager
+} from '../utils/package-manager';
 import type {
   CliArguments,
   PickByValue,
@@ -5,7 +9,9 @@ import type {
   CommitOptions
 } from '../types';
 
-export function normalize(argv: CliArguments): Partial<MihoOptions> {
+export async function normalize(
+  argv: CliArguments
+): Promise<Partial<MihoOptions>> {
   const options: Partial<MihoOptions> = {};
   options.commit = normalizeCommit(argv);
 
@@ -21,6 +27,12 @@ export function normalize(argv: CliArguments): Partial<MihoOptions> {
   normalizeArgvBoolean(options, 'verbose', argv.verbose);
 
   normalizeArgvString(options, 'preid', argv.preid);
+
+  if (!isPackageManager(argv.packageManager)) {
+    options.packageManager = await detectPackageManager();
+  } else {
+    options.packageManager = argv.packageManager;
+  }
 
   if (Array.isArray(argv.exclude)) {
     options.exclude = argv.exclude.map((i) => i.toString());
@@ -60,7 +72,7 @@ function normalizeCommit(argv: CliArguments): Partial<CommitOptions> {
   const commit: Partial<CommitOptions> = {};
 
   normalizeCommitBoolean(commit, 'all', argv.all);
-  normalizeCommitBoolean(commit, 'no-verify', argv['no-verify']);
+  normalizeCommitBoolean(commit, 'noVerify', argv.noVerify);
   normalizeCommitBoolean(commit, 'push', argv.push);
 
   normalizeCommitString(commit, 'message', argv.commit);

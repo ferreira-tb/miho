@@ -10,5 +10,8 @@ export type PickByValue<T, V> = {
   [P in keyof T as T[P] extends V ? P : never]: T[P];
 };
 
+export type WithPartial<T, K extends keyof T> = Omit<T, K> &
+  Partial<Pick<T, K>>;
+
 export type WithRequired<T, K extends keyof T> = Omit<T, K> &
   Required<Pick<T, K>>;
