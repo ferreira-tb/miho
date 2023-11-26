@@ -11,7 +11,7 @@ export default defineConfig({
   cleanUrls: true,
 
   sitemap: {
-    hostname: 'https://tb.dev.br'
+    hostname: 'https://tb.dev.br/miho'
   },
 
   vite: {
