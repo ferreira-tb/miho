@@ -5,7 +5,7 @@ on:
     types: [created]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,7 +18,7 @@ jobs:
       - run: pnpm test
 
   publish-npm:
-    needs: build
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
