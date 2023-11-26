@@ -1,5 +1,9 @@
 import { defineConfig } from './src';
 
 export default defineConfig({
-  release: 'minor'
+  release: 'patch',
+  commit: {
+    all: true,
+    push: true
+  }
 });
