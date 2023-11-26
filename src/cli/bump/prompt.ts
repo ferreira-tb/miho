@@ -1,10 +1,10 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
-import type { Miho } from '../miho';
-import type { FileData } from '../files';
+import type { Miho } from '../../miho';
+import type { FileData } from '../../files';
 
 /** @internal */
-export async function prompt(
+export async function promptUser(
   miho: Miho,
   packages: FileData[]
 ): Promise<number> {

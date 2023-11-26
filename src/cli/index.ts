@@ -5,7 +5,7 @@ import semver from 'semver';
 import chalk from 'chalk';
 import { Miho } from '../index';
 import { loadConfig } from '../config';
-import { prompt } from './prompt';
+import { bump } from './bump';
 import { normalize } from './normalize';
 import { LogLevel } from '../utils';
 import { createOptions } from './options';
@@ -49,13 +49,11 @@ async function main() {
     return;
   }
 
-  let packagesBumped: number = 0;
-  if (argv.ask) {
-    packagesBumped = await prompt(miho, packages);
-  } else {
-    packagesBumped = await miho.bumpAll();
-    miho.l`${chalk.green.bold(`${packagesBumped} package(s) bumped.`)}`;
-  }
+  const packagesBumped = await bump({
+    miho,
+    packages,
+    ask: Boolean(argv.ask)
+  });
 
   if (
     (typeof config.commit?.message === 'string' && packagesBumped > 0) ||
