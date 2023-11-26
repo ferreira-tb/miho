@@ -19,6 +19,7 @@ outline: [2, 3]
 |      [`--push`](#push)      | `-p`  | Push the commit.                                               |
 | [`--recursive`](#recursive) | `-r`  | Recursively bumps all packages in the monorepo.                |
 |    [`--silent`](#silent)    | none  | Omit unimportant logs.                                         |
+|      [`--skip`](#skip)      | `-s`  | Skip one or more steps.                                        |
 |   [`--verbose`](#verbose)   | none  | Log additional info. May be useful for debugging.              |
 |   [`--version`](#version)   | `-v`  | Show current version.                                          |
 
@@ -211,7 +212,21 @@ If the search is not recursive, this option is ignored. Miho will only search th
 Omit unimportant logs. Takes precedence over [`--verbose`](#verbose).
 
 ```bash
-npx miho major --r --silent
+npx miho major -r --silent
+```
+
+### `--skip`
+
+| Alias |       Usage        |
+| :---- | :----------------: |
+| `-s`  | `--skip [steps..]` |
+
+Skip one or more steps.
+
+Possible values are `build`, `bump`, `commit`, `publish` and `test`.
+
+```bash
+npx miho patch -s commit publish
 ```
 
 ### `--verbose`

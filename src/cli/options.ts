@@ -60,6 +60,11 @@ export function createOptions() {
       desc: 'Omit unimportant logs.',
       type: 'boolean'
     },
+    skip: {
+      desc: 'Skip one or more steps.',
+      type: 'array',
+      alias: 's'
+    },
     verbose: {
       desc: 'Log additional info. May be useful for debugging.',
       type: 'boolean'
@@ -67,4 +72,19 @@ export function createOptions() {
   };
 
   return options;
+}
+
+export const enum SkipChoices {
+  BUILD = 'build',
+  BUMP = 'bump',
+  COMMIT = 'commit',
+  PUBLISH = 'publish',
+  TEST = 'test'
+}
+
+export function createSkipChecker(skip: unknown) {
+  return function (choice: SkipChoices) {
+    if (!Array.isArray(skip)) return false;
+    return skip.includes(choice);
+  };
 }

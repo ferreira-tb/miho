@@ -12,7 +12,7 @@ export interface CliOptions extends PackageOptions, CliCommitOptions {
    * Glob patterns indicating where to **NOT** search for packages.
    * `.git` and `node_modules` are **ALWAYS** excluded.
    */
-  exclude: string | string[];
+  exclude: string[];
   /**
    * Package names to filter.
    */
@@ -22,7 +22,7 @@ export interface CliOptions extends PackageOptions, CliCommitOptions {
    *
    * By default, Miho will search the current directory.
    */
-  include: string | string[];
+  include: string[];
   /**
    * Each key represents the name of a package.
    * From here you can configure each one individually.
@@ -41,6 +41,12 @@ export interface CliOptions extends PackageOptions, CliCommitOptions {
    * @default false
    */
   silent: boolean;
+  /**
+   * Skip one or more steps.
+   *
+   * Possible values are `build`, `bump`, `commit`, `publish` and `test`.
+   */
+  skip: string[];
   /**
    * Log additional info. May be useful for debugging.
    * @default false

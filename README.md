@@ -19,6 +19,7 @@ Easily bump your package.json version.
 |      [`--push`](https://tb.dev.br/miho/cli#push)      | `-p`  | Push the commit.                                               |
 | [`--recursive`](https://tb.dev.br/miho/cli#recursive) | `-r`  | Recursively bumps all packages in the monorepo.                |
 |    [`--silent`](https://tb.dev.br/miho/cli#silent)    | none  | Omit unimportant logs.                                         |
+|      [`--skip`](https://tb.dev.br/miho/cli#skip)      | `-s`  | Skip one or more steps.                                        |
 |   [`--verbose`](https://tb.dev.br/miho/cli#verbose)   | none  | Log additional info. May be useful for debugging.              |
 |   [`--version`](https://tb.dev.br/miho/cli#version)   | `-v`  | Show current version.                                          |
 

@@ -9,7 +9,18 @@ export type * from './hooks';
 export type * from './package';
 export type * from './utils';
 
-export type MihoInternalOptions = Omit<CliOptions, keyof CliCommitOptions>;
+export type CliOnly = 'ask' | 'skip';
+export type CliHasDifferentType = 'exclude' | 'include';
+
+export type InterchangeableCliOptions = Omit<
+  CliOptions,
+  keyof CliCommitOptions | CliOnly | CliHasDifferentType
+>;
+
+export interface MihoInternalOptions extends InterchangeableCliOptions {
+  exclude: string | string[];
+  include: string | string[];
+}
 
 export interface MihoOptions extends MihoInternalOptions {
   /**
