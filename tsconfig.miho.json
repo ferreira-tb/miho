@@ -1,14 +1,14 @@
 {
-  "include": ["src/**/*", "rollup.config.ts"],
+  "include": ["miho.config.ts"],
   "compilerOptions": {
     "baseUrl": ".",
     "target": "esnext",
-    "lib": ["esnext", "dom"],
+    "lib": ["esnext"],
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "removeComments": false,
+    "removeComments": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "declaration": false,
