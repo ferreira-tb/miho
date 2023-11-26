@@ -1,27 +1,39 @@
+import process from 'node:process';
 import { glob } from 'glob';
-import type { Options as ExecaOptions } from 'execa';
+import { execa, type Options as ExecaOptions } from 'execa';
 import { MihoPackage, FileData } from './files';
 import { defaultConfig } from './config';
-import { GitCommit } from './git';
 import { MihoEmitter, MihoEvent } from './hooks';
+import { GitCommit } from './git';
+import { createJobSkipChecker } from './jobs';
+import {
+  detectPackageManager,
+  isPackageManager
+} from './utils/package-manager';
 import {
   FileType,
   MihoIgnore,
+  MihoJob,
   isNotBlank,
   isTemplateArray,
-  LogLevel
+  LogLevel,
+  PackageManager
 } from './utils';
 import type {
   MihoGetPackagesOptions,
   MihoOptions,
   MihoInternalOptions,
-  CommitOptions
+  CommitOptions,
+  JobFunction,
+  JobOptions,
+  JobFunctionOptions
 } from './types';
 
 export class Miho extends MihoEmitter {
   #id = 0;
+  #gitCommit: GitCommit = new GitCommit();
+  #jobs: Partial<JobOptions> = {};
   #config: Partial<MihoInternalOptions> = {};
-  #commit: GitCommit = new GitCommit();
   readonly #packages = new Map<number, MihoPackage>();
   readonly #updatedPackages = new Map<number, MihoPackage>();
 
@@ -70,6 +82,9 @@ export class Miho extends MihoEmitter {
    * @returns Whether the package was successfully bumped.
    */
   public async bump(id: number): Promise<boolean> {
+    const shouldSkip = createJobSkipChecker(this.#jobs);
+    if (shouldSkip(MihoJob.BUMP)) return false;
+
     const pkg = this.#packages.get(id);
     if (pkg) {
       const defaultPrevented = await this.executeHook(
@@ -101,6 +116,9 @@ export class Miho extends MihoEmitter {
    * @returns Number of packages successfully bumped.
    */
   public async bumpAll(): Promise<number> {
+    const shouldSkip = createJobSkipChecker(this.#jobs);
+    if (shouldSkip(MihoJob.BUMP)) return 0;
+
     const packages = this.getPackages();
     const defaultPrevented = await this.executeHook(
       new MihoEvent('beforeAll', {
@@ -125,17 +143,58 @@ export class Miho extends MihoEmitter {
     return results.filter(Boolean).length;
   }
 
+  /** Build the project. */
+  public async build(options: JobFunctionOptions = {}) {
+    const shouldSkip = createJobSkipChecker(this.#jobs);
+    if (shouldSkip(MihoJob.BUILD)) return;
+
+    await this.#setPackageManager(options.cwd);
+    const pm = this.#config.packageManager!;
+
+    if (this.#jobs.build === true) {
+      const execaOptions = this.#createExecaOptions(options.cwd);
+      await execa(pm, ['run', MihoJob.BUILD], execaOptions);
+    } else if (typeof this.#jobs.build === 'function') {
+      await this.#jobs.build({
+        name: MihoJob.BUILD,
+        miho: this,
+        cwd: options.cwd ?? process.cwd()
+      });
+    }
+  }
+
+  /** Run tests. */
+  public async test(options: JobFunctionOptions = {}) {
+    const shouldSkip = createJobSkipChecker(this.#jobs);
+    if (shouldSkip(MihoJob.TEST)) return;
+
+    await this.#setPackageManager(options.cwd);
+    const pm = this.#config.packageManager!;
+
+    if (this.#jobs.test === true) {
+      const execaOptions = this.#createExecaOptions(options.cwd);
+      await execa(pm, ['run', MihoJob.TEST], execaOptions);
+    } else if (typeof this.#jobs.test === 'function') {
+      await this.#jobs.test({
+        name: MihoJob.TEST,
+        miho: this,
+        cwd: options.cwd ?? process.cwd()
+      });
+    }
+  }
+
   /** Commit the modified packages. */
   public async commit(options: Partial<CommitOptions> = {}): Promise<void> {
+    const shouldSkip = createJobSkipChecker(this.#jobs);
+    if (shouldSkip(MihoJob.COMMIT)) return;
+
     this.#resolveCommitOptions(options);
 
-    if (this.#updatedPackages.size === 0 && !this.#commit.all) {
+    if (this.#updatedPackages.size === 0 && !this.#gitCommit.all) {
       throw new Error('Nothing to commit.');
     }
 
-    const execaOptions: ExecaOptions = this.#config.verbose
-      ? { stdout: 'inherit' }
-      : {};
+    const execaOptions = this.#createExecaOptions();
 
     const entries = Array.from(this.#updatedPackages.entries());
     const data = entries.map(([id, pkg]) => new FileData(id, pkg));
@@ -146,20 +205,42 @@ export class Miho extends MihoEmitter {
     if (defaultPrevented) return;
 
     const packages = entries.map(([, pkg]) => pkg);
-    await this.#commit.commit(packages, execaOptions);
+    await this.#gitCommit.commit(packages, execaOptions);
     this.#updatedPackages.clear();
 
     await this.executeHook(new MihoEvent('afterCommit', { miho: this, data }));
 
-    if (this.#commit.push) {
+    if (this.#gitCommit.push) {
       const defaultPrevented = await this.executeHook(
         new MihoEvent('beforePush', { miho: this, data, cancelable: true })
       );
       if (defaultPrevented) return;
 
-      await this.#commit.pushCommit(execaOptions);
+      await this.#gitCommit.pushCommit(execaOptions);
 
       await this.executeHook(new MihoEvent('afterPush', { miho: this, data }));
+    }
+  }
+
+  /** Publish the package. */
+  public async publish(options: JobFunctionOptions = {}) {
+    const shouldSkip = createJobSkipChecker(this.#jobs);
+    if (shouldSkip(MihoJob.PUBLISH)) return;
+
+    await this.#setPackageManager(options.cwd);
+    const pm = this.#config.packageManager!;
+
+    if (this.#jobs.publish === true) {
+      const execaOptions = this.#createExecaOptions(options.cwd);
+      const args: string[] = [MihoJob.PUBLISH];
+      if (pm === PackageManager.YARN) args.unshift(PackageManager.NPM);
+      await execa(pm, args, execaOptions);
+    } else if (typeof this.#jobs.publish === 'function') {
+      await this.#jobs.publish({
+        name: MihoJob.PUBLISH,
+        miho: this,
+        cwd: options.cwd ?? process.cwd()
+      });
     }
   }
 
@@ -181,23 +262,37 @@ export class Miho extends MihoEmitter {
   }
 
   /** Find a package by its name among the ones previously found by Miho. */
-  public getPackageByName(packageName: string): FileData | null {
+  public getPackageByName(packageName: string | RegExp): FileData | null {
     const packages = this.getPackages();
-    return packages.find(({ name }) => name === packageName) ?? null;
+    const pkg = packages.find(({ name }) => {
+      if (typeof packageName === 'string') return name === packageName;
+      return packageName.test(name ?? '');
+    });
+
+    return pkg ?? null;
+  }
+
+  public setJob<T extends keyof JobFunction>(job: T, value: JobFunction[T]) {
+    this.#resolveJobOptions({ [job]: value });
   }
 
   #resolveMihoOptions(options: Partial<MihoOptions>) {
-    const { hooks, commit, ...config } = options;
+    const { hooks, commit, jobs, ...config } = options;
     this.#config = { ...this.#config, ...config };
     if (commit) this.#resolveCommitOptions(commit);
     if (hooks) this.resolveListeners(hooks);
+    if (jobs) this.#resolveJobOptions(jobs);
   }
 
   #resolveCommitOptions(options: Partial<CommitOptions>) {
-    this.#commit = new GitCommit({
-      ...this.#commit,
+    this.#gitCommit = new GitCommit({
+      ...this.#gitCommit,
       ...options
     });
+  }
+
+  #resolveJobOptions(jobs: Partial<JobOptions>) {
+    this.#jobs = { ...this.#jobs, ...jobs };
   }
 
   #resolvePatterns() {
@@ -209,6 +304,21 @@ export class Miho extends MihoEmitter {
     patterns = patterns.filter((i) => i.length > 0);
     if (patterns.length === 0) return defaultConfig.include;
     return patterns;
+  }
+
+  async #setPackageManager(cwd: string = process.cwd()) {
+    if (!isPackageManager(this.#config.packageManager)) {
+      this.#config.packageManager = await detectPackageManager({ cwd });
+    }
+  }
+
+  #createExecaOptions(cwd: string = process.cwd()) {
+    let options: ExecaOptions = { cwd };
+    if (this.#config.verbose) {
+      options = { ...options, stdio: 'inherit' };
+    }
+
+    return options;
   }
 
   #createLogger(logLevel: LogLevel = LogLevel.HIGH) {

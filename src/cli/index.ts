@@ -6,9 +6,11 @@ import chalk from 'chalk';
 import { Miho } from '../index';
 import { loadConfig } from '../config';
 import { bump } from './bump';
+import { commit } from './commit';
 import { normalize } from './normalize';
-import { LogLevel } from '../utils';
-import { createOptions, createSkipChecker, SkipChoice } from './options';
+import { LogLevel, MihoJob } from '../utils';
+import { createJobSkipChecker } from '../jobs';
+import { createOptions } from './options';
 import type { CliArguments } from '../types';
 
 async function main() {
@@ -21,59 +23,67 @@ async function main() {
 
   const options = await normalize(argv as unknown as CliArguments);
   const config = await loadConfig(options);
-  const miho = await new Miho(config).search();
 
-  let packages = miho.getPackages({
-    filter: (pkg) => Boolean(semver.valid(pkg.version))
-  });
-
-  if (packages.length === 0) {
-    miho.l`${chalk.red.bold('No valid package found.')}`;
-    return;
-  }
-
-  packages.forEach((pkg) => {
-    const name = pkg.name ? chalk.bold(pkg.name) : chalk.gray.dim('NO NAME');
-    const version = chalk.blue.dim(pkg.version);
-    const newVersion = pkg.newVersion
-      ? chalk.green.bold(pkg.newVersion)
-      : chalk.red.bold('INVALID VERSION');
-
-    miho.l`[ ${chalk.bold(pkg.id)}: ${name} ]  ${version}  =>  ${newVersion}`;
-  });
-
-  packages = packages.filter((pkg) => Boolean(semver.valid(pkg.newVersion)));
-  if (packages.length === 0) {
-    miho.l`${chalk.red.bold('No semver compliant package.')}`;
-    miho.l(LogLevel.NORMAL)`Check: ${chalk.underline('https://semver.org/')}`;
-    return;
-  }
-
-  const shouldSkip = createSkipChecker({
-    skip: argv.skip,
-    only: argv.only,
-    dryRun: argv.dryRun
-  });
-
+  const miho = new Miho(config);
   let packagesBumped: number = 0;
 
-  if (!shouldSkip(SkipChoice.BUMP)) {
+  const shouldSkipJob = createJobSkipChecker({
+    skip: config.jobs?.skip,
+    only: config.jobs?.only,
+    dryRun: config.jobs?.dryRun
+  });
+
+  if (!shouldSkipJob(MihoJob.BUMP)) {
+    await miho.search();
+
+    let packages = miho.getPackages({
+      filter: (pkg) => Boolean(semver.valid(pkg.version))
+    });
+
+    if (packages.length === 0) {
+      miho.l`${chalk.red.bold('No valid package found.')}`;
+      return;
+    }
+
+    packages.forEach((pkg) => {
+      const name = pkg.name ? chalk.bold(pkg.name) : chalk.gray.dim('NO NAME');
+      const version = chalk.blue.dim(pkg.version);
+      const newVersion = pkg.newVersion
+        ? chalk.green.bold(pkg.newVersion)
+        : chalk.red.bold('INVALID VERSION');
+
+      miho.l`[ ${chalk.bold(pkg.id)}: ${name} ]  ${version}  =>  ${newVersion}`;
+    });
+
+    packages = packages.filter((pkg) => Boolean(semver.valid(pkg.newVersion)));
+    if (packages.length === 0) {
+      miho.l`${chalk.red.bold('No semver compliant package.')}`;
+      miho.l(LogLevel.NORMAL)`Check: ${chalk.underline('https://semver.org/')}`;
+      return;
+    }
+
     const ask = Boolean(argv.ask);
     packagesBumped = await bump({ miho, packages, ask });
-  } else {
-    miho.l(LogLevel.NORMAL)`${chalk.yellow('[SKIP]')} ${SkipChoice.BUMP}`;
   }
 
-  if (!shouldSkip(SkipChoice.COMMIT)) {
-    if (
-      (typeof config.commit?.message === 'string' && packagesBumped > 0) ||
-      config.commit?.all === true
-    ) {
-      miho.l(LogLevel.NORMAL)`Committing files...`;
-      await miho.commit();
-    }
-  } else {
-    miho.l(LogLevel.NORMAL)`${chalk.yellow('[SKIP]')} ${SkipChoice.COMMIT}`;
+  if (!shouldSkipJob(MihoJob.BUILD)) {
+    await miho.build();
+  }
+
+  if (!shouldSkipJob(MihoJob.TEST)) {
+    await miho.test();
+  }
+
+  if (!shouldSkipJob(MihoJob.COMMIT)) {
+    await commit({
+      miho,
+      config,
+      packagesBumped
+    });
+  }
+
+  if (!shouldSkipJob(MihoJob.PUBLISH) && config.jobs?.publish) {
+    await miho.publish();
   }
 }
 

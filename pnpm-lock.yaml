@@ -31,6 +31,9 @@ dependencies:
     version: 17.7.2
 
 devDependencies:
+  '@octokit/core':
+    specifier: ^5.0.2
+    version: 5.0.2
   '@rollup/plugin-typescript':
     specifier: ^11.1.5
     version: 11.1.5(rollup@4.5.2)(tslib@2.6.2)(typescript@5.2.2)
@@ -1404,6 +1407,94 @@ packages:
       - supports-color
     dev: true
 
+  /@octokit/auth-token@4.0.0:
+    resolution:
+      {
+        integrity: sha512-tY/msAuJo6ARbK6SPIxZrPBms3xPbfwBrulZe0Wtr/DIY9lje2HeV1uoebShn6mx7SjCHif6EjMvoREj+gZ+SA==
+      }
+    engines: { node: '>= 18' }
+    dev: true
+
+  /@octokit/core@5.0.2:
+    resolution:
+      {
+        integrity: sha512-cZUy1gUvd4vttMic7C0lwPed8IYXWYp8kHIMatyhY8t8n3Cpw2ILczkV5pGMPqef7v0bLo0pOHrEHarsau2Ydg==
+      }
+    engines: { node: '>= 18' }
+    dependencies:
+      '@octokit/auth-token': 4.0.0
+      '@octokit/graphql': 7.0.2
+      '@octokit/request': 8.1.6
+      '@octokit/request-error': 5.0.1
+      '@octokit/types': 12.3.0
+      before-after-hook: 2.2.3
+      universal-user-agent: 6.0.1
+    dev: true
+
+  /@octokit/endpoint@9.0.3:
+    resolution:
+      {
+        integrity: sha512-TXVX57fJV7SA6LvRkeXPIOBr8AKvKDlhwNVBP/26O9DjIFi+CkYZGFLP9WtPdVOicRIhqGHxBCC6Fdj5AWWGgQ==
+      }
+    engines: { node: '>= 18' }
+    dependencies:
+      '@octokit/types': 12.3.0
+      universal-user-agent: 6.0.1
+    dev: true
+
+  /@octokit/graphql@7.0.2:
+    resolution:
+      {
+        integrity: sha512-OJ2iGMtj5Tg3s6RaXH22cJcxXRi7Y3EBqbHTBRq+PQAqfaS8f/236fUrWhfSn8P4jovyzqucxme7/vWSSZBX2Q==
+      }
+    engines: { node: '>= 18' }
+    dependencies:
+      '@octokit/request': 8.1.6
+      '@octokit/types': 12.3.0
+      universal-user-agent: 6.0.1
+    dev: true
+
+  /@octokit/openapi-types@19.0.2:
+    resolution:
+      {
+        integrity: sha512-8li32fUDUeml/ACRp/njCWTsk5t17cfTM1jp9n08pBrqs5cDFJubtjsSnuz56r5Tad6jdEPJld7LxNp9dNcyjQ==
+      }
+    dev: true
+
+  /@octokit/request-error@5.0.1:
+    resolution:
+      {
+        integrity: sha512-X7pnyTMV7MgtGmiXBwmO6M5kIPrntOXdyKZLigNfQWSEQzVxR4a4vo49vJjTWX70mPndj8KhfT4Dx+2Ng3vnBQ==
+      }
+    engines: { node: '>= 18' }
+    dependencies:
+      '@octokit/types': 12.3.0
+      deprecation: 2.3.1
+      once: 1.4.0
+    dev: true
+
+  /@octokit/request@8.1.6:
+    resolution:
+      {
+        integrity: sha512-YhPaGml3ncZC1NfXpP3WZ7iliL1ap6tLkAp6MvbK2fTTPytzVUyUesBBogcdMm86uRYO5rHaM1xIWxigWZ17MQ==
+      }
+    engines: { node: '>= 18' }
+    dependencies:
+      '@octokit/endpoint': 9.0.3
+      '@octokit/request-error': 5.0.1
+      '@octokit/types': 12.3.0
+      universal-user-agent: 6.0.1
+    dev: true
+
+  /@octokit/types@12.3.0:
+    resolution:
+      {
+        integrity: sha512-nJ8X2HRr234q3w/FcovDlA+ttUU4m1eJAourvfUUtwAWeqL8AsyRqfnLvVnYn3NFbUnsmzQCzLNdFerPwdmcDQ==
+      }
+    dependencies:
+      '@octokit/openapi-types': 19.0.2
+    dev: true
+
   /@pkgjs/parseargs@0.11.0:
     resolution:
       {
@@ -2694,6 +2785,13 @@ packages:
         integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
       }
 
+  /before-after-hook@2.2.3:
+    resolution:
+      {
+        integrity: sha512-NzUnlZexiaH/46WDhANlyR2bXRopNg4F/zuSA3OpZnllCUgRaOF2znDioDWrmbNVsuZk6l9pMquQB38cfBZwkQ==
+      }
+    dev: true
+
   /binary-extensions@2.2.0:
     resolution:
       {
@@ -3148,6 +3246,13 @@ packages:
       {
         integrity: sha512-Vy2wmG3NTkmHNg/kzpuvHhkqeIx3ODWqasgCRbKtbXEN0G+HpEEv9BtJLp7ZG1CZloFaC41Ah3ZFbq7aqCqMeQ==
       }
+
+  /deprecation@2.3.1:
+    resolution:
+      {
+        integrity: sha512-xmHIy4F3scKVwMsQ4WnVaS8bHOx0DmVwRywosKhaILI0ywMDWPtBSku2HNxRvF7jtwDRsoEwYQSfbxj8b7RlJQ==
+      }
+    dev: true
 
   /dequal@2.0.3:
     resolution:
@@ -6197,6 +6302,13 @@ packages:
       '@types/unist': 3.0.2
       unist-util-is: 6.0.0
       unist-util-visit-parents: 6.0.1
+    dev: true
+
+  /universal-user-agent@6.0.1:
+    resolution:
+      {
+        integrity: sha512-yCzhz6FN2wU1NiiQRogkTQszlQSlpWaw8SvVegAc+bDxbzHgh1vX8uIe8OYyMH6DwH+sdTJsgMl36+mSMdRJIQ==
+      }
     dev: true
 
   /universalify@0.1.2:

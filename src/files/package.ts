@@ -2,6 +2,7 @@ import process from 'node:process';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import detectIndent from 'detect-indent';
+import chalk from 'chalk';
 import semver, { type ReleaseType } from 'semver';
 import { defaultConfig } from '../config';
 import { LogLevel } from '../utils';
@@ -122,7 +123,7 @@ export class MihoPackage {
 
     if (config.verbose) {
       const relative = path.relative(process.cwd(), fullpath);
-      miho.l(LogLevel.LOW)`Found: ${relative}`;
+      miho.l(LogLevel.LOW)`${chalk.yellow('[FOUND]')} ${relative}`;
     }
 
     return mihoPackage;

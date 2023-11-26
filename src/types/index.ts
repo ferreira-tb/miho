@@ -1,20 +1,22 @@
 import type { FileData } from '../index';
 import type { CliOptions, CliCommitOptions } from './cli';
+import type { JobOptions } from './jobs';
 import type { CommitOptions } from './git';
 import type { MihoHooks } from './hooks';
 
 export type * from './cli';
 export type * from './git';
 export type * from './hooks';
+export type * from './jobs';
 export type * from './package';
 export type * from './utils';
 
-export type CliOnly = 'ask' | 'dryRun' | 'only' | 'skip';
+export type CliOnly = 'ask';
 export type CliHasDifferentType = 'exclude' | 'include';
 
 export type InterchangeableCliOptions = Omit<
   CliOptions,
-  keyof CliCommitOptions | CliOnly | CliHasDifferentType
+  keyof CliCommitOptions | keyof JobOptions | CliOnly | CliHasDifferentType
 >;
 
 export interface MihoInternalOptions extends InterchangeableCliOptions {
@@ -34,9 +36,7 @@ export interface MihoOptions extends MihoInternalOptions {
    */
   hooks?: Partial<MihoHooks>;
 
-  build?: boolean;
-  publish?: boolean;
-  test?: boolean;
+  jobs?: Partial<JobOptions>;
 }
 
 export type MihoGetPackagesOptions = {

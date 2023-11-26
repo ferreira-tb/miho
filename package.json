@@ -1,6 +1,6 @@
 {
   "name": "miho",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "description": "Easily bump your package version",
   "license": "MIT",
   "type": "module",
@@ -25,7 +25,7 @@
     "*.{?(c|m)@(j|t)s,css,vue,md,json}": "prettier --write"
   },
   "scripts": {
-    "build": "node --loader ts-node/esm scripts/build.ts",
+    "build": "npx . -l build",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs && pnpm docs:typedoc",
     "docs:preview": "vitepress preview docs",
@@ -53,6 +53,7 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "@octokit/core": "^5.0.2",
     "@rollup/plugin-typescript": "^11.1.5",
     "@types/node": "^20.10.0",
     "@types/prompts": "^2.4.9",

@@ -1,8 +1,7 @@
 import { execa, type Options as ExecaOptions } from 'execa';
 import type { MihoPackage } from '../files';
 import type { CommitOptions, PartialNullish } from '../types';
-import { isNotBlank } from '../utils';
-import { CommitCommand, CommitDefaults } from './enum';
+import { isNotBlank, CommitCommand, CommitDefaults } from '../utils';
 
 export class GitCommit implements CommitOptions {
   public readonly all: boolean;

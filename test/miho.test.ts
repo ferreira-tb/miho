@@ -93,6 +93,14 @@ describe('Miho.prototype.getPackageByName', () => {
     expect(pkg).toBeInstanceOf(FileData);
   });
 
+  it('should find with regex', async () => {
+    const miho = await new Miho().search(options);
+    const pkg = miho.getPackageByName(
+      new RegExp(`^${MihoMock.PACKAGE_PREFIX}`)
+    );
+    expect(pkg).toBeInstanceOf(FileData);
+  });
+
   it('should not find', async () => {
     const miho = await new Miho().search(options);
     const pkg = miho.getPackageByName('awesome-miho-explosion');

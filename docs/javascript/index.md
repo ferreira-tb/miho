@@ -55,22 +55,37 @@ await miho.bumpAll();
 Most of these options are already explained in the [CLI](../cli/index.md) section, so it's recommended that you take a look.
 
 ```ts
-interface MihoOptions {
-  commit: {
-    message: string;
-    all: boolean;
-    'no-verify': boolean;
+interface PackageOptions {
+  preid?: string;
+  release?: string | number;
+}
+
+interface MihoOptions extends PackageOptions {
+  commit?: {
+    message?: string;
+    all?: boolean;
+    noVerify?: boolean;
   };
-  exclude: string | string[];
-  filter: (string | RegExp)[];
-  hooks: Partial<MihoHooks>;
-  include: string | string[];
-  overrides: Record<string, MihoOptions['release'] | Partial<PackageOptions>>;
-  preid: string;
-  recursive: boolean;
-  release: string | number;
-  silent: boolean;
-  verbose: boolean;
+  exclude?: string | string[];
+  filter?: (string | RegExp)[];
+  hooks?: Partial<MihoHooks>;
+  include?: string | string[];
+  jobs?: {
+    build?: boolean | ((job: JobCallbackParams) => MaybePromise<void>);
+    dryRun?: boolean;
+    only?: string;
+    publish?: boolean | ((job: JobCallbackParams) => MaybePromise<void>);
+    skip?: string[];
+    test?: boolean | ((job: JobCallbackParams) => MaybePromise<void>);
+  };
+  overrides?: Record<
+    string,
+    PackageOptions['release'] | Partial<PackageOptions>
+  >;
+  packageManager?: 'npm' | 'pnpm' | 'yarn';
+  recursive?: boolean;
+  silent?: boolean;
+  verbose?: boolean;
 }
 ```
 
@@ -79,6 +94,20 @@ Check the [Hooks](../hooks/index.md) section for more details on hooks.
 :::
 
 ## Methods
+
+### build
+
+```ts
+interface JobFunctionOptions {
+  cwd?: string;
+}
+
+interface Miho {
+  build(options?: JobFunctionOptions): Promise<void>;
+}
+```
+
+Builds the project. See [`--build`](../cli/index.md#build).
 
 ### bump
 
@@ -115,7 +144,7 @@ Returns the amount of packages successfully bumped.
 interface CommitOptions {
   all: boolean;
   message: string;
-  'no-verify': boolean;
+  noVerify: boolean;
   push: boolean;
 }
 
@@ -130,7 +159,7 @@ Commit the modified packages.
 
 ```ts
 interface Miho {
-  getPackageByName(): FileData | null;
+  getPackageByName(packageName: string | RegExp): FileData | null;
 }
 ```
 
@@ -172,6 +201,16 @@ interface Miho {
 
 Its behavior is similar to Node's [`on`](https://nodejs.org/dist/latest/docs/api/events.html#emitteroneventname-listener). However, Miho is not a [`EventEmitter`](https://nodejs.org/dist/latest/docs/api/events.html#class-eventemitter).
 
+### publish
+
+```ts
+interface Miho {
+  publish(options?: JobFunctionOptions): Promise<void>;
+}
+```
+
+Publish the package. See [`--publish`](../cli/index.md#publish).
+
 ### removeAllListeners
 
 ```ts
@@ -193,6 +232,34 @@ interface Miho {
 ```
 
 Search for all packages that meet the requirements. If `options` is defined, it will override those previously given to the constructor.
+
+### setJob
+
+```ts
+interface Miho {
+  setJob<T extends keyof JobFunction>(job: T, value: JobFunction[T]): void;
+}
+```
+
+Set the value for a job.
+
+```ts
+miho.setJob('build', async () => {
+  await buildMyProject();
+});
+
+await miho.build();
+```
+
+### test
+
+```ts
+interface Miho {
+  test(options?: JobFunctionOptions): Promise<void>;
+}
+```
+
+Run tests. See [`--test`](../cli/index.md#test).
 
 ## Functions
 

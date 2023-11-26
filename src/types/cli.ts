@@ -3,17 +3,21 @@ import type { PackageOptions } from './index';
 import type { CommitOptions } from './git';
 import type { WithRequired } from './utils';
 import type { PackageManager } from '../utils/enum';
+import type { JobOptions } from './jobs';
 
 export interface CliCommitOptions extends Omit<CommitOptions, 'message'> {
   commit: string;
 }
 
-export interface CliOptions extends PackageOptions, CliCommitOptions {
-  /**
-   * Skip all steps.
-   * @default false
-   */
-  dryRun: boolean;
+export type CliOverrides = Record<
+  string,
+  PackageOptions['release'] | Partial<PackageOptions>
+>;
+
+export interface CliOptions
+  extends PackageOptions,
+    CliCommitOptions,
+    JobOptions {
   /**
    * Glob patterns indicating where to **NOT** search for packages.
    * `.git` and `node_modules` are **ALWAYS** excluded.
@@ -30,19 +34,10 @@ export interface CliOptions extends PackageOptions, CliCommitOptions {
    */
   include: string[];
   /**
-   * Execute only one step.
-   *
-   * Possible value is one of those used for {@link CliOptions.skip}.
-   */
-  only: string;
-  /**
    * Each key represents the name of a package.
    * From here you can configure each one individually.
    */
-  overrides: Record<
-    string,
-    PackageOptions['release'] | Partial<PackageOptions>
-  >;
+  overrides: CliOverrides;
   /**
    * Package manager being used.
    * @default 'npm'
@@ -58,12 +53,6 @@ export interface CliOptions extends PackageOptions, CliCommitOptions {
    * @default false
    */
   silent: boolean;
-  /**
-   * Skip one or more steps.
-   *
-   * Possible values are `build`, `bump`, `commit`, `publish` and `test`.
-   */
-  skip: string[];
   /**
    * Log additional info. May be useful for debugging.
    * @default false
