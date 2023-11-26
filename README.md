@@ -15,6 +15,7 @@ Easily bump your package.json version.
 |            [`--help`](https://tb.dev.br/miho/cli#help)            | `-h`    | Show usage information.                                        |
 |         [`--include`](https://tb.dev.br/miho/cli#include)         | `-i`    | Glob patterns indicating where to search for packages.         |
 |       [`--no-verify`](https://tb.dev.br/miho/cli#no-verify)       | `-n`    | Bypass `pre-commit` and `commit-msg` hooks.                    |
+|            [`--only`](https://tb.dev.br/miho/cli#only)            | none    | Execute only one step.                                         |
 |       [`--overrides`](https://tb.dev.br/miho/cli#overrides)       | `-o`    | Allow to configure each package individually.                  |
 | [`--package-manager`](https://tb.dev.br/miho/cli#package-manager) | `--pm`  | Package manager being used.                                    |
 |           [`--preid`](https://tb.dev.br/miho/cli#preid)           | none    | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.      |

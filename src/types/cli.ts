@@ -30,6 +30,12 @@ export interface CliOptions extends PackageOptions, CliCommitOptions {
    */
   include: string[];
   /**
+   * Execute only one step.
+   *
+   * Possible value is one of those used for {@link CliOptions.skip}.
+   */
+  only: string;
+  /**
    * Each key represents the name of a package.
    * From here you can configure each one individually.
    */

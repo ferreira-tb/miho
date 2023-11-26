@@ -8,7 +8,7 @@ import { loadConfig } from '../config';
 import { bump } from './bump';
 import { normalize } from './normalize';
 import { LogLevel } from '../utils';
-import { createOptions, createSkipChecker, SkipChoices } from './options';
+import { createOptions, createSkipChecker, SkipChoice } from './options';
 import type { CliArguments } from '../types';
 
 async function main() {
@@ -49,19 +49,22 @@ async function main() {
     return;
   }
 
-  const skip = Array.isArray(argv.skip) ? (argv.skip as string[]) : null;
-  const shouldSkip = createSkipChecker(skip, argv.dryRun);
+  const shouldSkip = createSkipChecker({
+    skip: argv.skip,
+    only: argv.only,
+    dryRun: argv.dryRun
+  });
 
   let packagesBumped: number = 0;
 
-  if (!shouldSkip(SkipChoices.BUMP)) {
+  if (!shouldSkip(SkipChoice.BUMP)) {
     const ask = Boolean(argv.ask);
     packagesBumped = await bump({ miho, packages, ask });
   } else {
-    miho.l(LogLevel.NORMAL)`${chalk.yellow('[SKIP]')} ${SkipChoices.BUMP}`;
+    miho.l(LogLevel.NORMAL)`${chalk.yellow('[SKIP]')} ${SkipChoice.BUMP}`;
   }
 
-  if (!shouldSkip(SkipChoices.COMMIT)) {
+  if (!shouldSkip(SkipChoice.COMMIT)) {
     if (
       (typeof config.commit?.message === 'string' && packagesBumped > 0) ||
       config.commit?.all === true
@@ -70,7 +73,7 @@ async function main() {
       await miho.commit();
     }
   } else {
-    miho.l(LogLevel.NORMAL)`${chalk.yellow('[SKIP]')} ${SkipChoices.COMMIT}`;
+    miho.l(LogLevel.NORMAL)`${chalk.yellow('[SKIP]')} ${SkipChoice.COMMIT}`;
   }
 }
 

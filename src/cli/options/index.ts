@@ -1,4 +1,6 @@
-import type { CliFlag } from '../types';
+import type { CliFlag } from '../../types';
+
+export * from './skip';
 
 export function createOptions() {
   const options: CliFlag = {
@@ -43,6 +45,10 @@ export function createOptions() {
       type: 'boolean',
       alias: ['n', 'no-verify']
     },
+    only: {
+      desc: 'Execute only one step.',
+      type: 'string'
+    },
     overrides: {
       desc: 'Allow to configure each package individually.',
       type: 'string',
@@ -83,20 +89,4 @@ export function createOptions() {
   };
 
   return options;
-}
-
-export const enum SkipChoices {
-  BUILD = 'build',
-  BUMP = 'bump',
-  COMMIT = 'commit',
-  PUBLISH = 'publish',
-  TEST = 'test'
-}
-
-export function createSkipChecker(skip: unknown, dryRun: unknown) {
-  return function (choice: SkipChoices) {
-    if (dryRun === true) return true;
-    if (!Array.isArray(skip)) return false;
-    return skip.includes(choice);
-  };
 }

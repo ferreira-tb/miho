@@ -15,6 +15,7 @@ outline: [2, 3]
 |            [`--help`](#help)            | `-h`    | Show usage information.                                        |
 |         [`--include`](#include)         | `-i`    | Glob patterns indicating where to search for packages.         |
 |       [`--no-verify`](#no-verify)       | `-n`    | Bypass `pre-commit` and `commit-msg` hooks.                    |
+|            [`--only`](#only)            | none    | Execute only one step.                                         |
 |       [`--overrides`](#overrides)       | `-o`    | Allow to configure each package individually.                  |
 | [`--package-manager`](#package-manager) | `--pm`  | Package manager being used.                                    |
 |           [`--preid`](#preid)           | none    | Prerelease identifier, like the `beta` in `1.0.0-beta.1`.      |
@@ -164,6 +165,20 @@ npx miho major -r -i foo/**
 | `-n`  | `--no-verify` |
 
 By default, the [`pre-commit`](https://git-scm.com/docs/githooks#_pre_commit) and [`commit-msg`](https://git-scm.com/docs/githooks#_commit_msg) hooks are run. When any of `--no-verify` or `-n` is given, these are bypassed. See [`git-commit`](https://git-scm.com/docs/git-commit#Documentation/git-commit.txt--n) for details.
+
+### `--only`
+
+| Alias |      Usage      |
+| :---- | :-------------: |
+| none  | `--only <step>` |
+
+Execute only one step.
+
+Possible value is one of those used for [`--skip`](#skip).
+
+```bash
+npx miho --only build
+```
 
 ### `--overrides`
 
