@@ -100,9 +100,9 @@ npx miho patch -c "a commit message"
 
 ### `--exclude`
 
-| Alias |           Usage           |
-| :---- | :-----------------------: |
-| `-x`  | `--exclude [patterns...]` |
+| Alias |          Usage           |
+| :---- | :----------------------: |
+| `-x`  | `--exclude [patterns..]` |
 
 Glob patterns indicating where Miho should **not** look for packages.
 
@@ -112,9 +112,9 @@ npx miho patch -r -x foo/**
 
 ### `--filter`
 
-| Alias |         Usage         |
-| :---- | :-------------------: |
-| `-f`  | `--filter [names...]` |
+| Alias |        Usage         |
+| :---- | :------------------: |
+| `-f`  | `--filter [names..]` |
 
 Package names that should be filtered. Strings in the format `/abc/` will be treated as regex.
 
@@ -132,9 +132,9 @@ Show usage information.
 
 ### `--include`
 
-| Alias |           Usage           |
-| :---- | :-----------------------: |
-| `-i`  | `--include [patterns...]` |
+| Alias |          Usage           |
+| :---- | :----------------------: |
+| `-i`  | `--include [patterns..]` |
 
 Glob patterns indicating where to search for packages. By default, Miho will search the [current working directory](https://nodejs.org/dist/latest/docs/api/process.html#processcwd) (and also subdirectories, if [`--recursive`](#recursive)).
 
