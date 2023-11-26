@@ -5,6 +5,8 @@ import { Octokit } from '@octokit/core';
 import { existsSync as exists } from 'node:fs';
 import { defineConfig } from './src';
 import { $ } from 'execa';
+import config from './config.json' assert { type: 'json' };
+import packageJson from './package.json' assert { type: 'json' };
 
 export default defineConfig({
   release: 'patch',
@@ -21,8 +23,8 @@ export default defineConfig({
       await $({ stdio: 'inherit' })`run-s rollup minify`;
     },
     publish: async () => {
-      const { version } = await import('package.json');
-      const { GITHUB_TOKEN } = await import('config.json');
+      const { version } = packageJson;
+      const { GITHUB_TOKEN } = config;
       const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
       await octokit.request('POST /repos/{owner}/{repo}/releases', {
