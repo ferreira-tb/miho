@@ -1,6 +1,6 @@
 import process from 'node:process';
 import fs from 'node:fs/promises';
-import { glob } from 'glob';
+import { glob, type Path } from 'glob';
 import { execa, type Options as ExecaOptions } from 'execa';
 import { MihoPackage, FileData } from './files';
 import { defaultConfig } from './config';
@@ -65,13 +65,8 @@ export class Miho extends MihoEmitter {
       ignore: [MihoIgnore.GIT, MihoIgnore.NODE_MODULES, ...exclude]
     });
 
-    const result = await Promise.all(
-      files.map((pathObj) => {
-        return MihoPackage.create(this, pathObj, this.#config);
-      })
-    );
-
-    result.filter(Boolean).forEach((pkg: MihoPackage) => {
+    const packages = await this.#createPackages(files);
+    packages.forEach((pkg) => {
       this.#packages.set(++this.#id, pkg);
     });
 
@@ -330,6 +325,22 @@ export class Miho extends MihoEmitter {
     }
 
     return patterns;
+  }
+
+  async #createPackages(files: Path[]): Promise<MihoPackage[]> {
+    const fullpaths = new Set<string>();
+    const packages = await Promise.all(
+      files.map(async (pathObj) => {
+        const pkg = await MihoPackage.create(this, pathObj, this.#config);
+        if (!pkg) return null;
+
+        if (fullpaths.has(pkg.fullpath)) return null;
+        fullpaths.add(pkg.fullpath);
+        return pkg;
+      })
+    );
+
+    return packages.filter(Boolean) as MihoPackage[];
   }
 
   async #setPackageManager(cwd: string = process.cwd()) {
