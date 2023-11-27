@@ -34,8 +34,8 @@ export const enum LogLevel {
 }
 
 export const enum MihoIgnore {
-  GIT = '.git/**',
-  NODE_MODULES = 'node_modules/**'
+  GIT = '**/.git/**',
+  NODE_MODULES = '**/node_modules/**'
 }
 
 export enum MihoJob {

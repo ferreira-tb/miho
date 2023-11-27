@@ -3,6 +3,7 @@ import type { Miho } from '../miho';
 import type { MihoJob } from './enum';
 
 export * from './enum';
+export * from './regex';
 
 export function isNotBlank(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0;

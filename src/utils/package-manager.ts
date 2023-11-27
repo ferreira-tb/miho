@@ -2,6 +2,7 @@ import process from 'node:process';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import { PackageManager, FileType } from './enum';
+import { regex } from './regex';
 
 export interface DetectPackageManagerOptions {
   /**
@@ -23,9 +24,9 @@ const managerName: Record<PackageManager, RegExp> = {
 };
 
 const lockfile: Record<PackageManager, RegExp> = {
-  npm: /package-lock\.json/,
-  pnpm: /pnpm-lock\.json/,
-  yarn: /yarn\.lock/
+  npm: regex.npmLock,
+  pnpm: regex.pnpmLock,
+  yarn: regex.yarnLock
 };
 
 export async function detectPackageManager(
