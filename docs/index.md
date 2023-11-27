@@ -8,11 +8,11 @@ aside: true
 
 # Miho
 
-Easily bump your package.json version.
+Easily manage your package.json version.
 
+- Bump, build, test, commit and publish.
 - Simple Javascript API.
 - Easy to use CLI commands.
-- Bump, build, test, commit and publish your package.
 
 ```bash
 npm init miho@latest
