@@ -8,7 +8,7 @@ import { loadConfig } from '../config';
 import { bump } from './bump';
 import { commit } from './commit';
 import { normalize } from './normalize';
-import { LogLevel, MihoJob, skipAsDryRun } from '../utils';
+import { LogLevel, MihoJob, logDryRun } from '../utils';
 import { createJobSkipChecker } from '../jobs';
 import { createOptions } from './options';
 import type { CliArguments } from '../types';
@@ -71,7 +71,7 @@ async function main() {
 
   if (!shouldSkipJob(MihoJob.BUILD) && config.jobs?.build) {
     if (dryRun) {
-      skipAsDryRun(miho, MihoJob.BUILD);
+      logDryRun(miho, MihoJob.BUILD);
     } else {
       await miho.build();
     }
@@ -79,7 +79,7 @@ async function main() {
 
   if (!shouldSkipJob(MihoJob.TEST) && config.jobs?.test) {
     if (dryRun) {
-      skipAsDryRun(miho, MihoJob.TEST);
+      logDryRun(miho, MihoJob.TEST);
     } else {
       await miho.test();
     }
@@ -96,7 +96,7 @@ async function main() {
 
   if (!shouldSkipJob(MihoJob.PUBLISH) && config.jobs?.publish) {
     if (dryRun) {
-      skipAsDryRun(miho, MihoJob.PUBLISH);
+      logDryRun(miho, MihoJob.PUBLISH);
     } else {
       await miho.publish();
     }

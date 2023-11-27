@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
-import { MihoJob, skipAsDryRun } from '../../utils';
+import { MihoJob, logDryRun } from '../../utils';
 import type { BumpArgs } from './index';
 
 type PromptArgs = Omit<BumpArgs, 'ask'>;
@@ -27,7 +27,7 @@ async function promptSingle(args: PromptArgs): Promise<number> {
   });
 
   if (dryRun) {
-    skipAsDryRun(miho, MihoJob.BUMP);
+    logDryRun(miho, MihoJob.BUMP);
     return 0;
   } else if (response.confirm === true) {
     const result = await miho.bump(packages[0].id);
@@ -70,7 +70,7 @@ async function promptMultiple(options: PromptArgs): Promise<number> {
   ]);
 
   if (dryRun) {
-    skipAsDryRun(miho, MihoJob.BUMP);
+    logDryRun(miho, MihoJob.BUMP);
     return 0;
   }
 

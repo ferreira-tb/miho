@@ -207,6 +207,7 @@ export class Miho extends MihoEmitter {
     if (defaultPrevented) return;
 
     await this.#gitCommit.commit({
+      miho: this,
       packages: entries.map(([, pkg]) => pkg),
       execaOptions,
       dryRun
@@ -222,7 +223,7 @@ export class Miho extends MihoEmitter {
       );
       if (defaultPrevented) return;
 
-      await this.#gitCommit.pushCommit({ execaOptions, dryRun });
+      await this.#gitCommit.pushCommit({ miho: this, execaOptions, dryRun });
 
       await this.executeHook(new MihoEvent('afterPush', { miho: this, data }));
     }
