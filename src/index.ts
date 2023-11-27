@@ -8,4 +8,7 @@ export * from './files/file';
 export type { MihoPackage } from './files/package';
 
 export * from './utils/enum';
-export { detectPackageManager } from './utils/package-manager';
+export {
+  detectPackageManager,
+  isPackageManager
+} from './utils/package-manager';
