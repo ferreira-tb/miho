@@ -1,4 +1,5 @@
 import process from 'node:process';
+import fs from 'node:fs/promises';
 import { glob } from 'glob';
 import { execa, type Options as ExecaOptions } from 'execa';
 import { MihoPackage, FileData } from './files';
@@ -58,7 +59,8 @@ export class Miho extends MihoEmitter {
     if (!Array.isArray(exclude)) exclude = [exclude];
     exclude = exclude.filter(isNotBlank);
 
-    const files = await glob(this.#resolvePatterns(), {
+    const patterns = await this.#resolvePatterns();
+    const files = await glob(patterns, {
       withFileTypes: true,
       ignore: [MihoIgnore.GIT, MihoIgnore.NODE_MODULES, ...exclude]
     });
@@ -302,14 +304,31 @@ export class Miho extends MihoEmitter {
     this.#jobs = { ...this.#jobs, ...jobs };
   }
 
-  #resolvePatterns() {
-    if (!this.#config.recursive) return FileType.PACKAGE_JSON;
-    let patterns = this.#config.include ?? [];
-    if (typeof patterns === 'string') patterns = [patterns];
+  async #resolvePatterns(): Promise<string[]> {
+    let patterns: string[] = [FileType.PACKAGE_JSON];
+    if (!this.#config.recursive) return patterns;
+
+    if (this.#config.include) {
+      const include = Array.isArray(this.#config.include)
+        ? this.#config.include
+        : [this.#config.include];
+
+      patterns.push(...include);
+    }
 
     patterns = patterns.map((i) => i.trim());
     patterns = patterns.filter((i) => i.length > 0);
-    if (patterns.length === 0) return defaultConfig.include;
+
+    // If only "FileType.PACKAGE_JSON" is inside the array.
+    if (patterns.length === 1) {
+      let dirents = await fs.readdir(process.cwd(), { withFileTypes: true });
+      dirents = dirents.filter((ent) => ent.isDirectory());
+
+      patterns.push(
+        ...dirents.map((ent) => `${ent.name}/**/${FileType.PACKAGE_JSON}`)
+      );
+    }
+
     return patterns;
   }
 
