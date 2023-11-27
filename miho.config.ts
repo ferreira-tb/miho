@@ -1,7 +1,5 @@
 import { Octokit } from '@octokit/core';
 import { defineConfig } from './src';
-import config from './config.json' assert { type: 'json' };
-import packageJson from './package.json' assert { type: 'json' };
 
 export default defineConfig({
   release: 'patch',
@@ -14,8 +12,8 @@ export default defineConfig({
   jobs: {
     build: true,
     publish: async () => {
-      const { version } = packageJson;
-      const { GITHUB_TOKEN } = config;
+      const { version } = await import('./package.json');
+      const { GITHUB_TOKEN } = await import('./config.json');
       const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
       await octokit.request('POST /repos/{owner}/{repo}/releases', {
