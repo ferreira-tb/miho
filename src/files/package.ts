@@ -5,7 +5,7 @@ import detectIndent from 'detect-indent';
 import chalk from 'chalk';
 import semver, { type ReleaseType } from 'semver';
 import { defaultConfig } from '../config';
-import { LogLevel } from '../utils';
+import { FileType, LogLevel } from '../utils';
 import type { Path } from 'glob';
 import type { MihoInternalOptions } from '../types';
 import type { Miho } from '../miho';
@@ -96,8 +96,15 @@ export class MihoPackage {
     if (!pathObj.isFile()) return null;
 
     const fullpath = pathObj.fullpath();
+    if (path.basename(fullpath) !== FileType.PACKAGE_JSON) return null;
+
     const file = await fs.readFile(fullpath, 'utf-8');
-    const pkg = JSON.parse(file) as Record<string, unknown>;
+    let pkg: Record<string, unknown>;
+    try {
+      pkg = JSON.parse(file);
+    } catch {
+      return null;
+    }
 
     const packageName = typeof pkg.name === 'string' ? pkg.name : null;
     if (packageName && Array.isArray(config.filter)) {
