@@ -20,7 +20,7 @@ export function createOptions() {
     commit: {
       desc: 'Commit the modified packages.',
       type: 'string',
-      alias: 'c'
+      alias: ['c', 'message', 'm']
     },
     dryRun: {
       desc: 'Skip all jobs.',
