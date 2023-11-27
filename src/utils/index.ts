@@ -20,6 +20,6 @@ export function isTemplateArray(value: unknown): value is TemplateStringsArray {
  * @internal
  * @ignore
  */
-export function skipAsDryRun(miho: Miho, job: MihoJob) {
+export function logDryRun(miho: Miho, job: MihoJob) {
   miho.l`${chalk.yellow('[DRY RUN]')} ${job} skipped.`;
 }

@@ -1,9 +1,12 @@
 import { execa, type Options as ExecaOptions } from 'execa';
+import { logDryRun, MihoJob } from '../utils';
 import type { MihoPackage } from '../files';
 import type { CommitOptions, Nullish, PartialNullish } from '../types';
 import { isNotBlank, CommitCommand, CommitDefaults } from '../utils';
+import type { Miho } from '../miho';
 
 interface Args {
+  miho: Miho,
   execaOptions?: ExecaOptions;
   dryRun?: Nullish<boolean>;
 }
@@ -43,6 +46,7 @@ export class GitCommit implements CommitOptions {
 
     if (dryRun) {
       commandArgs.push(CommitCommand.DRY_RUN);
+      logDryRun(args.miho, MihoJob.COMMIT);
     }
 
     // Should be the last.
@@ -54,15 +58,32 @@ export class GitCommit implements CommitOptions {
       });
     }
 
-    await execa('git', ['commit', ...commandArgs], execaOptions);
+    try {
+      await execa('git', ['commit', ...commandArgs], execaOptions);
+    } catch (err) {
+      this.#handleException(err, dryRun);
+    }
   }
 
   public async pushCommit(args: PushCommitArgs) {
     const { execaOptions, dryRun } = args;
 
     const commandArgs = ['push'];
-    if (dryRun) commandArgs.push(CommitCommand.DRY_RUN);
+    if (dryRun) {
+      commandArgs.push(CommitCommand.DRY_RUN);
+      logDryRun(args.miho, MihoJob.PUSH);
+    }
 
-    await execa('git', commandArgs, execaOptions);
+    try {
+      await execa('git', commandArgs, execaOptions);
+    } catch (err) {
+      this.#handleException(err, dryRun);
+    }
+  }
+
+  #handleException(err: unknown, dryRun: Nullish<boolean>) {
+    if (!(err instanceof Error)) return;
+    if (!dryRun) throw err;
+    console.error(err);
   }
 }

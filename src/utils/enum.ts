@@ -43,6 +43,7 @@ export enum MihoJob {
   BUMP = 'bump',
   COMMIT = 'commit',
   PUBLISH = 'publish',
+  PUSH = 'push',
   TEST = 'test'
 }
 
