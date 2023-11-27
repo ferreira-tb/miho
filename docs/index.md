@@ -10,6 +10,14 @@ aside: true
 
 Easily bump your package.json version.
 
+- Simple Javascript API.
+- Easy to use CLI commands.
+- Bump, build, test, commit and publish your package.
+
+```bash
+npm init miho@latest
+```
+
 ## Config file
 
 When using [Miho CLI](./cli/), it will try to find a config file named `miho.config.js` inside the [current working directory](https://nodejs.org/dist/latest/docs/api/process.html#processcwd). Any options set in the config file will eventually be passed down to Miho.

@@ -2,6 +2,14 @@
 
 Easily bump your package.json version.
 
+- Bump, build, test, commit and publish.
+- Simple Javascript API.
+- Easy to use CLI commands.
+
+```bash
+npm init miho@latest
+```
+
 ## CLI
 
 |                              Command                              | Alias   | Description                                                    |
@@ -28,52 +36,6 @@ Easily bump your package.json version.
 |            [`--test`](https://tb.dev.br/miho/cli#test)            | `-t`    | Run tests.                                                     |
 |         [`--verbose`](https://tb.dev.br/miho/cli#verbose)         | none    | Log additional info. May be useful for debugging.              |
 |         [`--version`](https://tb.dev.br/miho/cli#version)         | `-v`    | Show current version.                                          |
-
-## Javascript API
-
-```ts
-import { Miho } from 'miho';
-
-// Set up Miho and search for packages.
-const miho = new Miho({
-  release: 'patch',
-  recursive: true,
-  exclude: ['foo/**'],
-  filter: [/bar/],
-  commit: {
-    message: 'a commit message',
-    all: true,
-    push: true
-  },
-  overrides: {
-    baz: 'major',
-    qux: {
-      release: 'preminor',
-      preid: 'beta'
-    }
-  }
-});
-
-await miho.search();
-
-// Get basic information on the packages found.
-// This also returns an id identifying each package,
-// which can eventually be used to bump them individually.
-console.log(miho.getPackages());
-
-// Register hooks.
-miho.on('beforeEach', async (event) => {
-  const { miho, data } = event;
-  const result = await doSomethingAsync(miho, data);
-  if (!result) event.preventDefault();
-});
-
-// Bump a package by its id.
-await miho.bump(id);
-
-// Bump all the packages found by Miho.
-await miho.bumpAll();
-```
 
 ## Documentation
 
