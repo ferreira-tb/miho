@@ -1,3 +1,7 @@
+import chalk from 'chalk';
+import type { Miho } from '../miho';
+import type { MihoJob } from './enum';
+
 export * from './enum';
 
 export function isNotBlank(value: unknown): value is string {
@@ -10,4 +14,12 @@ export function isNotBlank(value: unknown): value is string {
  */
 export function isTemplateArray(value: unknown): value is TemplateStringsArray {
   return Array.isArray(value);
+}
+
+/**
+ * @internal
+ * @ignore
+ */
+export function skipAsDryRun(miho: Miho, job: MihoJob) {
+  miho.l`${chalk.yellow('[DRY RUN]')} ${job} skipped.`;
 }

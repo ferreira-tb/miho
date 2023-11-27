@@ -2,8 +2,13 @@
  * @see https://git-scm.com/docs/git-commit
  */
 export const enum CommitCommand {
+  /** @see https://git-scm.com/docs/git-commit#Documentation/git-commit.txt---all */
   ALL = '--all',
+  /** @see https://git-scm.com/docs/git-commit#Documentation/git-commit.txt---dry-run */
+  DRY_RUN = '--dry-run',
+  /** @see https://git-scm.com/docs/git-commit#Documentation/git-commit.txt---messageltmsggt */
   MESSAGE = '--message',
+  /** @see https://git-scm.com/docs/git-commit#Documentation/git-commit.txt---no-verify */
   NO_VERIFY = '--no-verify'
 }
 

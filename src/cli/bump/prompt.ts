@@ -1,21 +1,21 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
-import type { Miho } from '../../miho';
-import type { FileData } from '../../files';
+import { MihoJob, skipAsDryRun } from '../../utils';
+import type { BumpArgs } from './index';
+
+type PromptArgs = Omit<BumpArgs, 'ask'>;
 
 /** @internal */
-export async function promptUser(
-  miho: Miho,
-  packages: FileData[]
-): Promise<number> {
-  if (packages.length === 1) {
-    return await promptSingle(miho, packages);
+export async function promptUser(args: PromptArgs): Promise<number> {
+  if (args.packages.length === 1) {
+    return await promptSingle(args);
   } else {
-    return await promptMultiple(miho, packages);
+    return await promptMultiple(args);
   }
 }
 
-async function promptSingle(miho: Miho, packages: FileData[]): Promise<number> {
+async function promptSingle(args: PromptArgs): Promise<number> {
+  const { miho, packages, dryRun } = args;
   const name = packages[0].name;
   const response = await prompts({
     name: 'confirm',
@@ -26,7 +26,10 @@ async function promptSingle(miho: Miho, packages: FileData[]): Promise<number> {
     inactive: 'no'
   });
 
-  if (response.confirm === true) {
+  if (dryRun) {
+    skipAsDryRun(miho, MihoJob.BUMP);
+    return 0;
+  } else if (response.confirm === true) {
     const result = await miho.bump(packages[0].id);
     if (result) {
       miho.l`${chalk.green.bold('Package bumped.')}`;
@@ -40,10 +43,8 @@ async function promptSingle(miho: Miho, packages: FileData[]): Promise<number> {
   return 0;
 }
 
-async function promptMultiple(
-  miho: Miho,
-  packages: FileData[]
-): Promise<number> {
+async function promptMultiple(options: PromptArgs): Promise<number> {
+  const { miho, packages, dryRun } = options;
   const response = await prompts([
     {
       name: 'bumpMode',
@@ -67,6 +68,11 @@ async function promptMultiple(
       })
     }
   ]);
+
+  if (dryRun) {
+    skipAsDryRun(miho, MihoJob.BUMP);
+    return 0;
+  }
 
   let packagesBumped: number = 0;
   switch (response.bumpMode) {
