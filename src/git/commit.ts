@@ -1,7 +1,21 @@
 import { execa, type Options as ExecaOptions } from 'execa';
 import type { MihoPackage } from '../files';
-import type { CommitOptions, PartialNullish } from '../types';
+import type { CommitOptions, Nullish, PartialNullish } from '../types';
 import { isNotBlank, CommitCommand, CommitDefaults } from '../utils';
+
+interface Args {
+  execaOptions?: ExecaOptions;
+  dryRun?: Nullish<boolean>;
+}
+
+interface CommitArgs extends Args {
+  packages: MihoPackage[];
+}
+
+interface PushCommitArgs extends Args {
+  /** @see https://git-scm.com/docs/git-push#Documentation/git-push.txt---dry-run */
+  dryRun?: Nullish<boolean>;
+}
 
 export class GitCommit implements CommitOptions {
   public readonly all: boolean;
@@ -19,26 +33,36 @@ export class GitCommit implements CommitOptions {
     this.push = options.push ?? false;
   }
 
-  public async commit(packages: MihoPackage[], execaOptions?: ExecaOptions) {
-    const args: string[] = [CommitCommand.MESSAGE, this.message];
+  public async commit(args: CommitArgs) {
+    const { packages, execaOptions, dryRun } = args;
+    const commandArgs: string[] = [CommitCommand.MESSAGE, this.message];
 
     if (this.noVerify) {
-      args.push(CommitCommand.NO_VERIFY);
+      commandArgs.push(CommitCommand.NO_VERIFY);
+    }
+
+    if (dryRun) {
+      commandArgs.push(CommitCommand.DRY_RUN);
     }
 
     // Should be the last.
     if (this.all) {
-      args.push(CommitCommand.ALL);
+      commandArgs.push(CommitCommand.ALL);
     } else {
       packages.forEach((pkg) => {
-        args.push(pkg.fullpath);
+        commandArgs.push(pkg.fullpath);
       });
     }
 
-    await execa('git', ['commit', ...args], execaOptions);
+    await execa('git', ['commit', ...commandArgs], execaOptions);
   }
 
-  public async pushCommit(execaOptions?: ExecaOptions) {
-    await execa('git', ['push'], execaOptions);
+  public async pushCommit(args: PushCommitArgs) {
+    const { execaOptions, dryRun } = args;
+
+    const commandArgs = ['push'];
+    if (dryRun) commandArgs.push(CommitCommand.DRY_RUN);
+
+    await execa('git', commandArgs, execaOptions);
   }
 }

@@ -24,6 +24,7 @@ import type {
   MihoOptions,
   MihoInternalOptions,
   CommitOptions,
+  MihoCommitArgs,
   JobFunction,
   JobOptions,
   JobFunctionOptions
@@ -184,7 +185,8 @@ export class Miho extends MihoEmitter {
   }
 
   /** Commit the modified packages. */
-  public async commit(options: Partial<CommitOptions> = {}): Promise<void> {
+  public async commit(args: Partial<MihoCommitArgs> = {}): Promise<void> {
+    const { dryRun, ...options } = args;
     const shouldSkip = createJobSkipChecker(this.#jobs);
     if (shouldSkip(MihoJob.COMMIT)) return;
 
@@ -204,8 +206,12 @@ export class Miho extends MihoEmitter {
     );
     if (defaultPrevented) return;
 
-    const packages = entries.map(([, pkg]) => pkg);
-    await this.#gitCommit.commit(packages, execaOptions);
+    await this.#gitCommit.commit({
+      packages: entries.map(([, pkg]) => pkg),
+      execaOptions,
+      dryRun
+    });
+
     this.#updatedPackages.clear();
 
     await this.executeHook(new MihoEvent('afterCommit', { miho: this, data }));
@@ -216,7 +222,7 @@ export class Miho extends MihoEmitter {
       );
       if (defaultPrevented) return;
 
-      await this.#gitCommit.pushCommit(execaOptions);
+      await this.#gitCommit.pushCommit({ execaOptions, dryRun });
 
       await this.executeHook(new MihoEvent('afterPush', { miho: this, data }));
     }

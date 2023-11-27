@@ -21,3 +21,8 @@ export interface CommitOptions {
    */
   push: boolean;
 }
+
+export interface MihoCommitArgs extends CommitOptions {
+  /** @see https://git-scm.com/docs/git-commit#Documentation/git-commit.txt---dry-run */
+  dryRun?: boolean;
+}
