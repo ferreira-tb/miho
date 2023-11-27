@@ -10,7 +10,6 @@ import type { MihoOptions } from './types';
 export const defaultConfig: MihoOptions = {
   exclude: [],
   filter: [],
-  include: '**/',
   overrides: {},
   packageManager: PackageManager.NPM,
   preid: 'alpha',

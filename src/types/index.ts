@@ -21,7 +21,7 @@ export type InterchangeableCliOptions = Omit<
 
 export interface MihoInternalOptions extends InterchangeableCliOptions {
   exclude: string | string[];
-  include: string | string[];
+  include?: string | string[];
 }
 
 export interface MihoOptions extends MihoInternalOptions {
