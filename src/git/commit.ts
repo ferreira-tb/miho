@@ -1,12 +1,12 @@
 import { execa, type Options as ExecaOptions } from 'execa';
-import { logDryRun, MihoJob } from '../utils';
+import { logDryRun, LogLevel, MihoJob } from '../utils';
 import type { MihoPackage } from '../files';
 import type { CommitOptions, Nullish, PartialNullish } from '../types';
 import { isNotBlank, CommitCommand, CommitDefaults } from '../utils';
 import type { Miho } from '../miho';
 
 interface Args {
-  miho: Miho,
+  miho: Miho;
   execaOptions?: ExecaOptions;
   dryRun?: Nullish<boolean>;
 }
@@ -19,6 +19,8 @@ interface PushCommitArgs extends Args {
   /** @see https://git-scm.com/docs/git-push#Documentation/git-push.txt---dry-run */
   dryRun?: Nullish<boolean>;
 }
+
+type HandleExceptionArgs = Required<Omit<Args, 'execaOptions'>>;
 
 export class GitCommit implements CommitOptions {
   public readonly all: boolean;
@@ -37,7 +39,7 @@ export class GitCommit implements CommitOptions {
   }
 
   public async commit(args: CommitArgs) {
-    const { packages, execaOptions, dryRun } = args;
+    const { miho, packages, execaOptions, dryRun } = args;
     const commandArgs: string[] = [CommitCommand.MESSAGE, this.message];
 
     if (this.noVerify) {
@@ -46,7 +48,7 @@ export class GitCommit implements CommitOptions {
 
     if (dryRun) {
       commandArgs.push(CommitCommand.DRY_RUN);
-      logDryRun(args.miho, MihoJob.COMMIT);
+      logDryRun(miho, MihoJob.COMMIT);
     }
 
     // Should be the last.
@@ -61,29 +63,31 @@ export class GitCommit implements CommitOptions {
     try {
       await execa('git', ['commit', ...commandArgs], execaOptions);
     } catch (err) {
-      this.#handleException(err, dryRun);
+      this.#handleException(err, { miho, dryRun });
     }
   }
 
   public async pushCommit(args: PushCommitArgs) {
-    const { execaOptions, dryRun } = args;
+    const { miho, execaOptions, dryRun } = args;
 
     const commandArgs = ['push'];
     if (dryRun) {
       commandArgs.push(CommitCommand.DRY_RUN);
-      logDryRun(args.miho, MihoJob.PUSH);
+      logDryRun(miho, MihoJob.PUSH);
     }
 
     try {
       await execa('git', commandArgs, execaOptions);
     } catch (err) {
-      this.#handleException(err, dryRun);
+      this.#handleException(err, { miho, dryRun });
     }
   }
 
-  #handleException(err: unknown, dryRun: Nullish<boolean>) {
+  #handleException(err: unknown, args: HandleExceptionArgs) {
     if (!(err instanceof Error)) return;
+
+    const { miho, dryRun } = args;
     if (!dryRun) throw err;
-    console.error(err);
+    miho.l(LogLevel.LOW)`${err}`;
   }
 }
