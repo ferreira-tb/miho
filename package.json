@@ -1,6 +1,6 @@
 {
   "name": "miho",
-  "version": "1.7.10",
+  "version": "1.7.11",
   "description": "Easily bump your package version",
   "license": "MIT",
   "type": "module",
@@ -35,7 +35,6 @@
     "format": "pnpm exec prettier . --write",
     "format-check": "pnpm exec prettier . --check",
     "lint": "eslint . --config eslint.config.js --cache",
-    "minify": "pnpm exec minify-it dist",
     "prepare": "husky install",
     "release": "miho -l publish",
     "rollup": "rollup --config rollup.config.js",
@@ -68,7 +67,6 @@
     "eslint": "^8.54.0",
     "husky": "^8.0.3",
     "lint-staged": "^15.1.0",
-    "minify-it": "^1.1.1",
     "npm-run-all2": "^6.1.1",
     "prettier": "^3.1.0",
     "rollup": "^4.6.0",
