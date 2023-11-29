@@ -307,9 +307,12 @@ export class Miho extends MihoEmitter {
           } else if (logLevel === LogLevel.NORMAL) {
             log();
           }
-        } else if (logLevel === LogLevel.HIGH) {
+        }
+
+        if (logLevel === LogLevel.HIGH) {
           log();
         }
+
         return;
       }
 
