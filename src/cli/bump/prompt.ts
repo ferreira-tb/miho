@@ -1,3 +1,4 @@
+import process from 'node:process';
 import chalk from 'chalk';
 import prompts from 'prompts';
 import type { BumpArgs } from './index';
@@ -16,14 +17,19 @@ export async function promptUser(args: PromptArgs): Promise<number> {
 async function promptSingle(args: PromptArgs): Promise<number> {
   const { miho, packages, dryRun } = args;
   const name = packages[0].name;
-  const response = await prompts({
-    name: 'confirm',
-    type: 'toggle',
-    message: `Bump${name ? ` ${name}` : ''}?`,
-    initial: true,
-    active: 'yes',
-    inactive: 'no'
-  });
+  const response = await prompts(
+    {
+      name: 'confirm',
+      type: 'toggle',
+      message: `Bump${name ? ` ${name}` : ''}?`,
+      initial: true,
+      active: 'yes',
+      inactive: 'no'
+    },
+    {
+      onCancel: () => process.exit(1)
+    }
+  );
 
   if (dryRun) {
     logDryRun(miho, MihoJob.BUMP);
@@ -44,29 +50,34 @@ async function promptSingle(args: PromptArgs): Promise<number> {
 
 async function promptMultiple(options: PromptArgs): Promise<number> {
   const { miho, packages, dryRun } = options;
-  const response = await prompts([
+  const response = await prompts(
+    [
+      {
+        name: 'bumpMode',
+        type: 'select',
+        message: 'Select what to bump.',
+        choices: [
+          { title: 'all', value: 'all' },
+          { title: 'some', value: 'some' },
+          { title: 'none', value: 'none' }
+        ]
+      },
+      {
+        name: 'packageList',
+        type: (p) => (p === 'some' ? 'multiselect' : null),
+        message: 'Select the packages to bump.',
+        choices: packages.map((pkg) => {
+          return {
+            title: `${pkg.id}:  ${pkg.name ?? 'NO NAME'}`,
+            value: pkg.id
+          };
+        })
+      }
+    ],
     {
-      name: 'bumpMode',
-      type: 'select',
-      message: 'Select what to bump.',
-      choices: [
-        { title: 'all', value: 'all' },
-        { title: 'some', value: 'some' },
-        { title: 'none', value: 'none' }
-      ]
-    },
-    {
-      name: 'packageList',
-      type: (p) => (p === 'some' ? 'multiselect' : null),
-      message: 'Select the packages to bump.',
-      choices: packages.map((pkg) => {
-        return {
-          title: `${pkg.id}:  ${pkg.name ?? 'NO NAME'}`,
-          value: pkg.id
-        };
-      })
+      onCancel: () => process.exit(1)
     }
-  ]);
+  );
 
   if (dryRun) {
     logDryRun(miho, MihoJob.BUMP);
