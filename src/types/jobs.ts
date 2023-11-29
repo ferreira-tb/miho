@@ -3,9 +3,9 @@ import type { MihoJob } from '../utils';
 import type { MaybePromise } from './utils';
 
 export interface JobCallbackParams {
-  name: MihoJob;
-  miho: Miho;
   cwd: string;
+  miho: Miho;
+  name: MihoJob;
 }
 
 export interface JobFunctionOptions {

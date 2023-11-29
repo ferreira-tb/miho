@@ -1,8 +1,8 @@
-import { defineConfig, type ExternalOption } from 'rollup';
-import typescript from '@rollup/plugin-typescript';
 import dts from 'vite-plugin-dts';
+import { defineConfig } from 'rollup';
+import typescript from '@rollup/plugin-typescript';
 
-const externalDeps: ExternalOption = [
+const externalDeps = [
   /^node:/,
   /^yargs/,
   'c12',

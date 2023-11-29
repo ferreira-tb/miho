@@ -2,11 +2,11 @@ import { MihoPackage } from './package';
 import { FileType } from '../utils/enum';
 
 export class FileData {
-  readonly id: number;
-  readonly type: FileType;
-  readonly name: string | null;
-  readonly version: string;
-  readonly newVersion: string | null;
+  public readonly id: number;
+  public readonly name: string | null;
+  public readonly newVersion: string | null;
+  public readonly type: FileType;
+  public readonly version: string;
 
   constructor(id: number, pkg: MihoPackage) {
     this.id = id;

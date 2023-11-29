@@ -1,12 +1,8 @@
-import type { ExpectStatic } from 'vitest';
 import { getDefaultOptions } from './options';
-import { Miho, type FileData } from '../../src';
+import { type FileData, Miho } from '../../src';
 
-type MatchersObject = Parameters<ExpectStatic['extend']>[0];
-type MatcherState = ThisParameterType<MatchersObject[keyof MatchersObject]>;
-
-export function toHaveBeenBumped(testName: string, thisArg?: MatcherState) {
-  const fn = async function (oldPkgs: FileData[]) {
+export function toHaveBeenBumped(testName: string) {
+  async function fn(oldPkgs: FileData[]) {
     const options = getDefaultOptions(testName);
     const updatedMiho = await new Miho(options).search();
     const updatedPkgs = updatedMiho.getPackages();
@@ -24,7 +20,7 @@ export function toHaveBeenBumped(testName: string, thisArg?: MatcherState) {
         return `${bumpedAmount} package(s) bumped`;
       }
     };
-  };
+  }
 
-  return fn.bind(thisArg);
+  return fn;
 }

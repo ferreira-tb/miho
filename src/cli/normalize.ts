@@ -4,10 +4,10 @@ import {
 } from '../utils/package-manager';
 import type {
   CliArguments,
-  PickByValue,
-  MihoOptions,
   CommitOptions,
-  JobOptions
+  JobOptions,
+  MihoOptions,
+  PickByValue
 } from '../types';
 
 export async function normalize(
@@ -117,7 +117,7 @@ function createBooleanNormalizer<T>() {
     value: unknown
   ) {
     if (typeof value === 'boolean') {
-      options[key] = value as any;
+      options[key] = value as never;
     }
   };
 }
@@ -129,7 +129,7 @@ function createStringNormalizer<T>() {
     value: unknown
   ) {
     if (typeof value === 'string') {
-      options[key] = value as any;
+      options[key] = value as never;
     }
   };
 }

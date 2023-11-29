@@ -1,17 +1,17 @@
 import process from 'node:process';
 import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
-import semver from 'semver';
 import chalk from 'chalk';
-import { Miho } from '../index';
-import { loadConfig } from '../config';
+import semver from 'semver';
+import { hideBin } from 'yargs/helpers';
 import { bump } from './bump';
+import { Miho } from '../index';
 import { commit } from './commit';
+import { loadConfig } from '../config';
 import { normalize } from './normalize';
-import { LogLevel, MihoJob, logDryRun } from '../utils';
-import { createJobSkipChecker } from '../jobs';
 import { createOptions } from './options';
 import type { CliArguments } from '../types';
+import { createJobSkipChecker } from '../jobs';
+import { LogLevel, MihoJob, logDryRun } from '../utils';
 
 async function main() {
   const argv = await yargs(hideBin(process.argv))
@@ -25,7 +25,7 @@ async function main() {
   const config = await loadConfig(options);
 
   const miho = await new Miho(config).search();
-  let packagesBumped: number = 0;
+  let packagesBumped = 0;
 
   const dryRun = Boolean(config.jobs?.dryRun);
   const shouldSkipJob = createJobSkipChecker({
@@ -43,7 +43,7 @@ async function main() {
       return;
     }
 
-    packages.forEach((pkg) => {
+    for (const pkg of packages) {
       const name = pkg.name ? chalk.bold(pkg.name) : chalk.gray.dim('NO NAME');
       const version = chalk.blue.dim(pkg.version);
       const newVersion = pkg.newVersion
@@ -51,7 +51,7 @@ async function main() {
         : chalk.red.bold('INVALID VERSION');
 
       miho.l`[ ${chalk.bold(pkg.id)}: ${name} ]  ${version}  =>  ${newVersion}`;
-    });
+    }
 
     packages = packages.filter((pkg) => Boolean(semver.valid(pkg.newVersion)));
     if (packages.length === 0) {

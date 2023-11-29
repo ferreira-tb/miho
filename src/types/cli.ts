@@ -1,9 +1,9 @@
-import type { Options, Arguments } from 'yargs';
-import type { PackageOptions } from './index';
-import type { CommitOptions } from './git';
-import type { WithRequired } from './utils';
-import type { PackageManager } from '../utils/enum';
+import type { Arguments, Options } from 'yargs';
 import type { JobOptions } from './jobs';
+import type { CommitOptions } from './git';
+import type { PackageOptions } from './index';
+import type { PackageManager } from '../utils/enum';
+import type { WithPartial, WithRequired } from './utils';
 
 export interface CliCommitOptions extends Omit<CommitOptions, 'message'> {
   commit: string;
@@ -65,4 +65,4 @@ export type CliFlag = Record<
   WithRequired<Options, 'desc' | 'type'>
 >;
 
-export type CliArguments = Arguments<CliOptions>;
+export type CliArguments = Arguments<WithPartial<CliOptions, 'overrides'>>;

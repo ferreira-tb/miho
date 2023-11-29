@@ -1,8 +1,8 @@
 import type { FileData } from '../index';
-import type { CliOptions, CliCommitOptions } from './cli';
 import type { JobOptions } from './jobs';
-import type { CommitOptions } from './git';
 import type { MihoHooks } from './hooks';
+import type { CommitOptions } from './git';
+import type { CliCommitOptions, CliOptions } from './cli';
 
 export type * from './cli';
 export type * from './git';
@@ -39,6 +39,6 @@ export interface MihoOptions extends MihoInternalOptions {
   jobs?: Partial<JobOptions>;
 }
 
-export type MihoGetPackagesOptions = {
+export interface MihoGetPackagesOptions {
   filter?: (pkg: FileData) => boolean;
-};
+}

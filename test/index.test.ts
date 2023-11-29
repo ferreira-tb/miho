@@ -1,7 +1,7 @@
-import process from 'node:process';
 import path from 'node:path';
+import process from 'node:process';
 import { describe, expect, it } from 'vitest';
-import { detectPackageManager, PackageManager } from '../src';
+import { PackageManager, detectPackageManager } from '../src';
 
 describe('detectPackageManager', () => {
   const mockDir = path.join(process.cwd(), 'test');

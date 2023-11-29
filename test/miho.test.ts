@@ -1,20 +1,20 @@
 import fs from 'node:fs/promises';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { Miho, FileData } from '../src';
+import { FileData, Miho } from '../src';
 import {
-  createMockPackages,
-  getTempDir,
-  getDefaultOptions,
-  toHaveBeenBumped,
   MihoMock,
-  PackageJsonMock
+  PackageJsonMock,
+  createMockPackages,
+  getDefaultOptions,
+  getTempDir,
+  toHaveBeenBumped
 } from './utils';
 
 const testName = 'miho';
 beforeEach(() => createMockPackages(testName));
 
 expect.extend({
-  toHaveBeenBumped: toHaveBeenBumped(testName, this)
+  toHaveBeenBumped: toHaveBeenBumped(testName)
 });
 
 describe('Miho.prototype.search', () => {

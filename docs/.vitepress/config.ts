@@ -1,6 +1,6 @@
-import { defineConfig } from 'vitepress';
-import { presetUno } from 'unocss';
 import UnoCSS from 'unocss/vite';
+import { presetUno } from 'unocss';
+import { defineConfig } from 'vitepress';
 
 export default defineConfig({
   base: '/miho/',
@@ -9,10 +9,6 @@ export default defineConfig({
   lang: 'en',
   lastUpdated: true,
   cleanUrls: true,
-
-  sitemap: {
-    hostname: 'https://tb.dev.br/miho'
-  },
 
   vite: {
     plugins: [UnoCSS({ presets: [presetUno()] })]

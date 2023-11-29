@@ -1,30 +1,30 @@
-import process from 'node:process';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import detectIndent from 'detect-indent';
+import process from 'node:process';
 import chalk from 'chalk';
+import type { Path } from 'glob';
+import detectIndent from 'detect-indent';
 import semver, { type ReleaseType } from 'semver';
+import type { Miho } from '../miho';
 import { defaultConfig } from '../config';
 import { FileType, LogLevel } from '../utils';
-import type { Path } from 'glob';
 import type { MihoInternalOptions } from '../types';
-import type { Miho } from '../miho';
 
-type MihoPackageConstructor = {
-  readonly pathObj: Path;
-  readonly packageName: string | null;
-  readonly version: string;
+interface MihoPackageConstructor {
   readonly indent: string;
-};
+  readonly packageName: string | null;
+  readonly pathObj: Path;
+  readonly version: string;
+}
 
 export class MihoPackage {
   readonly #fullpath: string;
-  readonly #packageName: string | null;
-  readonly #version: string;
   readonly #indent: string;
-  #release: MihoInternalOptions['release'];
-  #preid: MihoInternalOptions['preid'];
-  #newVersion: string | null = null;
+  readonly #newVersion: string | null = null;
+  readonly #packageName: string | null;
+  readonly #preid: MihoInternalOptions['preid'];
+  readonly #release: MihoInternalOptions['release'];
+  readonly #version: string;
 
   private constructor(
     config: Partial<MihoInternalOptions>,
@@ -50,7 +50,10 @@ export class MihoPackage {
         case 'object': {
           this.#release = override.release ?? defaultConfig.release;
           this.#preid = override.preid ?? defaultConfig.preid;
+          break;
         }
+        default:
+          throw new TypeError('Invalid override type.');
       }
     }
 
@@ -88,6 +91,22 @@ export class MihoPackage {
     await fs.writeFile(this.#fullpath, jsonString, 'utf-8');
   }
 
+  get fullpath() {
+    return this.#fullpath;
+  }
+
+  get newVersion() {
+    return this.#newVersion;
+  }
+
+  get packageName() {
+    return this.#packageName;
+  }
+
+  get version() {
+    return this.#version;
+  }
+
   public static async create(
     miho: Miho,
     pathObj: Path,
@@ -101,7 +120,7 @@ export class MihoPackage {
     const file = await fs.readFile(fullpath, 'utf-8');
     let pkg: Record<string, unknown>;
     try {
-      pkg = JSON.parse(file);
+      pkg = JSON.parse(file) as Record<string, unknown>;
     } catch {
       return null;
     }
@@ -139,21 +158,5 @@ export class MihoPackage {
   static #isReleaseType(value: unknown): value is ReleaseType {
     if (typeof value !== 'string') return false;
     return semver.RELEASE_TYPES.some((r) => r === value);
-  }
-
-  get packageName() {
-    return this.#packageName;
-  }
-
-  get version() {
-    return this.#version;
-  }
-
-  get newVersion() {
-    return this.#newVersion;
-  }
-
-  get fullpath() {
-    return this.#fullpath;
   }
 }

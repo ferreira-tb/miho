@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
-import { MihoJob, logDryRun } from '../../utils';
 import type { BumpArgs } from './index';
+import { MihoJob, logDryRun } from '../../utils';
 
 type PromptArgs = Omit<BumpArgs, 'ask'>;
 
@@ -9,9 +9,8 @@ type PromptArgs = Omit<BumpArgs, 'ask'>;
 export async function promptUser(args: PromptArgs): Promise<number> {
   if (args.packages.length === 1) {
     return await promptSingle(args);
-  } else {
-    return await promptMultiple(args);
   }
+  return await promptMultiple(args);
 }
 
 async function promptSingle(args: PromptArgs): Promise<number> {
@@ -34,10 +33,10 @@ async function promptSingle(args: PromptArgs): Promise<number> {
     if (result) {
       miho.l`${chalk.green.bold('Package bumped.')}`;
       return 1;
-    } else {
-      const msg = `Could not bump package${name ? ` "${name}"` : ''}.`;
-      miho.l`${chalk.red.bold(msg)}`;
     }
+
+    const msg = `Could not bump package${name ? ` "${name}"` : ''}.`;
+    miho.l`${chalk.red.bold(msg)}`;
   }
 
   return 0;
@@ -74,7 +73,7 @@ async function promptMultiple(options: PromptArgs): Promise<number> {
     return 0;
   }
 
-  let packagesBumped: number = 0;
+  let packagesBumped = 0;
   switch (response.bumpMode) {
     case 'none':
       break;

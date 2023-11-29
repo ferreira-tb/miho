@@ -1,8 +1,8 @@
-import process from 'node:process';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import { PackageManager, FileType } from './enum';
+import process from 'node:process';
 import { regex } from './regex';
+import { FileType, PackageManager } from './enum';
 
 export interface DetectPackageManagerOptions {
   /**

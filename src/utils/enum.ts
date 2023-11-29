@@ -25,12 +25,12 @@ export const enum FileType {
  * @ignore
  */
 export const enum LogLevel {
+  /** Important log. Should always be displayed. */
+  HIGH = 2,
   /** Only displayed if `--verbose` flag is set. */
   LOW = 0,
   /** Not so important. Can be omitted if `--silent`. */
-  NORMAL = 1,
-  /** Important log. Should always be displayed. */
-  HIGH = 2
+  NORMAL = 1
 }
 
 export const enum MihoIgnore {

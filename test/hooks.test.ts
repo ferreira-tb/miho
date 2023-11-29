@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { Miho, FileData, type MihoEvent } from '../src';
+import { FileData, Miho, type MihoEvent } from '../src';
 import {
   createMockPackages,
   getDefaultOptions,
@@ -10,34 +10,34 @@ const testName = 'hooks';
 beforeEach(() => createMockPackages(testName));
 
 expect.extend({
-  toHaveBeenBumped: toHaveBeenBumped(testName, this)
+  toHaveBeenBumped: toHaveBeenBumped(testName)
 });
 
 describe('Miho.prototype.constructor', () => {
   const options = getDefaultOptions(testName);
 
   it('should resolve hooks', async () => {
-    const beforeEach = vi.fn(() => void 0);
-    const afterEach = vi.fn(() => void 0);
-    const beforeAll = vi.fn(() => void 0);
-    const afterAll = vi.fn(() => void 0);
+    const beforeEachCb = vi.fn(() => void 0);
+    const afterEachCb = vi.fn(() => void 0);
+    const beforeAllCb = vi.fn(() => void 0);
+    const afterAllCb = vi.fn(() => void 0);
 
     const miho = new Miho({
       hooks: {
-        beforeEach,
-        afterEach,
-        beforeAll,
-        afterAll
+        beforeEach: beforeEachCb,
+        afterEach: afterEachCb,
+        beforeAll: beforeAllCb,
+        afterAll: afterAllCb
       }
     });
 
     await miho.search(options);
     await miho.bumpAll();
 
-    expect(beforeEach).toHaveBeenCalled();
-    expect(afterEach).toHaveBeenCalled();
-    expect(beforeAll).toHaveBeenCalled();
-    expect(afterAll).toHaveBeenCalled();
+    expect(beforeEachCb).toHaveBeenCalled();
+    expect(afterEachCb).toHaveBeenCalled();
+    expect(beforeAllCb).toHaveBeenCalled();
+    expect(afterAllCb).toHaveBeenCalled();
   });
 });
 
@@ -86,7 +86,7 @@ describe('Miho.prototype.on [BUMP]', () => {
 
   it('should abort if default is prevented', async () => {
     const miho = new Miho(options);
-    const cb = vi.fn((e) => e.preventDefault());
+    const cb = vi.fn((e: MihoEvent<'beforeEach'>) => e.preventDefault());
 
     miho.on('beforeEach', cb);
     await miho.search();
@@ -258,64 +258,64 @@ describe('Miho.prototype.removeAllListeners', () => {
 
   it('should remove listeners from a hook', async () => {
     const miho = new Miho(options);
-    const beforeEach = vi.fn(() => void 0);
-    const afterEach = vi.fn(() => void 0);
+    const beforeEachCb = vi.fn(() => void 0);
+    const afterEachCb = vi.fn(() => void 0);
 
-    miho.on('beforeEach', beforeEach);
-    miho.on('afterEach', afterEach);
+    miho.on('beforeEach', beforeEachCb);
+    miho.on('afterEach', afterEachCb);
 
     miho.removeAllListeners('afterEach');
 
     await miho.search();
     await miho.bumpAll();
 
-    expect(beforeEach).toHaveBeenCalled();
-    expect(afterEach).not.toHaveBeenCalled();
+    expect(beforeEachCb).toHaveBeenCalled();
+    expect(afterEachCb).not.toHaveBeenCalled();
   });
 
   it('should remove listeners from some hooks', async () => {
     const miho = new Miho(options);
-    const beforeEach = vi.fn(() => void 0);
-    const afterEach = vi.fn(() => void 0);
-    const beforeAll = vi.fn(() => void 0);
-    const afterAll = vi.fn(() => void 0);
+    const beforeEachCb = vi.fn(() => void 0);
+    const afterEachCb = vi.fn(() => void 0);
+    const beforeAllCb = vi.fn(() => void 0);
+    const afterAllCb = vi.fn(() => void 0);
 
-    miho.on('beforeEach', beforeEach);
-    miho.on('afterEach', afterEach);
-    miho.on('beforeAll', beforeAll);
-    miho.on('afterAll', afterAll);
+    miho.on('beforeEach', beforeEachCb);
+    miho.on('afterEach', afterEachCb);
+    miho.on('beforeAll', beforeAllCb);
+    miho.on('afterAll', afterAllCb);
 
     miho.removeAllListeners(['beforeAll', 'afterAll']);
 
     await miho.search();
     await miho.bumpAll();
 
-    expect(beforeEach).toHaveBeenCalled();
-    expect(afterEach).toHaveBeenCalled();
-    expect(beforeAll).not.toHaveBeenCalled();
-    expect(afterAll).not.toHaveBeenCalled();
+    expect(beforeEachCb).toHaveBeenCalled();
+    expect(afterEachCb).toHaveBeenCalled();
+    expect(beforeAllCb).not.toHaveBeenCalled();
+    expect(afterAllCb).not.toHaveBeenCalled();
   });
 
   it('should remove all listeners', async () => {
     const miho = new Miho(options);
-    const beforeEach = vi.fn(() => void 0);
-    const afterEach = vi.fn(() => void 0);
-    const beforeAll = vi.fn(() => void 0);
-    const afterAll = vi.fn(() => void 0);
+    const beforeEachCb = vi.fn(() => void 0);
+    const afterEachCb = vi.fn(() => void 0);
+    const beforeAllCb = vi.fn(() => void 0);
+    const afterAllCb = vi.fn(() => void 0);
 
-    miho.on('beforeEach', beforeEach);
-    miho.on('afterEach', afterEach);
-    miho.on('beforeAll', beforeAll);
-    miho.on('afterAll', afterAll);
+    miho.on('beforeEach', beforeEachCb);
+    miho.on('afterEach', afterEachCb);
+    miho.on('beforeAll', beforeAllCb);
+    miho.on('afterAll', afterAllCb);
 
     miho.removeAllListeners();
 
     await miho.search();
     await miho.bumpAll();
 
-    expect(beforeEach).not.toHaveBeenCalled();
-    expect(afterEach).not.toHaveBeenCalled();
-    expect(beforeAll).not.toHaveBeenCalled();
-    expect(afterAll).not.toHaveBeenCalled();
+    expect(beforeEachCb).not.toHaveBeenCalled();
+    expect(afterEachCb).not.toHaveBeenCalled();
+    expect(beforeAllCb).not.toHaveBeenCalled();
+    expect(afterAllCb).not.toHaveBeenCalled();
   });
 });

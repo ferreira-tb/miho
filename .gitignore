@@ -15,6 +15,7 @@ coverage
 *.local
 .temp
 .vite
+.eslintcache
 **/.vitepress/temp
 **/.vitepress/cache
 

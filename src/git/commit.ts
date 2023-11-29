@@ -1,14 +1,20 @@
-import { execa, type Options as ExecaOptions } from 'execa';
-import { logDryRun, LogLevel, MihoJob } from '../utils';
+import { type Options as ExecaOptions, execa } from 'execa';
+import type { Miho } from '../miho';
 import type { MihoPackage } from '../files';
 import type { CommitOptions, Nullish, PartialNullish } from '../types';
-import { isNotBlank, CommitCommand, CommitDefaults } from '../utils';
-import type { Miho } from '../miho';
+import {
+  CommitCommand,
+  CommitDefaults,
+  LogLevel,
+  MihoJob,
+  isNotBlank,
+  logDryRun
+} from '../utils';
 
 interface Args {
-  miho: Miho;
-  execaOptions?: ExecaOptions;
   dryRun?: Nullish<boolean>;
+  execaOptions?: ExecaOptions;
+  miho: Miho;
 }
 
 interface CommitArgs extends Args {
@@ -55,9 +61,9 @@ export class GitCommit implements CommitOptions {
     if (this.all) {
       commandArgs.push(CommitCommand.ALL);
     } else {
-      packages.forEach((pkg) => {
+      for (const pkg of packages) {
         commandArgs.push(pkg.fullpath);
-      });
+      }
     }
 
     try {

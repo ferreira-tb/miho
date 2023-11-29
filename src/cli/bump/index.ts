@@ -1,21 +1,21 @@
 import chalk from 'chalk';
+import type { FileData, Miho } from 'src';
 import { promptUser } from './prompt';
-import type { Miho, FileData } from 'src';
 
 /**
  * @internal
  * @ignore
  */
 export interface BumpArgs {
-  miho: Miho;
-  packages: FileData[];
   ask: boolean;
   dryRun: boolean;
+  miho: Miho;
+  packages: FileData[];
 }
 
 export async function bump(args: BumpArgs): Promise<number> {
   const { miho, ask } = args;
-  let packagesBumped: number = 0;
+  let packagesBumped = 0;
 
   if (ask) {
     packagesBumped = await promptUser(args);
