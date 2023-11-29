@@ -7,7 +7,7 @@ Easily manage your package.json version.
 - Easy to use CLI commands.
 
 ```bash
-npm init miho@latest
+npm create miho@latest
 ```
 
 ## CLI

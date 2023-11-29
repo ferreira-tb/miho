@@ -14,9 +14,17 @@ Easily manage your package.json version.
 - Simple Javascript API.
 - Easy to use CLI commands.
 
-```bash
-npm init miho@latest
+::: code-group
+
+```bash [NPM]
+npm create miho@latest
 ```
+
+```bash [PNPM]
+pnpm create miho@latest
+```
+
+:::
 
 ## Config file
 

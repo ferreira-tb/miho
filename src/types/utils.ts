@@ -1,17 +1,41 @@
-export type MaybeArray<T> = T | T[];
-export type MaybePromise<T> = T | Promise<T>;
-export type Nullish<T> = T | null | undefined;
+// #region MaybeArray
+type MaybeArray<T> = T | T[];
+// #endregion MaybeArray
 
-export type PartialNullish<T> = {
+// #region MaybePromise
+type MaybePromise<T> = T | Promise<T>;
+// #endregion MaybePromise
+
+// #region Nullish
+type Nullish<T> = T | null | undefined;
+// #endregion Nullish
+
+// #region PartialNullish
+type PartialNullish<T> = {
   [P in keyof T]?: Nullish<T[P]>;
 };
+// #endregion PartialNullish
 
-export type PickByValue<T, V> = {
+// #region PickByValue
+type PickByValue<T, V> = {
   [P in keyof T as T[P] extends V ? P : never]: T[P];
 };
+// #endregion PickByValue
 
-export type WithPartial<T, K extends keyof T> = Omit<T, K> &
-  Partial<Pick<T, K>>;
+// #region WithPartial
+type WithPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+// #endregion WithPartial
 
-export type WithRequired<T, K extends keyof T> = Omit<T, K> &
-  Required<Pick<T, K>>;
+// #region WithRequired
+type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+// #endregion WithRequired
+
+export type {
+  MaybeArray,
+  MaybePromise,
+  Nullish,
+  PartialNullish,
+  PickByValue,
+  WithPartial,
+  WithRequired
+};
