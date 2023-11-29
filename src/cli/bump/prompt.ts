@@ -31,19 +31,21 @@ async function promptSingle(args: PromptArgs): Promise<number> {
     }
   );
 
+  if (!response.confirm) process.exit(1);
+
   if (dryRun) {
     logDryRun(miho, MihoJob.BUMP);
     return 0;
-  } else if (response.confirm === true) {
-    const result = await miho.bump(packages[0].id);
-    if (result) {
-      miho.l`${chalk.green.bold('Package bumped.')}`;
-      return 1;
-    }
-
-    const msg = `Could not bump package${name ? ` "${name}"` : ''}.`;
-    miho.l`${chalk.red.bold(msg)}`;
   }
+
+  const result = await miho.bump(packages[0].id);
+  if (result) {
+    miho.l`${chalk.green.bold('Package bumped.')}`;
+    return 1;
+  }
+
+  const msg = `Could not bump package${name ? ` "${name}"` : ''}.`;
+  miho.l`${chalk.red.bold(msg)}`;
 
   return 0;
 }
@@ -79,6 +81,10 @@ async function promptMultiple(options: PromptArgs): Promise<number> {
     }
   );
 
+  if (response.bumpMode === 'none') {
+    process.exit(1);
+  }
+
   if (dryRun) {
     logDryRun(miho, MihoJob.BUMP);
     return 0;
@@ -86,8 +92,6 @@ async function promptMultiple(options: PromptArgs): Promise<number> {
 
   let packagesBumped = 0;
   switch (response.bumpMode) {
-    case 'none':
-      break;
     case 'all': {
       packagesBumped = await miho.bumpAll();
       break;
