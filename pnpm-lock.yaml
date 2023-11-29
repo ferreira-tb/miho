@@ -75,7 +75,7 @@ devDependencies:
     version: 4.6.0
   taze:
     specifier: ^0.12.2
-    version: 0.12.2
+    version: 0.12.3
   ts-node:
     specifier: ^10.9.1
     version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
@@ -4263,8 +4263,8 @@ packages:
       mkdirp: 1.0.4
       yallist: 4.0.0
 
-  /taze@0.12.2:
-    resolution: {integrity: sha512-k6ZGUdqTcSmOQ181feZeizgPHEQLPlbK6ed8vCE3TJo+EWJ8DuS452b4uKa2rSdX4GlgdL8rBy7UpDMYrITOGg==}
+  /taze@0.12.3:
+    resolution: {integrity: sha512-kvc8+XM1nizAalJiVaFbVX0aLWuiCX4F/oW9ozt8otyy/ORejeqpe/6SIASmrY/T4CWsc1G3G4IfNg5KfGR11w==}
     hasBin: true
     dependencies:
       '@antfu/ni': 0.21.10
