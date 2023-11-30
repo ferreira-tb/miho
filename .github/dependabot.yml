@@ -4,6 +4,8 @@ updates:
     directory: '/'
     groups:
       non-major:
+        patterns:
+          - "*"
         update-types:
           - minor
           - patch
