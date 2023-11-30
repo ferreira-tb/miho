@@ -2,6 +2,14 @@ version: 2
 updates:
   - package-ecosystem: 'npm'
     directory: '/'
+    groups:
+      non-major:
+        update-types:
+          - minor
+          - patch
+      major:
+        update-types:
+          - major
     schedule:
       interval: 'daily'
 
