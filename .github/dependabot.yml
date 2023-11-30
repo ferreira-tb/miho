@@ -7,9 +7,6 @@ updates:
         update-types:
           - minor
           - patch
-      major:
-        update-types:
-          - major
     schedule:
       interval: 'daily'
 
