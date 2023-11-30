@@ -1,12 +1,17 @@
 {
   "name": "miho",
-  "version": "1.7.11",
+  "version": "1.7.13",
   "description": "Easily bump your package version",
   "license": "MIT",
   "type": "module",
   "private": false,
   "packageManager": "pnpm@8.11.0",
   "homepage": "https://tb.dev.br/miho/",
+  "author": {
+    "name": "Andrew Ferreira",
+    "email": "andrew.shien2@gmail.com",
+    "url": "https://github.com/ferreira-tb"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ferreira-tb/miho.git"
@@ -57,8 +62,8 @@
   "devDependencies": {
     "@octokit/core": "^5.0.2",
     "@rollup/plugin-typescript": "^11.1.5",
-    "@tb-dev/eslint-config": "^1.3.9",
-    "@types/node": "^20.10.0",
+    "@tb-dev/eslint-config": "^1.4.1",
+    "@types/node": "^20.10.1",
     "@types/prompts": "^2.4.9",
     "@types/semver": "^7.5.6",
     "@types/yargs": "^17.0.32",
@@ -69,7 +74,7 @@
     "lint-staged": "^15.1.0",
     "npm-run-all2": "^6.1.1",
     "prettier": "^3.1.0",
-    "rollup": "^4.6.0",
+    "rollup": "^4.6.1",
     "taze": "^0.13.0",
     "ts-node": "^10.9.1",
     "tslib": "^2.6.2",
