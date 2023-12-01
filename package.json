@@ -1,6 +1,6 @@
 {
   "name": "miho",
-  "version": "1.8.4",
+  "version": "2.0.0",
   "description": "Easily bump your package version",
   "license": "MIT",
   "type": "module",
