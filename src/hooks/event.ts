@@ -7,6 +7,7 @@ interface MihoEventInit<T extends keyof MihoHooks> {
   readonly miho: Miho;
 }
 
+/** @deprecated */
 export class MihoEvent<T extends keyof MihoHooks> extends Event {
   public readonly data: MihoEventData<T>;
   public readonly miho: Miho;

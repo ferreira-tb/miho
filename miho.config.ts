@@ -1,7 +1,8 @@
 import { Octokit } from '@octokit/core';
-import { defineConfig } from './src';
+import { PackageManager, defineConfig } from './src';
 
 export default defineConfig({
+  packageManager: PackageManager.PNPM,
   release: 'patch',
   verbose: true,
   commit: {
