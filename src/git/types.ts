@@ -1,7 +1,7 @@
 import type { Options as ExecaOptions } from 'execa';
 import type { Miho } from '../miho';
-import type { Nullish } from '../utils';
 import type { MihoPackage } from '../files';
+import type { MaybePromise, Nullish } from '../utils';
 
 interface BaseArgs {
   dryRun?: Nullish<boolean>;
@@ -27,10 +27,11 @@ export interface CommitOptions {
    */
   all: boolean;
   /**
+   * Commit message.
    * @default 'chore: bump version'
    * @see https://git-scm.com/docs/git-commit#Documentation/git-commit.txt--mltmsggt
    */
-  message: string;
+  message: string | ((miho: Miho) => MaybePromise<string | null>);
   /**
    * @default false
    * @see https://git-scm.com/docs/git-commit#Documentation/git-commit.txt---no-verify

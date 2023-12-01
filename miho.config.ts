@@ -8,7 +8,14 @@ export default defineConfig({
   commit: {
     all: true,
     push: true,
-    noVerify: false
+    noVerify: false,
+    message: (miho) => {
+      const pkg = miho.getPackageByName('miho');
+      if (!pkg) throw new Error('No miho in the Miho package!?');
+      const { version, newVersion } = pkg;
+      if (!newVersion) return null;
+      return `chore: bump Miho from ${version} to ${newVersion}`;
+    }
   },
   jobs: {
     build: true,

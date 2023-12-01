@@ -1,4 +1,5 @@
 import { execa } from 'execa';
+import type { Miho } from '../miho';
 import type {
   CommitArgs,
   CommitOptions,
@@ -9,22 +10,29 @@ import {
   CommitCommand,
   CommitDefaults,
   LogLevel,
+  type MaybePromise,
   MihoJob,
   type PartialNullish,
-  isNotBlank,
   logDryRun
 } from '../utils';
 
 export class GitCommit implements CommitOptions {
   public readonly all: boolean;
-  public readonly message: string;
+  public readonly message:
+    | string
+    | ((miho: Miho) => MaybePromise<string | null>);
   public readonly noVerify: boolean;
   public readonly push: boolean;
 
-  constructor(options: PartialNullish<CommitOptions> = {}) {
-    this.message = isNotBlank(options.message)
-      ? options.message
-      : CommitDefaults.DEFAULT_MESSAGE;
+  constructor(
+    private readonly miho: Miho,
+    options: PartialNullish<CommitOptions> = {}
+  ) {
+    if (typeof options.message === 'function') {
+      this.message = options.message.bind(miho);
+    } else {
+      this.message = options.message ?? CommitDefaults.DEFAULT_MESSAGE;
+    }
 
     this.all = options.all ?? false;
     this.noVerify = options.noVerify ?? false;
@@ -33,7 +41,8 @@ export class GitCommit implements CommitOptions {
 
   public async commit(args: CommitArgs) {
     const { miho, packages, execaOptions, dryRun } = args;
-    const commandArgs: string[] = [CommitCommand.MESSAGE, this.message];
+    const message = await this.#resolveMessage();
+    const commandArgs: string[] = [CommitCommand.MESSAGE, message];
 
     if (this.noVerify) {
       commandArgs.push(CommitCommand.NO_VERIFY);
@@ -82,5 +91,10 @@ export class GitCommit implements CommitOptions {
     const { miho, dryRun } = args;
     if (!dryRun) throw err;
     miho.l(LogLevel.LOW)`${err}`;
+  }
+
+  async #resolveMessage(): Promise<string> {
+    if (typeof this.message === 'string') return this.message;
+    return (await this.message(this.miho)) ?? CommitDefaults.DEFAULT_MESSAGE;
   }
 }

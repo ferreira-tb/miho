@@ -4,7 +4,7 @@ import type { CliCommitFunctionArgs } from './types';
 export async function commit(args: CliCommitFunctionArgs) {
   const { miho, config, packagesBumped } = args;
   if (
-    (typeof config.commit?.message === 'string' && packagesBumped > 0) ||
+    (Boolean(config.commit?.message) && packagesBumped > 0) ||
     config.commit?.all
   ) {
     miho.l(LogLevel.NORMAL)`Committing files...`;

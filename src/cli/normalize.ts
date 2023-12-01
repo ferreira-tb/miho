@@ -67,7 +67,6 @@ export async function normalize(
 
 function normalizeCommit(argv: CliArguments): Partial<CommitOptions> {
   const normalizeCommitBoolean = createBooleanNormalizer<CommitOptions>();
-  const normalizeCommitString = createStringNormalizer<CommitOptions>();
 
   const commit: Partial<CommitOptions> = {};
 
@@ -75,7 +74,9 @@ function normalizeCommit(argv: CliArguments): Partial<CommitOptions> {
   normalizeCommitBoolean(commit, 'noVerify', argv.noVerify);
   normalizeCommitBoolean(commit, 'push', argv.push);
 
-  normalizeCommitString(commit, 'message', argv.commit);
+  if (typeof argv.commit === 'string') {
+    commit.message = argv.commit;
+  }
 
   return commit;
 }

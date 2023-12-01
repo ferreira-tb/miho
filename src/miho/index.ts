@@ -38,7 +38,7 @@ export class Miho {
    */
   public readonly l = this.#createLogger();
   #config: Partial<MihoInternalOptions> = {};
-  #gitCommit: GitCommit = new GitCommit();
+  #gitCommit: GitCommit = new GitCommit(this);
   #id = 0;
   #jobs: Partial<JobOptions> = {};
   readonly #packages = new Map<number, MihoPackage>();
@@ -82,7 +82,6 @@ export class Miho {
     const pkg = this.#packages.get(id);
     if (pkg) {
       await pkg.bump();
-      this.#packages.delete(id);
       this.#updatedPackages.set(id, pkg);
     }
 
@@ -294,7 +293,7 @@ export class Miho {
   }
 
   #resolveCommitOptions(options: Partial<CommitOptions>) {
-    this.#gitCommit = new GitCommit({
+    this.#gitCommit = new GitCommit(this, {
       ...this.#gitCommit,
       ...options
     });
