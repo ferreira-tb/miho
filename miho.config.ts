@@ -6,8 +6,8 @@ export default defineConfig({
   release: 'patch',
   verbose: true,
   commit: {
-    all: false,
-    push: false,
+    all: true,
+    push: true,
     noVerify: false,
     message: (miho) => {
       const pkg = miho.getPackageByName('miho');
@@ -18,7 +18,6 @@ export default defineConfig({
     }
   },
   jobs: {
-    skip: ['build', 'publish'],
     build: true,
     publish: async () => {
       const { version } = await import('./package.json');
