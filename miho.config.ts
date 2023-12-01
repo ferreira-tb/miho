@@ -6,11 +6,19 @@ export default defineConfig({
   release: 'patch',
   verbose: true,
   commit: {
-    all: true,
-    push: true,
-    noVerify: false
+    all: false,
+    push: false,
+    noVerify: false,
+    message: (miho) => {
+      const pkg = miho.getPackageByName('miho');
+      if (!pkg) throw new Error('No miho in the Miho package!?');
+      const { version, newVersion } = pkg;
+      if (!newVersion) return null;
+      return `chore: bump Miho from ${version} to ${newVersion}`;
+    }
   },
   jobs: {
+    skip: ['build', 'publish'],
     build: true,
     publish: async () => {
       const { version } = await import('./package.json');

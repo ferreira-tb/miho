@@ -102,6 +102,10 @@ export class MihoPackage {
     return this.#packageName;
   }
 
+  get release() {
+    return this.#release;
+  }
+
   get version() {
     return this.#version;
   }
