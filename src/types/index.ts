@@ -33,6 +33,7 @@ export interface MihoOptions extends MihoInternalOptions {
 
   /**
    * @see https://tb.dev.br/miho/hooks
+   * @deprecated
    */
   hooks?: Partial<MihoHooks>;
 

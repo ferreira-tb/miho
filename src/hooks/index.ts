@@ -19,12 +19,16 @@ export class MihoEmitter {
     return event.defaultPrevented;
   }
 
+  /** @deprecated */
   public off<T extends keyof MihoHooks>(hookName: T, listener: MihoHooks[T]) {
     this.#hookListenerMap.remove(hookName, listener);
     return this;
   }
 
-  /** Adds the listener function to the end of the listeners array for the hook named `hookName`. */
+  /**
+   * Adds the listener function to the end of the listeners array for the hook named `hookName`.
+   * @deprecated
+   */
   public on<T extends keyof MihoHooks>(hookName: T, listener: MihoHooks[T]) {
     this.#hookListenerMap.set(hookName, listener);
     return this;
@@ -33,6 +37,7 @@ export class MihoEmitter {
   /**
    * Removes all listeners associated with one or more hooks.
    * If no hook name is specified, listeners from all hooks will be removed.
+   * @deprecated
    */
   public removeAllListeners<T extends keyof MihoHooks>(
     hookName?: T | T[]
