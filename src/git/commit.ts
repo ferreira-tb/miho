@@ -1,32 +1,19 @@
-import { type Options as ExecaOptions, execa } from 'execa';
-import type { Miho } from '../miho';
-import type { MihoPackage } from '../files';
-import type { CommitOptions, Nullish, PartialNullish } from '../types';
+import { execa } from 'execa';
+import type {
+  CommitArgs,
+  CommitOptions,
+  HandleExceptionArgs,
+  PushCommitArgs
+} from './types';
 import {
   CommitCommand,
   CommitDefaults,
   LogLevel,
   MihoJob,
+  type PartialNullish,
   isNotBlank,
   logDryRun
 } from '../utils';
-
-interface Args {
-  dryRun?: Nullish<boolean>;
-  execaOptions?: ExecaOptions;
-  miho: Miho;
-}
-
-interface CommitArgs extends Args {
-  packages: MihoPackage[];
-}
-
-interface PushCommitArgs extends Args {
-  /** @see https://git-scm.com/docs/git-push#Documentation/git-push.txt---dry-run */
-  dryRun?: Nullish<boolean>;
-}
-
-type HandleExceptionArgs = Required<Omit<Args, 'execaOptions'>>;
 
 export class GitCommit implements CommitOptions {
   public readonly all: boolean;

@@ -1,13 +1,5 @@
-import { LogLevel } from '../utils';
-import type { Miho } from '../miho';
-import type { MihoOptions } from '../types';
-
-interface CliCommitFunctionArgs {
-  config: Partial<MihoOptions>;
-  dryRun: boolean;
-  miho: Miho;
-  packagesBumped: number;
-}
+import { LogLevel } from '../../utils';
+import type { CliCommitFunctionArgs } from './types';
 
 export async function commit(args: CliCommitFunctionArgs) {
   const { miho, config, packagesBumped } = args;
@@ -17,5 +9,6 @@ export async function commit(args: CliCommitFunctionArgs) {
   ) {
     miho.l(LogLevel.NORMAL)`Committing files...`;
     await miho.commit({ dryRun: args.dryRun });
+    miho.l(LogLevel.NORMAL)`Files committed.`;
   }
 }

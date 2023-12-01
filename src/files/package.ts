@@ -5,10 +5,9 @@ import chalk from 'chalk';
 import type { Path } from 'glob';
 import detectIndent from 'detect-indent';
 import semver, { type ReleaseType } from 'semver';
-import type { Miho } from '../miho';
 import { defaultConfig } from '../config';
 import { FileType, LogLevel } from '../utils';
-import type { MihoInternalOptions } from '../types';
+import type { Miho, MihoInternalOptions } from '../miho';
 
 interface MihoPackageConstructor {
   readonly indent: string;

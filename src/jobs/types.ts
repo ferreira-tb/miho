@@ -1,6 +1,8 @@
 import type { Miho } from '../miho';
-import type { MihoJob } from '../utils';
-import type { MaybePromise } from './utils';
+import type { MaybePromise } from '../utils/types';
+import type { MihoJob, PartialNullish } from '../utils';
+
+export type JobSkipCheckerArgs = Omit<PartialNullish<JobOptions>, 'dryRun'>;
 
 export interface JobCallbackParams {
   cwd: string;

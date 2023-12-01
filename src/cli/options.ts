@@ -1,4 +1,4 @@
-import type { CliFlag } from '../types';
+import type { CliFlag } from './types';
 
 export function createOptions() {
   const options: CliFlag = {

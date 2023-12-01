@@ -1,6 +1,6 @@
 {
   "name": "miho",
-  "version": "1.7.14",
+  "version": "1.7.15",
   "description": "Easily bump your package version",
   "license": "MIT",
   "type": "module",
@@ -62,7 +62,7 @@
   "devDependencies": {
     "@octokit/core": "^5.0.2",
     "@rollup/plugin-typescript": "^11.1.5",
-    "@tb-dev/eslint-config": "^1.4.1",
+    "@tb-dev/eslint-config": "^1.4.3",
     "@types/node": "^20.10.1",
     "@types/prompts": "^2.4.9",
     "@types/semver": "^7.5.6",

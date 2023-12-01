@@ -14,6 +14,10 @@ export default defineConfig({
     plugins: [UnoCSS({ presets: [presetUno()] })]
   },
 
+  sitemap: {
+    hostname: 'https://tb.dev.br/miho'
+  },
+
   head: [
     [
       'meta',
@@ -35,7 +39,6 @@ export default defineConfig({
     sidebar: [
       { text: 'CLI', link: '/cli/' },
       { text: 'Javascript API', link: '/javascript/' },
-      { text: 'Hooks', link: '/hooks/' },
       { text: 'Typescript', link: '/typescript/' }
     ],
 

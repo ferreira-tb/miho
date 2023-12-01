@@ -8,31 +8,31 @@ outline: [2, 3]
 
 ### MaybeArray\<T>
 
-<<< ../../src/types/utils.ts#MaybeArray
+<<< ../../src/utils/types.ts#MaybeArray
 
 Something may or may not be an array.
 
 ### MaybePromise\<T>
 
-<<< ../../src/types/utils.ts#MaybePromise
+<<< ../../src/utils/types.ts#MaybePromise
 
 Something may or may not be a promise.
 
 ### Nullish\<T>
 
-<<< ../../src/types/utils.ts#Nullish
+<<< ../../src/utils/types.ts#Nullish
 
 Something may be nullish.
 
 ### PartialNullish\<T>
 
-<<< ../../src/types/utils.ts#PartialNullish
+<<< ../../src/utils/types.ts#PartialNullish
 
 Constructs a type where all properties of `T` may be nullish.
 
 ### PickByValue\<T, V>
 
-<<< ../../src/types/utils.ts#PickByValue
+<<< ../../src/utils/types.ts#PickByValue
 
 ```ts
 interface Movie {
@@ -53,12 +53,12 @@ Like [`Pick`](https://www.typescriptlang.org/docs/handbook/utility-types.html#pi
 
 ### WithPartial\<T, K>
 
-<<< ../../src/types/utils.ts#WithPartial
+<<< ../../src/utils/types.ts#WithPartial
 
 Constructs a type consisting of some properties of `T` set to partial.
 
 ### WithRequired\<T, K>
 
-<<< ../../src/types/utils.ts#WithRequired
+<<< ../../src/utils/types.ts#WithRequired
 
 Constructs a type consisting of some properties of `T` set to required.

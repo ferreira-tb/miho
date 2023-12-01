@@ -1,7 +1,7 @@
 import process from 'node:process';
 import { loadConfig as load } from 'c12';
 import { PackageManager } from './utils';
-import type { MihoOptions } from './types';
+import type { MihoOptions } from './miho';
 
 /**
  * @internal

@@ -23,7 +23,7 @@ const miho = new Miho({
   overrides: {
     baz: 'major',
     qux: {
-      release: 'preminor',
+      release: 'prerelease',
       preid: 'beta'
     }
   }
@@ -36,13 +36,6 @@ await miho.search();
 // which can eventually be used to bump them individually.
 console.log(miho.getPackages());
 
-// Register hooks.
-miho.on('beforeEach', async (event) => {
-  const { miho, data } = event;
-  const result = await doSomethingAsync(miho, data);
-  if (!result) event.preventDefault();
-});
-
 // Bump a package by its id.
 await miho.bump(id);
 
@@ -52,7 +45,7 @@ await miho.bumpAll();
 
 ## Options
 
-Most of these options are already explained in the [CLI](../cli/index.md) section, so it's recommended that you take a look.
+Most of these options are already explained in the [CLI](../cli/index.md) section, so it's recommended that you take a look there.
 
 ```ts
 interface PackageOptions {
@@ -68,7 +61,6 @@ interface MihoOptions extends PackageOptions {
   };
   exclude?: string | string[];
   filter?: (string | RegExp)[];
-  hooks?: Partial<MihoHooks>;
   include?: string | string[];
   jobs?: {
     build?: boolean | ((job: JobCallbackParams) => MaybePromise<void>);
@@ -88,10 +80,6 @@ interface MihoOptions extends PackageOptions {
   verbose?: boolean;
 }
 ```
-
-::: tip Hooks
-Check the [Hooks](../hooks/index.md) section for more details on hooks.
-:::
 
 ## Methods
 
@@ -179,27 +167,7 @@ interface Miho {
 
 Returns information on the packages found by Miho.
 
-The `FileData` objects are just a snapshot of the packages at the time they were found. Modifying any property will have no effect on them.
-
-### off
-
-```ts
-interface Miho {
-  off<T extends keyof MihoHooks>(hookName: T, listener: MihoHooks[T]): Miho;
-}
-```
-
-Its behavior is similar to Node's [`off`](https://nodejs.org/dist/latest/docs/api/events.html#emitterremovelistenereventname-listener). However, Miho is not a [`EventEmitter`](https://nodejs.org/dist/latest/docs/api/events.html#class-eventemitter).
-
-### on
-
-```ts
-interface Miho {
-  on<T extends keyof MihoHooks>(hookName: T, listener: MihoHooks[T]): Miho;
-}
-```
-
-Its behavior is similar to Node's [`on`](https://nodejs.org/dist/latest/docs/api/events.html#emitteroneventname-listener). However, Miho is not a [`EventEmitter`](https://nodejs.org/dist/latest/docs/api/events.html#class-eventemitter).
+The `FileData` objects are just a snapshot of the packages at the time. Modifying any property will have no effect on them.
 
 ### publish
 
@@ -210,18 +178,6 @@ interface Miho {
 ```
 
 Publish the package. See [`--publish`](../cli/index.md#publish).
-
-### removeAllListeners
-
-```ts
-interface Miho {
-  removeAllListeners<T extends keyof MihoHooks>(hookName?: T | T[]): Miho;
-}
-```
-
-Removes all listeners associated with one or more hooks.
-
-If no hook name is specified, listeners from all hooks will be removed.
 
 ### search
 
@@ -285,20 +241,9 @@ Read [config file](../index.md#config-file) for details.
 
 ### detectPackageManager
 
-```ts
-interface DetectPackageManagerOptions {
-  /**
-   * Current working directory.
-   * @default process.cwd()
-   */
-  cwd?: string;
-  /**
-   * Default package manager.
-   * @default 'npm'
-   */
-  default?: PackageManager;
-}
+<<< ../../src/utils/package-manager.ts#DetectPackageManagerOptions
 
+```ts
 declare function detectPackageManager(
   options?: DetectPackageManagerOptions
 ): Promise<PackageManager>;

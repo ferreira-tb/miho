@@ -315,6 +315,10 @@ After the `build` job, run the `test` script defined in the root `package.json`.
 
 You can provide a custom function using the [config file](../index.md#config-file).
 
+::: tip Husky
+If using Miho to test before commiting, maybe you would be better off using tools like [Husky](https://typicode.github.io/husky/), as Miho itself does.
+:::
+
 ### `--verbose`
 
 | Alias |    Usage    |
