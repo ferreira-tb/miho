@@ -2,15 +2,25 @@ import fs from 'node:fs/promises';
 import process from 'node:process';
 import { type Path, glob } from 'glob';
 import { type Options as ExecaOptions, execa } from 'execa';
-import { GitCommit } from './git';
-import { defaultConfig } from './config';
-import { createJobSkipChecker } from './jobs';
-import { FileData, MihoPackage } from './files';
-import { MihoEmitter, MihoEvent } from './hooks';
+import { defaultConfig } from '../config';
+import { FileData, MihoPackage } from '../files';
+import { type CommitOptions, GitCommit } from '../git';
 import {
   detectPackageManager,
   isPackageManager
-} from './utils/package-manager';
+} from '../utils/package-manager';
+import type {
+  MihoCommitArgs,
+  MihoGetPackagesOptions,
+  MihoInternalOptions,
+  MihoOptions
+} from './types';
+import {
+  type JobFunction,
+  type JobFunctionOptions,
+  type JobOptions,
+  createJobSkipChecker
+} from '../jobs';
 import {
   FileType,
   LogLevel,
@@ -19,19 +29,9 @@ import {
   PackageManager,
   isNotBlank,
   isTemplateArray
-} from './utils';
-import type {
-  CommitOptions,
-  JobFunction,
-  JobFunctionOptions,
-  JobOptions,
-  MihoCommitArgs,
-  MihoGetPackagesOptions,
-  MihoInternalOptions,
-  MihoOptions
-} from './types';
+} from '../utils';
 
-export class Miho extends MihoEmitter {
+export class Miho {
   /**
    * @internal
    * @ignore
@@ -46,7 +46,6 @@ export class Miho extends MihoEmitter {
   readonly #updatedPackages = new Map<number, MihoPackage>();
 
   constructor(options: Partial<MihoOptions> = {}) {
-    super();
     this.#resolveMihoOptions(options);
   }
 
@@ -82,25 +81,9 @@ export class Miho extends MihoEmitter {
 
     const pkg = this.#packages.get(id);
     if (pkg) {
-      const defaultPrevented = await this.executeHook(
-        new MihoEvent('beforeEach', {
-          miho: this,
-          data: new FileData(id, pkg),
-          cancelable: true
-        })
-      );
-      if (defaultPrevented) return false;
-
       await pkg.bump();
       this.#packages.delete(id);
       this.#updatedPackages.set(id, pkg);
-
-      await this.executeHook(
-        new MihoEvent('afterEach', {
-          miho: this,
-          data: new FileData(id, pkg)
-        })
-      );
     }
 
     return true;
@@ -114,25 +97,8 @@ export class Miho extends MihoEmitter {
     const shouldSkip = createJobSkipChecker(this.#jobs);
     if (shouldSkip(MihoJob.BUMP)) return 0;
 
-    const packages = this.getPackages();
-    const defaultPrevented = await this.executeHook(
-      new MihoEvent('beforeAll', {
-        miho: this,
-        data: packages,
-        cancelable: true
-      })
-    );
-    if (defaultPrevented) return 0;
-
     const results = await Promise.all(
       Array.from(this.#packages.keys()).map(this.bump.bind(this))
-    );
-
-    await this.executeHook(
-      new MihoEvent('afterAll', {
-        miho: this,
-        data: packages
-      })
     );
 
     return results.filter(Boolean).length;
@@ -150,15 +116,8 @@ export class Miho extends MihoEmitter {
       throw new Error('Nothing to commit.');
     }
 
-    const execaOptions = this.#createExecaOptions();
-
     const entries = Array.from(this.#updatedPackages.entries());
-    const data = entries.map(([id, pkg]) => new FileData(id, pkg));
-
-    const commitPrevented = await this.executeHook(
-      new MihoEvent('beforeCommit', { miho: this, data, cancelable: true })
-    );
-    if (commitPrevented) return;
+    const execaOptions = this.#createExecaOptions();
 
     await this.#gitCommit.commit({
       miho: this,
@@ -169,17 +128,8 @@ export class Miho extends MihoEmitter {
 
     this.#updatedPackages.clear();
 
-    await this.executeHook(new MihoEvent('afterCommit', { miho: this, data }));
-
     if (this.#gitCommit.push) {
-      const pushPrevented = await this.executeHook(
-        new MihoEvent('beforePush', { miho: this, data, cancelable: true })
-      );
-      if (pushPrevented) return;
-
       await this.#gitCommit.pushCommit({ miho: this, execaOptions, dryRun });
-
-      await this.executeHook(new MihoEvent('afterPush', { miho: this, data }));
     }
   }
 
@@ -281,7 +231,12 @@ export class Miho extends MihoEmitter {
   }
 
   #createExecaOptions(cwd: string = process.cwd()) {
-    let options: ExecaOptions = { cwd };
+    let options: ExecaOptions = {
+      cwd,
+      cleanup: true,
+      reject: true
+    };
+
     if (this.#config.verbose) {
       options = { ...options, stdio: 'inherit' };
     }
@@ -350,10 +305,9 @@ export class Miho extends MihoEmitter {
   }
 
   #resolveMihoOptions(options: Partial<MihoOptions>) {
-    const { hooks, commit, jobs, ...config } = options;
+    const { commit, jobs, ...config } = options;
     this.#config = { ...this.#config, ...config };
     if (commit) this.#resolveCommitOptions(commit);
-    if (hooks) this.resolveListeners(hooks);
     if (jobs) this.#resolveJobOptions(jobs);
   }
 
@@ -391,3 +345,5 @@ export class Miho extends MihoEmitter {
     }
   }
 }
+
+export type { MihoInternalOptions, MihoOptions } from './types';

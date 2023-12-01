@@ -38,8 +38,8 @@ devDependencies:
     specifier: ^11.1.5
     version: 11.1.5(rollup@4.6.1)(tslib@2.6.2)(typescript@5.3.2)
   '@tb-dev/eslint-config':
-    specifier: ^1.4.1
-    version: 1.4.1(eslint@8.54.0)(typescript@5.3.2)
+    specifier: ^1.4.3
+    version: 1.4.3(eslint@8.54.0)(typescript@5.3.2)
   '@types/node':
     specifier: ^20.10.1
     version: 20.10.1
@@ -1444,8 +1444,8 @@ packages:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
     dev: true
 
-  /@tb-dev/eslint-config@1.4.1(eslint@8.54.0)(typescript@5.3.2):
-    resolution: {integrity: sha512-KQHoHVOZWNNnrfMDQtZ1LxpoIEvmhsrr6foeC+jKkDqMqiw9HZB2BeGYgaTzgPCSrS4RRiHbCQ/wfiuyCZBUng==}
+  /@tb-dev/eslint-config@1.4.3(eslint@8.54.0)(typescript@5.3.2):
+    resolution: {integrity: sha512-Em9gqhYZVF78X4EOQZYWUspEqMlwWTvaMFVrWWansD0OU9/qM15+c44i1XhHU2OfJkBoZPrcMr41cx6nnYwKMQ==}
     peerDependencies:
       eslint: ^8.0.0
     dependencies:

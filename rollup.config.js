@@ -14,6 +14,9 @@ const externalDeps = [
   'semver'
 ];
 
+/**
+ * @see https://github.com/microsoft/rushstack/issues/3875#issuecomment-1746164303
+ */
 export default defineConfig([
   {
     plugins: [typescript(), dts({ rollupTypes: true })],

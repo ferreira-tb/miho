@@ -1,10 +1,8 @@
 import process from 'node:process';
 import chalk from 'chalk';
 import prompts from 'prompts';
-import type { BumpArgs } from './index';
+import type { PromptArgs } from './types';
 import { MihoJob, logDryRun } from '../../utils';
-
-type PromptArgs = Omit<BumpArgs, 'ask'>;
 
 /** @internal */
 export async function promptUser(args: PromptArgs): Promise<number> {

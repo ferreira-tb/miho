@@ -9,7 +9,7 @@ import { commit } from './commit';
 import { loadConfig } from '../config';
 import { normalize } from './normalize';
 import { createOptions } from './options';
-import type { CliArguments } from '../types';
+import type { CliArguments } from './types';
 import { createJobSkipChecker } from '../jobs';
 import { LogLevel, MihoJob, logDryRun } from '../utils';
 

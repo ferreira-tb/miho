@@ -1,14 +1,12 @@
+import type { JobOptions } from '../jobs';
+import type { MihoOptions } from '../miho';
+import type { CommitOptions } from '../git';
+import type { CliArguments } from './types';
+import type { PickByValue } from '../utils';
 import {
   detectPackageManager,
   isPackageManager
 } from '../utils/package-manager';
-import type {
-  CliArguments,
-  CommitOptions,
-  JobOptions,
-  MihoOptions,
-  PickByValue
-} from '../types';
 
 export async function normalize(
   argv: CliArguments

@@ -4,7 +4,8 @@ import process from 'node:process';
 import { regex } from './regex';
 import { FileType, PackageManager } from './enum';
 
-export interface DetectPackageManagerOptions {
+// #region DetectPackageManagerOptions
+interface DetectPackageManagerOptions {
   /**
    * Current working directory.
    * @default process.cwd()
@@ -16,11 +17,12 @@ export interface DetectPackageManagerOptions {
    */
   default?: PackageManager;
 }
+// #endregion DetectPackageManagerOptions
 
 const managerName: Record<PackageManager, RegExp> = {
-  npm: new RegExp(`^${PackageManager.NPM}`),
-  pnpm: new RegExp(`^${PackageManager.PNPM}`),
-  yarn: new RegExp(`^${PackageManager.YARN}`)
+  npm: regex.npmPrefix,
+  pnpm: regex.pnpmPrefix,
+  yarn: regex.yarnPrefix
 };
 
 const lockfile: Record<PackageManager, RegExp> = {
@@ -70,3 +72,5 @@ export function isPackageManager(value: unknown): value is PackageManager {
   if (typeof value !== 'string' || value.length === 0) return false;
   return Object.values(PackageManager).some((pm) => pm === value);
 }
+
+export type { DetectPackageManagerOptions };
