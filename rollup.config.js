@@ -15,6 +15,7 @@ const externalDeps = [
 ];
 
 /**
+ * @see https://github.com/qmhc/vite-plugin-dts#internal-error-occurs-when-using-rolluptypes-true
  * @see https://github.com/microsoft/rushstack/issues/3875#issuecomment-1746164303
  */
 export default defineConfig([
