@@ -21,7 +21,11 @@ npm create miho@latest
 ```
 
 ```bash [PNPM]
-pnpm create miho@latest
+pnpm create miho
+```
+
+```bash [YARN]
+yarn create miho
 ```
 
 :::
