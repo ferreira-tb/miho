@@ -1,3 +1,11 @@
+// #region ExtractPartial
+type ExtractPartial<T, K extends keyof T> = Partial<T>[K];
+// #endregion ExtractPartial
+
+// #region ExtractRequired
+type ExtractRequired<T, K extends keyof T> = Required<T>[K];
+// #endregion ExtractRequired
+
 // #region MaybeArray
 type MaybeArray<T> = T | T[];
 // #endregion MaybeArray
@@ -22,6 +30,14 @@ type PickByValue<T, V> = {
 };
 // #endregion PickByValue
 
+// #region PickPartial
+type PickPartial<T, K extends keyof T> = Pick<Partial<T>, K>;
+// #endregion PickPartial
+
+// #region PickRequired
+type PickRequired<T, K extends keyof T> = Pick<Required<T>, K>;
+// #endregion PickRequired
+
 // #region WithPartial
 type WithPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 // #endregion WithPartial
@@ -31,11 +47,15 @@ type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 // #endregion WithRequired
 
 export type {
+  ExtractPartial,
+  ExtractRequired,
   MaybeArray,
   MaybePromise,
   Nullish,
   PartialNullish,
   PickByValue,
+  PickPartial,
+  PickRequired,
   WithPartial,
   WithRequired
 };
