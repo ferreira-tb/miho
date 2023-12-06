@@ -6,6 +6,14 @@ outline: [2, 3]
 
 ## Utility Types
 
+### ExtractPartial\<T, K>
+
+<<< ../../src/utils/types.ts#ExtractPartial
+
+### ExtractRequired\<T, K>
+
+<<< ../../src/utils/types.ts#ExtractRequired
+
 ### MaybeArray\<T>
 
 <<< ../../src/utils/types.ts#MaybeArray
@@ -50,6 +58,18 @@ const movie: MovieWithoutStars = {
 ```
 
 Like [`Pick`](https://www.typescriptlang.org/docs/handbook/utility-types.html#picktype-keys), but constructs the type based on the values.
+
+### PickPartial<T, K>
+
+<<< ../../src/utils/types.ts#PickPartial
+
+Constructs a type by picking the set of properties `K` from a [`Partial`](https://www.typescriptlang.org/docs/handbook/utility-types.html#partialtype) version of `T`.
+
+### PickRequired<T, K>
+
+<<< ../../src/utils/types.ts#PickRequired
+
+Constructs a type by picking the set of properties `K` from a [`Required`](https://www.typescriptlang.org/docs/handbook/utility-types.html#requiredtype) version of `T`.
 
 ### WithPartial\<T, K>
 
