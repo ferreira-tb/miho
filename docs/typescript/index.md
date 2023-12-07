@@ -7,7 +7,7 @@ outline: [2, 3]
 ## Utility Types
 
 ::: danger
-Utility types are deprecated. They will move to `@tb-dev/utility-types` in the next major release.
+Utility types are deprecated. They will move to [`@tb-dev/utility-types`](https://tb.dev.br/utility-types) in the next major release.
 :::
 
 ### ExtractPartial\<T, K>
