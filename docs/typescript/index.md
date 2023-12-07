@@ -6,6 +6,10 @@ outline: [2, 3]
 
 ## Utility Types
 
+::: danger
+Utility types are deprecated. They will move to `@tb-dev/utility-types` in the next major release.
+:::
+
 ### ExtractPartial\<T, K>
 
 <<< ../../src/utils/types.ts#ExtractPartial
