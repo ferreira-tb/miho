@@ -1,6 +1,6 @@
 {
   "name": "miho",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Easily bump your package version",
   "license": "MIT",
   "type": "module",
@@ -62,14 +62,14 @@
   "devDependencies": {
     "@octokit/core": "^5.0.2",
     "@rollup/plugin-typescript": "^11.1.5",
-    "@tb-dev/eslint-config": "^1.4.4",
+    "@tb-dev/eslint-config": "^1.4.6",
     "@types/node": "^20.10.4",
     "@types/prompts": "^2.4.9",
     "@types/semver": "^7.5.6",
     "@types/yargs": "^17.0.32",
     "@vitest/coverage-istanbul": "1.0.4",
     "@vitest/ui": "1.0.4",
-    "eslint": "^8.55.0",
+    "eslint": "^8.56.0",
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",
     "npm-run-all2": "^6.1.1",
@@ -79,14 +79,14 @@
     "ts-node": "^10.9.2",
     "tslib": "^2.6.2",
     "typedoc": "^0.25.4",
-    "typedoc-plugin-mdn-links": "^3.1.7",
+    "typedoc-plugin-mdn-links": "^3.1.8",
     "typescript": "5.3.3",
     "unocss": "^0.58.0",
-    "vite": "^5.0.8",
+    "vite": "^5.0.10",
     "vite-plugin-dts": "^3.6.4",
-    "vitepress": "1.0.0-rc.31",
+    "vitepress": "1.0.0-rc.32",
     "vitest": "1.0.4",
-    "vue": "^3.3.11"
+    "vue": "^3.3.12"
   },
   "bin": {
     "miho": "bin/miho.mjs"
