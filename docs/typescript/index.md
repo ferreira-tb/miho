@@ -6,7 +6,7 @@ outline: [2, 3]
 
 ## Utility Types
 
-::: danger
+::: warning
 Utility types are deprecated. They will move to [`@tb-dev/utility-types`](https://tb.dev.br/utility-types) in the next major release.
 :::
 
