@@ -1,13 +1,12 @@
 # Miho
 
-Easily manage your package.json version.
+Easily manage your project version.
 
-- Bump, build, test, commit and publish.
-- Simple Javascript API.
+- Bump, build, commit and publish.
 - Easy to use CLI commands.
 
 ```bash
-npm create miho@latest
+cargo install miho
 ```
 
 ## CLI
@@ -33,7 +32,6 @@ npm create miho@latest
 |       [`--recursive`](https://tb.dev.br/miho/cli#recursive)       | `-r`    | Recursively bumps all packages in the monorepo.                |
 |          [`--silent`](https://tb.dev.br/miho/cli#silent)          | none    | Omit unimportant logs.                                         |
 |            [`--skip`](https://tb.dev.br/miho/cli#skip)            | `-s`    | Skip one or more jobs.                                         |
-|            [`--test`](https://tb.dev.br/miho/cli#test)            | `-t`    | Run tests.                                                     |
 |         [`--verbose`](https://tb.dev.br/miho/cli#verbose)         | none    | Log additional info. May be useful for debugging.              |
 |         [`--version`](https://tb.dev.br/miho/cli#version)         | `-v`    | Show current version.                                          |
 

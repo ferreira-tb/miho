@@ -1,12 +1,10 @@
 {
   "recommendations": [
-    "vivaxy.vscode-conventional-commits",
-    "dbaeumer.vscode-eslint",
-    "donjayamanne.githistory",
     "github.vscode-github-actions",
     "github.vscode-pull-request-github",
-    "esbenp.prettier-vscode",
+    "rust-lang.rust-analyzer",
     "vscode-icons-team.vscode-icons",
-    "redhat.vscode-yaml"
+    "tamasfe.even-better-toml",
+    "esbenp.prettier-vscode"
   ]
 }

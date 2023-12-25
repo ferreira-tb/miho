@@ -1,15 +1,5 @@
 {
-  "vsicons.associations.files": [
-    {
-      "icon": "tsconfig",
-      "extensions": ["tsconfig.miho.json", "tsconfig.rollup.json"],
-      "filename": true,
-      "format": "svg"
-    }
-  ],
-  "vsicons.associations.folders": [
-    { "icon": "js", "extensions": ["javascript"], "format": "svg" }
-  ],
+
   "conventionalCommits.promptScopes": false,
   "prettier.requireConfig": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
