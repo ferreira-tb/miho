@@ -2,30 +2,56 @@ use anyhow::Result;
 use clap::Parser;
 
 #[derive(Debug, Parser)]
+#[command(name = "miho")]
 #[command(version, about, long_about = None)]
-struct MihoCli {
-  /// Commit all modififed files, not only the packages.
-  #[arg(short = 'a', long, default_value_t = true)]
-  all: bool,
+enum MihoCli {
+  Bump {
+    /// Commit the modified packages.
+    #[arg(short = 'c', long, value_name = "MESSAGE")]
+    commit: Option<String>,
 
-  /// Determines whether Miho should ask for consent.
-  #[arg(long, default_value_t = true)]
-  ask: bool,
+    /// Package names to filter.
+    #[arg(short = 'f', long, value_name = "PACKAGE")]
+    filter: Option<Vec<String>>,
 
-  /// Commit the modified packages.
-  #[arg(short = 'c', long, default_value = "chore: bump version")]
-  commit: String,
+    /// Do not ask for consent before bumping.
+    #[arg(long)]
+    no_ask: bool,
 
-  /// Skip all jobs.
-  #[arg(long)]
-  dry_run: bool,
+    /// Do not push the commit.
+    #[arg(long)]
+    no_push: bool,
+
+    /// Bypass `pre-commit` and `commit-msg` hooks.
+    #[arg(long)]
+    no_verify: bool,
+
+    /// Prerelease identifier.
+    #[arg(long, default_value = "alpha", value_name = "IDENTIFIER")]
+    preid: Option<String>,
+
+    /// Recursively bumps all packages in the monorepo.
+    #[arg(short = 'r', long)]
+    recursive: bool,
+
+    /// Describes what to do with the standard I/O stream.
+    #[arg(long, default_value = "inherit")]
+    stdio: Option<String>,
+  },
 }
 
 fn main() -> Result<()> {
   let cli = MihoCli::parse();
   println!("{:?}", cli);
 
+  let entries = miho::search()?;
 
+  for entry in &entries {
+    println!("{}", entry.display());
+  }
+
+  let packages = miho::packages::create_packages(entries)?;
+  println!("{:?}", packages);
 
   Ok(())
 }
