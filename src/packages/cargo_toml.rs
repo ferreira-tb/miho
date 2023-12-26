@@ -1,14 +1,15 @@
 use super::{Package, PackageBuilder, PackageType};
+use crate::semver::Version;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct CargoToml {
   pub package: CargoPackage,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct CargoPackage {
   pub name: String,
   pub version: String,
@@ -21,7 +22,7 @@ impl PackageBuilder for CargoToml {
 
     let package = Package {
       name: cargo_toml.package.name,
-      version: cargo_toml.package.version,
+      version: Version::new(&cargo_toml.package.version)?,
       package_type: PackageType::CargoToml,
       path: path.to_owned(),
     };

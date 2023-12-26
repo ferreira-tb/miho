@@ -1,10 +1,11 @@
 mod cargo_toml;
 mod package_json;
 
+use self::cargo_toml::CargoToml;
+use self::package_json::PackageJson;
+use crate::semver::Version;
 use anyhow::{anyhow, Result};
-use cargo_toml::CargoToml;
 use globset::Glob;
-use package_json::PackageJson;
 use std::path::PathBuf;
 
 pub const GLOB_CARGO_TOML: &str = "**/Cargo.toml";
@@ -19,7 +20,7 @@ pub enum PackageType {
 #[derive(Debug)]
 pub struct Package {
   pub name: String,
-  pub version: String,
+  pub version: Version,
   pub package_type: PackageType,
   pub path: String,
 }
@@ -67,8 +68,5 @@ pub fn is_package(package_type: PackageType, path: &str) -> Result<bool> {
     PackageType::PackageJson => GLOB_PACKAGE_JSON,
   };
 
-  match Glob::new(glob)?.compile_matcher().is_match(path) {
-    true => Ok(true),
-    false => Ok(false),
-  }
+  Ok(Glob::new(glob)?.compile_matcher().is_match(path))
 }

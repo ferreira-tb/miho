@@ -1,9 +1,10 @@
 use super::{Package, PackageBuilder, PackageType};
+use crate::semver::Version;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct PackageJson {
   pub name: String,
   pub version: String,
@@ -16,7 +17,7 @@ impl PackageBuilder for PackageJson {
 
     let package = Package {
       name: package_json.name,
-      version: package_json.version,
+      version: Version::new(&package_json.version)?,
       package_type: PackageType::PackageJson,
       path: path.to_owned(),
     };

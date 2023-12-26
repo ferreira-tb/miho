@@ -1,4 +1,5 @@
 pub mod packages;
+pub mod semver;
 
 use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};

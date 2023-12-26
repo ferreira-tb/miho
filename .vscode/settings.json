@@ -1,5 +1,4 @@
 {
-
   "conventionalCommits.promptScopes": false,
   "prettier.requireConfig": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
