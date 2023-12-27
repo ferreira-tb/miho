@@ -24,5 +24,7 @@ jobs:
       - run: pnpm install
       - run: pnpm build
       - run: npm publish
+      - run: cargo publish
         env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

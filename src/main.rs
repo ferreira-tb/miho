@@ -3,6 +3,7 @@ use clap::{Args, Parser};
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select};
 use miho::bump;
+use miho::git::{self, GitCommit, GitPush};
 use miho::packages::{self, Package};
 use miho::semver::{self, ReleaseType};
 
@@ -78,6 +79,12 @@ impl BumpCommand {
       bump::bump(packages, release_type, pre_id)?;
     }
 
+    self.commit_changes()?;
+
+    if !self.no_push {
+      self.push_commit()?;
+    }
+
     Ok(())
   }
 
@@ -108,6 +115,29 @@ impl BumpCommand {
     }
   }
 
+  fn commit_changes(&self) -> Result<()> {
+    let message = match &self.commit {
+      Some(m) => m.clone(),
+      None => String::from("chore: bump version"),
+    };
+
+    let options = GitCommit {
+      message,
+      no_verify: self.no_verify,
+      stdio: self.stdio(),
+    };
+
+    git::commit(options)
+  }
+
+  fn push_commit(&self) -> Result<()> {
+    let options = GitPush {
+      stdio: self.stdio()
+    };
+
+    git::push(options)
+  }
+
   fn pre_id(&self) -> Option<&str> {
     self.pre_id.as_deref()
   }
@@ -119,6 +149,13 @@ impl BumpCommand {
     };
 
     Ok(rt)
+  }
+
+  fn stdio(&self) -> String {
+    match &self.stdio {
+      Some(m) => m.clone(),
+      None => String::from("inherit"),
+    }
   }
 }
 
