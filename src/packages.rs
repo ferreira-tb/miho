@@ -1,9 +1,9 @@
-mod cargo_toml;
-mod package_json;
+pub mod cargo_toml;
+pub mod package_json;
 
 use self::cargo_toml::CargoToml;
 use self::package_json::PackageJson;
-use crate::semver::Version;
+use crate::semver::{ReleaseType, Version};
 use anyhow::{anyhow, Result};
 use globset::Glob;
 use std::path::PathBuf;
@@ -19,7 +19,6 @@ pub enum PackageType {
 
 #[derive(Debug)]
 pub struct Package {
-  pub id: u32,
   pub package_type: PackageType,
   pub name: String,
   pub version: Version,
@@ -27,30 +26,38 @@ pub struct Package {
 }
 
 impl Package {
-  pub fn new(id: u32, path: &str) -> Result<Self> {
+  pub fn new(path: &str) -> Result<Self> {
     let package_type = parse_package_type(path)?;
     let package = match package_type {
-      PackageType::CargoToml => CargoToml::to_package(id, path)?,
-      PackageType::PackageJson => PackageJson::to_package(id, path)?,
+      PackageType::CargoToml => CargoToml::to_package(path)?,
+      PackageType::PackageJson => PackageJson::to_package(path)?,
     };
 
     Ok(package)
   }
 }
 
-pub trait PackageBuilder {
-  fn to_package(id: u32, path: &str) -> Result<Package>;
+pub trait MihoPackage {
+  fn bump(package: &Package, release_type: &ReleaseType, pre_id: Option<&str>) -> Result<()>;
+  fn to_package(path: &str) -> Result<Package>;
+
+  fn new_version(
+    package: &Package,
+    release_type: &ReleaseType,
+    pre_id: Option<&str>,
+  ) -> Result<Version> {
+    let version = package.version.inc(release_type, pre_id)?;
+    Ok(version)
+  }
 }
 
 pub fn create_packages(entries: Vec<PathBuf>) -> Result<Vec<Package>> {
-  let mut id: u32 = 0;
   let mut packages: Vec<Package> = vec![];
 
   for entry in entries {
     let path = entry.to_str().ok_or(anyhow!("Invalid package path"))?;
-    let pkg = Package::new(id, path)?;
+    let pkg = Package::new(path)?;
     packages.push(pkg);
-    id = id + 1;
   }
 
   Ok(packages)

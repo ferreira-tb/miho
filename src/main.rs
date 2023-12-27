@@ -2,8 +2,8 @@ use anyhow::Result;
 use clap::{Args, Parser};
 use colored::*;
 use inquire::{Confirm, Select};
-use miho::{packages, semver};
-use std::collections::HashMap;
+use miho::semver::{self, ReleaseType};
+use miho::{bump, packages};
 
 #[derive(Debug, Parser)]
 #[command(name = "miho")]
@@ -57,54 +57,63 @@ impl BumpCommand {
       return Ok(());
     }
 
-    let pre_id = self.pre_id.as_deref();
-    let release_type = match &self.release_type {
-      Some(rt) => semver::to_release_type(rt)?,
-      None => semver::to_release_type("patch")?,
-    };
-
-    let mut new_version_map: HashMap<u32, semver::Version> = HashMap::new();
+    let release_type = self.release_type()?;
+    let pre_id = self.pre_id();
 
     for package in &packages {
       let new_version = package.version.inc(&release_type, pre_id)?;
-      let new_version_raw = new_version.raw();
-      new_version_map.insert(package.id, new_version);
 
       println!(
         "[ {} ]  {}  =>  {}",
         package.name.bold(),
         package.version.raw().bright_blue(),
-        new_version_raw.bright_green()
+        new_version.raw().bright_green()
       );
     }
 
     if !self.no_ask {
-      self.prompt(&packages)?;
+      self.prompt(packages, release_type)?;
+    } else {
+      bump::bump(packages, release_type, pre_id)?;
     }
 
     Ok(())
   }
 
-  fn prompt(&self, packages: &Vec<packages::Package>) -> Result<()> {
+  fn prompt(&self, packages: Vec<packages::Package>, release_type: ReleaseType) -> Result<()> {
     if packages.len() == 1 {
       let name = &packages.first().unwrap().name;
       let message = format!("Bump {}?", name);
       let ans = Confirm::new(&message).with_default(true).prompt()?;
 
-      match ans {
-        true => todo!(),
-        false => Ok(()),
+      if ans {
+        bump::bump(packages, release_type, self.pre_id())?;
       }
+
+      Ok(())
     } else {
       let options = vec!["All", "Some", "None"];
       let ans = Select::new("Select what to bump.", options).prompt()?;
 
       match ans {
-        "All" => todo!(),
+        "All" => bump::bump(packages, release_type, self.pre_id()),
         "Some" => todo!(),
         _ => Ok(()),
       }
     }
+  }
+
+  fn pre_id(&self) -> Option<&str> {
+    self.pre_id.as_deref()
+  }
+
+  fn release_type(&self) -> Result<ReleaseType> {
+    let rt = match &self.release_type {
+      Some(rt) => semver::to_release_type(rt)?,
+      None => semver::to_release_type("patch")?,
+    };
+
+    Ok(rt)
   }
 }
 
