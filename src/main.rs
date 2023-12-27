@@ -44,10 +44,6 @@ struct BumpCommand {
   #[arg(short = 'i', long, value_name = "IDENTIFIER")]
   pre_id: Option<String>,
 
-  /// Recursively bumps all packages in the monorepo.
-  #[arg(short = 'r', long)]
-  recursive: bool,
-
   /// Type of the release.
   #[arg(short = 't', long, value_name = "TYPE")]
   release_type: Option<String>,
