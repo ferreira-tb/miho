@@ -1,9 +1,11 @@
 # Miho
 
-> [!CAUTION] > **THIS PACKAGE IS DEPRECATED**
->
-> Miho has been rewritten in Rust and is no longer available on NPM.
-> Consider using the [new version](https://crates.io/crates/miho).
+**THIS PACKAGE IS DEPRECATED**
+
+Miho has been rewritten in Rust and is no longer available on NPM.
+Consider using the [new version](https://crates.io/crates/miho).
+
+---
 
 Easily manage your package.json version.
 
