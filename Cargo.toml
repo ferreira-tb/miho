@@ -10,12 +10,24 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
-clap = { version = "4", features = ["derive"] }
 colored = "2"
 globset = "0.4"
 ignore = "0.4"
 inquire = "0.6"
 regex = "1.10"
-serde = { version = "1", features = ["derive"] }
-serde_json = { version = "1", features = ["preserve_order"] }
-toml = { version = "0.8", features = ["preserve_order"] }
+
+[dependencies.clap]
+version = "4"
+features = ["derive"]
+
+[dependencies.serde]
+version = "1"
+features = ["derive"]
+
+[dependencies.serde_json]
+version = "1"
+features = ["preserve_order"]
+
+[dependencies.toml]
+version = "0.8"
+features = ["preserve_order"]

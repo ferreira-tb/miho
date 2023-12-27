@@ -35,7 +35,7 @@ impl MihoPackage for CargoToml {
     let mut cargo_toml = CargoToml::read_as_value(&package.path)?;
 
     let new_version = CargoToml::new_version(package, release_type, pre_id)?;
-    cargo_toml["version"] = Value::String(new_version.raw());
+    cargo_toml["package"]["version"] = Value::String(new_version.raw());
 
     let toml_string = toml::to_string_pretty(&cargo_toml)?;
     fs::write(&package.path, toml_string)?;
