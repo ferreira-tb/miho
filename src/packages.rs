@@ -6,6 +6,7 @@ use self::package_json::PackageJson;
 use crate::semver::{ReleaseType, Version};
 use anyhow::{anyhow, Result};
 use globset::Glob;
+use std::fmt;
 use std::path::PathBuf;
 
 pub const GLOB_CARGO_TOML: &str = "**/Cargo.toml";
@@ -17,7 +18,6 @@ pub enum PackageType {
   PackageJson,
 }
 
-#[derive(Debug)]
 pub struct Package {
   pub package_type: PackageType,
   pub name: String,
@@ -34,6 +34,21 @@ impl Package {
     };
 
     Ok(package)
+  }
+
+  pub fn filename(&self) -> String {
+    let string = match &self.package_type {
+      PackageType::CargoToml => "Cargo.toml",
+      PackageType::PackageJson => "package.json",
+    };
+
+    String::from(string)
+  }
+}
+
+impl fmt::Display for Package {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "{} ({})", self.name, self.filename().to_lowercase())
   }
 }
 

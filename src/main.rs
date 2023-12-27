@@ -1,9 +1,10 @@
 use anyhow::Result;
 use clap::{Args, Parser};
 use colored::*;
-use inquire::{Confirm, Select};
+use inquire::{Confirm, MultiSelect, Select};
+use miho::bump;
+use miho::packages::{self, Package};
 use miho::semver::{self, ReleaseType};
-use miho::{bump, packages};
 
 #[derive(Debug, Parser)]
 #[command(name = "miho")]
@@ -80,24 +81,28 @@ impl BumpCommand {
     Ok(())
   }
 
-  fn prompt(&self, packages: Vec<packages::Package>, release_type: ReleaseType) -> Result<()> {
+  fn prompt(&self, packages: Vec<Package>, release_type: ReleaseType) -> Result<()> {
     if packages.len() == 1 {
       let name = &packages.first().unwrap().name;
       let message = format!("Bump {}?", name);
-      let ans = Confirm::new(&message).with_default(true).prompt()?;
+      let response = Confirm::new(&message).with_default(true).prompt()?;
 
-      if ans {
+      if response {
         bump::bump(packages, release_type, self.pre_id())?;
       }
 
       Ok(())
     } else {
       let options = vec!["All", "Some", "None"];
-      let ans = Select::new("Select what to bump.", options).prompt()?;
+      let response = Select::new("Select what to bump.", options).prompt()?;
 
-      match ans {
+      match response {
         "All" => bump::bump(packages, release_type, self.pre_id()),
-        "Some" => todo!(),
+        "Some" => {
+          let message = "Select the packages to bump.";
+          let packages = MultiSelect::new(message, packages).prompt()?;
+          bump::bump(packages, release_type, self.pre_id())
+        }
         _ => Ok(()),
       }
     }
