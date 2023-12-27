@@ -1,9 +1,9 @@
-use super::{Package, MihoPackage, PackageType};
-use crate::semver::{Version, ReleaseType};
+use super::{MihoPackage, Package, PackageType};
+use crate::semver::{ReleaseType, Version};
 use anyhow::Result;
 use serde::Deserialize;
-use toml::Value;
 use std::fs;
+use toml::Value;
 
 #[derive(Debug, Deserialize)]
 pub struct CargoToml {
@@ -39,7 +39,7 @@ impl MihoPackage for CargoToml {
 
     let toml_string = toml::to_string_pretty(&cargo_toml)?;
     fs::write(&package.path, toml_string)?;
-    
+
     Ok(())
   }
 
