@@ -5,7 +5,17 @@ use regex::Regex;
 pub const SEMVER_REGEX: &str =
   r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([a-zA-Z-]+)(?:\.(\d+)))?$";
 
-#[derive(Debug)]
+pub enum ReleaseType {
+  Major,
+  Minor,
+  Patch,
+  PreMajor,
+  PreMinor,
+  PrePatch,
+  PreRelease,
+}
+
+#[derive(Clone, Debug)]
 pub struct Version {
   pub major: usize,
   pub minor: usize,
@@ -49,6 +59,60 @@ impl Version {
     Ok(version)
   }
 
+  /// Increment the version by a release type.
+  pub fn inc(&self, release_type: &ReleaseType, pre_id: Option<&str>) -> Result<Version> {
+    let version = match release_type {
+      ReleaseType::Major => Version {
+        major: self.major + 1,
+        minor: 0,
+        patch: 0,
+        pre_id: None,
+        pre_version: None,
+      },
+      ReleaseType::Minor => Version {
+        major: self.major,
+        minor: self.minor + 1,
+        patch: 0,
+        pre_id: None,
+        pre_version: None,
+      },
+      ReleaseType::Patch => Version {
+        major: self.major,
+        minor: self.minor,
+        patch: self.patch + 1,
+        pre_id: None,
+        pre_version: None,
+      },
+      ReleaseType::PreRelease if self.pre_id.is_none() => {
+        self.inc_pre(ReleaseType::Patch, pre_id)?
+      }
+      ReleaseType::PreRelease if self.pre_version.is_some() => {
+        let mut version = self.clone();
+        let pre_version = self.pre_version.unwrap();
+        version.pre_version = Some(pre_version + 1);
+        version
+      }
+      ReleaseType::PreRelease => self.inc_pre(ReleaseType::Major, pre_id)?,
+      ReleaseType::PreMajor => self.inc_pre(ReleaseType::Major, pre_id)?,
+      ReleaseType::PreMinor => self.inc_pre(ReleaseType::Minor, pre_id)?,
+      ReleaseType::PrePatch => self.inc_pre(ReleaseType::Patch, pre_id)?,
+    };
+
+    Ok(version)
+  }
+
+  fn inc_pre(&self, release_type: ReleaseType, pre_id: Option<&str>) -> Result<Version> {
+    match pre_id {
+      Some(id) => {
+        let mut version = self.inc(&release_type, None)?;
+        version.pre_id = Some(id.to_string());
+        version.pre_version = Some(1);
+        Ok(version)
+      }
+      None => Err(anyhow!("Missing id for prerelease.")),
+    }
+  }
+
   pub fn raw(&self) -> String {
     let mut version = format!("{}.{}.{}", self.major, self.minor, self.patch);
     if let Some(id) = &self.pre_id {
@@ -68,6 +132,22 @@ impl Version {
 pub fn is_valid(version: &str) -> bool {
   let regex = Regex::new(SEMVER_REGEX).unwrap();
   regex.is_match(version)
+}
+
+pub fn to_release_type(raw: &str) -> Result<ReleaseType> {
+  let release_type = raw.to_lowercase();
+  let release_type = match release_type.trim() {
+    "major" => ReleaseType::Major,
+    "minor" => ReleaseType::Minor,
+    "patch" => ReleaseType::Patch,
+    "premajor" => ReleaseType::PreMajor,
+    "preminor" => ReleaseType::PreMinor,
+    "prepatch" => ReleaseType::PrePatch,
+    "prerelease" => ReleaseType::PreRelease,
+    _ => return Err(anyhow!("Cannot convert {} into a release type.", raw)),
+  };
+
+  Ok(release_type)
 }
 
 #[cfg(test)]

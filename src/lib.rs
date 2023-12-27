@@ -1,3 +1,4 @@
+pub mod bump;
 pub mod packages;
 pub mod semver;
 

@@ -11,11 +11,12 @@ pub(crate) struct PackageJson {
 }
 
 impl PackageBuilder for PackageJson {
-  fn to_package(path: &str) -> Result<Package> {
+  fn to_package(id: u32, path: &str) -> Result<Package> {
     let json_string = fs::read_to_string(path)?;
     let package_json: PackageJson = serde_json::from_str(&json_string)?;
 
     let package = Package {
+      id,
       name: package_json.name,
       version: Version::new(&package_json.version)?,
       package_type: PackageType::PackageJson,

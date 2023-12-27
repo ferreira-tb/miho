@@ -16,11 +16,12 @@ pub(crate) struct CargoPackage {
 }
 
 impl PackageBuilder for CargoToml {
-  fn to_package(path: &str) -> Result<Package> {
+  fn to_package(id: u32, path: &str) -> Result<Package> {
     let toml_string = fs::read_to_string(path)?;
     let cargo_toml: CargoToml = toml::from_str(&toml_string)?;
 
     let package = Package {
+      id,
       name: cargo_toml.package.name,
       version: Version::new(&cargo_toml.package.version)?,
       package_type: PackageType::CargoToml,
