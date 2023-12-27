@@ -1,3 +1,1 @@
-pub fn bump() {
-  
-}
+pub fn bump() {}

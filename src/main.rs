@@ -51,7 +51,7 @@ impl BumpCommand {
   fn execute(&self) -> Result<()> {
     let entries = miho::search()?;
     let packages = packages::create_packages(entries)?;
-  
+
     if packages.is_empty() {
       println!("{}", "No valid package found.".bold().red());
       return Ok(());
@@ -62,14 +62,14 @@ impl BumpCommand {
       Some(rt) => semver::to_release_type(rt)?,
       None => semver::to_release_type("patch")?,
     };
-  
+
     let mut new_version_map: HashMap<u32, semver::Version> = HashMap::new();
-  
+
     for package in &packages {
       let new_version = package.version.inc(&release_type, pre_id)?;
       let new_version_raw = new_version.raw();
       new_version_map.insert(package.id, new_version);
-  
+
       println!(
         "[ {} ]  {}  =>  {}",
         package.name.bold(),
@@ -77,20 +77,20 @@ impl BumpCommand {
         new_version_raw.bright_green()
       );
     }
-  
+
     if !self.no_ask {
       self.prompt(&packages)?;
     }
-  
+
     Ok(())
   }
-  
+
   fn prompt(&self, packages: &Vec<packages::Package>) -> Result<()> {
     if packages.len() == 1 {
       let name = &packages.first().unwrap().name;
       let message = format!("Bump {}?", name);
       let ans = Confirm::new(&message).with_default(true).prompt()?;
-  
+
       match ans {
         true => todo!(),
         false => Ok(()),
@@ -98,7 +98,7 @@ impl BumpCommand {
     } else {
       let options = vec!["All", "Some", "None"];
       let ans = Select::new("Select what to bump.", options).prompt()?;
-  
+
       match ans {
         "All" => todo!(),
         "Some" => todo!(),
