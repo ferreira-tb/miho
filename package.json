@@ -84,7 +84,7 @@
     "unocss": "^0.58.0",
     "vite": "^5.0.10",
     "vite-plugin-dts": "^3.6.4",
-    "vitepress": "1.0.0-rc.32",
+    "vitepress": "1.0.0-rc.33",
     "vitest": "1.1.0",
     "vue": "^3.3.13"
   },
