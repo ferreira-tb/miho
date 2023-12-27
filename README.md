@@ -24,10 +24,6 @@ miho bump [OPTIONS]
 |  `--release-type`  | Type of the release.                                      |
 |     `--stdio`      | Describes what to do with the standard I/O stream.        |
 
-## Documentation
-
-Read the [documentation](https://docs.rs/miho) for more details.
-
 ## License
 
 [MIT](https://github.com/ferreira-tb/miho/blob/main/LICENSE)
