@@ -1,5 +1,10 @@
 # Miho
 
+**THIS PACKAGE IS DEPRECATED**
+Miho has been rewritten in Rust and is no longer available on NPM.
+Consider using the [new version](https://crates.io/crates/miho).
+**THIS PACKAGE IS DEPRECATED**
+
 Easily manage your package.json version.
 
 - Bump, build, test, commit and publish.
@@ -39,7 +44,7 @@ npm create miho@latest
 
 ## Documentation
 
-Read the [documentation](https://tb.dev.br/miho) for more details.
+Read the [documentation](https://docs.rs/miho) for more details.
 
 ## License
 
