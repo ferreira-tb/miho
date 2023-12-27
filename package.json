@@ -1,43 +1,15 @@
 {
   "name": "miho",
   "version": "3.0.0",
-  "description": "Easily bump your package version",
-  "license": "MIT",
   "type": "module",
-  "private": false,
+  "private": true,
   "packageManager": "pnpm@8.12.1",
-  "homepage": "https://github.com/ferreira-tb/miho",
-  "author": {
-    "name": "Andrew Ferreira",
-    "email": "andrew.shien2@gmail.com",
-    "url": "https://github.com/ferreira-tb"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ferreira-tb/miho.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ferreira-tb/miho/issues"
-  },
-  "keywords": [
-    "miho",
-    "version",
-    "bump",
-    "semver",
-    "package"
-  ],
   "scripts": {
     "deps": "pnpm exec taze -w -f -l",
     "format": "pnpm exec prettier . --write",
     "format-check": "pnpm exec prettier . --check",
     "prepare": "husky install"
   },
-  "bin": {
-    "miho": "bin/miho.mjs"
-  },
-  "files": [
-    "bin"
-  ],
   "devDependencies": {
     "husky": "^8.0.3",
     "prettier": "^3.1.1",

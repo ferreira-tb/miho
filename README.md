@@ -2,16 +2,20 @@
 
 Easily manage your project version.
 
-```bash
+```sh
 cargo install miho
 ```
 
 ## CLI
 
+```sh
+miho bump [OPTIONS]
+```
+
 |      Command       | Description                                               |
 | :----------------: | :-------------------------------------------------------- |
+|      `--add`       | Include untracked files with `git add <PATHSPEC>`.        |
 | `--commit-message` | Message of the commit, if any.                            |
-|      `--help`      | Show usage information.                                   |
 |     `--no-ask`     | Do not ask for consent before bumping.                    |
 |   `--no-commit`    | Do not commit the modified files.                         |
 |    `--no-push`     | Do not push the commit.                                   |
@@ -20,11 +24,10 @@ cargo install miho
 |   `--recursive`    | Recursively bumps all packages in the monorepo.           |
 |  `--release-type`  | Type of the release.                                      |
 |     `--stdio`      | Describes what to do with the standard I/O stream.        |
-|    `--version`     | Show current version.                                     |
 
 ## Documentation
 
-Read the [documentation](https://tb.dev.br/miho) for more details.
+Read the [documentation](https://docs.rs/miho) for more details.
 
 ## License
 
