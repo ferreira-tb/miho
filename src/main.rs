@@ -3,7 +3,7 @@ use clap::{Args, Parser};
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select};
 use miho::bump;
-use miho::git::{self, GitCommit, GitPush};
+use miho::git::{self, GitCommit};
 use miho::packages::{self, Package};
 use miho::semver::{self, ReleaseType};
 
@@ -16,13 +16,21 @@ enum MihoCli {
 
 #[derive(Debug, Args)]
 struct BumpCommand {
+  /// Include untracked files with `git add <PATHSPEC>`.
+  #[arg(short = 'a', long, value_name = "PATHSPEC")]
+  add: Option<String>,
+
   /// Commit the modified packages.
-  #[arg(short = 'c', long, value_name = "MESSAGE")]
-  commit: Option<String>,
+  #[arg(short = 'm', long, value_name = "MESSAGE")]
+  commit_message: Option<String>,
 
   /// Do not ask for consent before bumping.
   #[arg(long)]
   no_ask: bool,
+
+  /// Do not commit the modified packages.
+  #[arg(long)]
+  no_commit: bool,
 
   /// Do not push the commit.
   #[arg(long)]
@@ -79,12 +87,30 @@ impl BumpCommand {
       bump::bump(packages, release_type, pre_id)?;
     }
 
-    self.commit_changes()?;
+    if !self.no_commit {
+      let stdio = self.stdio();
 
-    if !self.no_push {
-      self.push_commit()?;
+      if let Some(add) = &self.add {
+        git::add(&stdio, add)?;
+      }
+
+      let message = match &self.commit_message {
+        Some(m) => m.clone(),
+        None => String::from("chore: bump version"),
+      };
+
+      let commit_flags = GitCommit {
+        message,
+        no_verify: self.no_verify
+      };
+  
+      git::commit(&stdio, commit_flags)?;
+  
+      if !self.no_push {
+        git::push(&stdio)?;
+      }
     }
-
+    
     Ok(())
   }
 
@@ -113,29 +139,6 @@ impl BumpCommand {
         _ => Ok(()),
       }
     }
-  }
-
-  fn commit_changes(&self) -> Result<()> {
-    let message = match &self.commit {
-      Some(m) => m.clone(),
-      None => String::from("chore: bump version"),
-    };
-
-    let options = GitCommit {
-      message,
-      no_verify: self.no_verify,
-      stdio: self.stdio(),
-    };
-
-    git::commit(options)
-  }
-
-  fn push_commit(&self) -> Result<()> {
-    let options = GitPush {
-      stdio: self.stdio()
-    };
-
-    git::push(options)
   }
 
   fn pre_id(&self) -> Option<&str> {
