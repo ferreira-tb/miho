@@ -161,8 +161,10 @@ impl BumpCommand {
 
 fn main() -> Result<()> {
   let cli = MihoCli::parse();
+  crate::git::is_dirty()?;
 
   match cli {
-    MihoCli::Bump(cmd) => cmd.execute(),
+    MihoCli::Bump(cmd) if false => cmd.execute(),
+    _ => Ok(())
   }
 }
