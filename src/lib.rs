@@ -42,11 +42,8 @@ fn is_match(glob: &GlobSet, entry: &DirEntry) -> bool {
   if !glob.is_match(entry.path()) {
     return false;
   }
-
-  match entry.file_type() {
-    Some(t) if t.is_file() => true,
-    _ => false,
-  }
+  
+  matches!(entry.file_type(), Some(t) if t.is_file())
 }
 
 #[cfg(test)]

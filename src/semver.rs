@@ -37,11 +37,8 @@ impl Version {
     let major = groups.get(1).ok_or(anyhow!("Invalid major: {}", raw))?;
     let minor = groups.get(2).ok_or(anyhow!("Invalid minor: {}", raw))?;
     let patch = groups.get(3).ok_or(anyhow!("Invalid patch: {}", raw))?;
-
-    let pre_id = match groups.get(4) {
-      Some(id) => Some(id.as_str().to_owned()),
-      None => None,
-    };
+    
+    let pre_id = groups.get(4).map(|id| id.as_str().to_owned());
 
     let pre_version = match groups.get(5) {
       Some(v) if pre_id.is_some() => Some(v.as_str().parse::<usize>()?),
