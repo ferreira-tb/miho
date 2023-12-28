@@ -1,5 +1,6 @@
+use crate::stdio::MihoStdio;
 use anyhow::Result;
-use std::process::{Command, Stdio};
+use std::process::Command;
 
 const ALL: &str = "--all";
 const MESSAGE: &str = "--message";
@@ -11,18 +12,18 @@ pub struct GitCommit {
 }
 
 /// https://git-scm.com/docs/git-add
-pub fn add(stdio: &str, pathspec: &str) -> Result<()> {
+pub fn add(stdio: MihoStdio, pathspec: &str) -> Result<()> {
   Command::new("git")
     .args(["add", pathspec])
-    .stdout(parse_stdio(stdio))
-    .stderr(parse_stdio(stdio))
+    .stdout(stdio.as_stdio())
+    .stderr(stdio.as_stdio())
     .output()?;
 
   Ok(())
 }
 
 /// https://git-scm.com/docs/git-commit
-pub fn commit(stdio: &str, flags: GitCommit) -> Result<()> {
+pub fn commit(stdio: MihoStdio, flags: GitCommit) -> Result<()> {
   let message = flags.message.as_str();
   let mut args = vec!["commit", MESSAGE, message];
 
@@ -35,29 +36,20 @@ pub fn commit(stdio: &str, flags: GitCommit) -> Result<()> {
 
   Command::new("git")
     .args(args)
-    .stdout(parse_stdio(stdio))
-    .stderr(parse_stdio(stdio))
+    .stdout(stdio.as_stdio())
+    .stderr(stdio.as_stdio())
     .output()?;
 
   Ok(())
 }
 
 /// https://git-scm.com/docs/git-push
-pub fn push(stdio: &str) -> Result<()> {
+pub fn push(stdio: MihoStdio) -> Result<()> {
   Command::new("git")
     .arg("push")
-    .stdout(parse_stdio(stdio))
-    .stderr(parse_stdio(stdio))
+    .stdout(stdio.as_stdio())
+    .stderr(stdio.as_stdio())
     .output()?;
 
   Ok(())
-}
-
-fn parse_stdio(cfg: &str) -> Stdio {
-  let cfg = cfg.to_lowercase();
-  match cfg.as_str() {
-    "null" => Stdio::null(),
-    "piped" => Stdio::piped(),
-    _ => Stdio::inherit(),
-  }
 }

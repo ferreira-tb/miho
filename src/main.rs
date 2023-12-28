@@ -6,6 +6,7 @@ use miho::bump;
 use miho::git::{self, GitCommit};
 use miho::packages::{self, Package};
 use miho::semver::{self, ReleaseType};
+use miho::stdio::MihoStdio;
 
 #[derive(Debug, Parser)]
 #[command(name = "miho")]
@@ -87,7 +88,7 @@ impl BumpCommand {
       let stdio = self.stdio();
 
       if let Some(add) = &self.add {
-        git::add(&stdio, add)?;
+        git::add(stdio, add)?;
       }
 
       let message = match &self.commit_message {
@@ -100,10 +101,10 @@ impl BumpCommand {
         no_verify: self.no_verify
       };
   
-      git::commit(&stdio, commit_flags)?;
+      git::commit(stdio, commit_flags)?;
   
       if !self.no_push {
-        git::push(&stdio)?;
+        git::push(stdio)?;
       }
     }
     
@@ -150,10 +151,10 @@ impl BumpCommand {
     Ok(rt)
   }
 
-  fn stdio(&self) -> String {
+  fn stdio(&self) -> MihoStdio {
     match &self.stdio {
-      Some(m) => m.clone(),
-      None => String::from("inherit"),
+      Some(m) => m.into(),
+      None => MihoStdio::Inherit,
     }
   }
 }

@@ -2,6 +2,7 @@ pub mod bump;
 pub mod git;
 pub mod packages;
 pub mod semver;
+pub mod stdio;
 
 use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
