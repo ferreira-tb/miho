@@ -17,9 +17,9 @@ impl MihoStdio {
   }
 }
 
-impl Into<MihoStdio> for &str {
-  fn into(self) -> MihoStdio {
-    let string = self.to_lowercase();
+impl From<&str> for MihoStdio {
+  fn from(val: &str) -> Self {
+    let string = val.to_lowercase();
     match string.as_str() {
       "null" => MihoStdio::Null,
       "piped" => MihoStdio::Piped,
@@ -38,9 +38,9 @@ impl From<MihoStdio> for &str {
   }
 }
 
-impl Into<MihoStdio> for String {
-  fn into(self) -> MihoStdio {
-    let string = self.to_lowercase();
+impl From<String> for MihoStdio {
+  fn from(val: String) -> Self {
+    let string = val.to_lowercase();
     string.as_str().into()
   }
 }
@@ -52,9 +52,9 @@ impl From<MihoStdio> for String {
   }
 }
 
-impl Into<MihoStdio> for &String {
-  fn into(self) -> MihoStdio {
-    let string = self.to_lowercase();
+impl From<&String> for MihoStdio {
+  fn from(val: &String) -> Self {
+    let string = val.to_lowercase();
     string.as_str().into()
   }
 }
