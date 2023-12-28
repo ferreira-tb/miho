@@ -54,15 +54,15 @@ pub fn push(stdio: MihoStdio) -> Result<()> {
   Ok(())
 }
 
+/// https://git-scm.com/docs/git-status
 pub fn is_dirty() -> Result<bool> {
   let output = Command::new("git")
     .args(["status", "--porcelain"])
     .output()?;
 
-  println!("{}", output.stdout.len());
   if output.stdout.is_empty() {
-    Ok(true)
-  } else {
     Ok(false)
+  } else {
+    Ok(true)
   }
 }

@@ -98,16 +98,16 @@ impl BumpCommand {
 
       let commit_flags = GitCommit {
         message,
-        no_verify: self.no_verify
+        no_verify: self.no_verify,
       };
-  
+
       git::commit(stdio, commit_flags)?;
-  
+
       if !self.no_push {
         git::push(stdio)?;
       }
     }
-    
+
     Ok(())
   }
 
@@ -161,10 +161,8 @@ impl BumpCommand {
 
 fn main() -> Result<()> {
   let cli = MihoCli::parse();
-  crate::git::is_dirty()?;
 
   match cli {
-    MihoCli::Bump(cmd) if false => cmd.execute(),
-    _ => Ok(())
+    MihoCli::Bump(cmd) => cmd.execute(),
   }
 }
