@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use regex::Regex;
 
-/// https://regex101.com/r/VX7uQk
+/// <https://regex101.com/r/VX7uQk>
 pub const SEMVER_REGEX: &str =
   r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([a-zA-Z-]+)(?:\.(\d+)))?$";
 

@@ -11,7 +11,7 @@ pub struct GitCommit {
   pub no_verify: bool,
 }
 
-/// https://git-scm.com/docs/git-add
+/// <https://git-scm.com/docs/git-add>
 pub fn add(stdio: MihoStdio, pathspec: &str) -> Result<()> {
   Command::new("git")
     .args(["add", pathspec])
@@ -22,7 +22,7 @@ pub fn add(stdio: MihoStdio, pathspec: &str) -> Result<()> {
   Ok(())
 }
 
-/// https://git-scm.com/docs/git-commit
+/// <https://git-scm.com/docs/git-commit>
 pub fn commit(stdio: MihoStdio, flags: GitCommit) -> Result<()> {
   let message = flags.message.as_str();
   let mut args = vec!["commit", MESSAGE, message];
@@ -43,7 +43,7 @@ pub fn commit(stdio: MihoStdio, flags: GitCommit) -> Result<()> {
   Ok(())
 }
 
-/// https://git-scm.com/docs/git-push
+/// <https://git-scm.com/docs/git-push>
 pub fn push(stdio: MihoStdio) -> Result<()> {
   Command::new("git")
     .arg("push")
@@ -54,7 +54,7 @@ pub fn push(stdio: MihoStdio) -> Result<()> {
   Ok(())
 }
 
-/// https://git-scm.com/docs/git-status
+/// <https://git-scm.com/docs/git-status>
 pub fn is_dirty() -> Result<bool> {
   let output = Command::new("git")
     .args(["status", "--porcelain"])
