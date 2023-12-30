@@ -1,19 +1,12 @@
+mod release_type;
+
 use anyhow::{anyhow, Result};
 use regex::Regex;
+pub use release_type::ReleaseType;
 
 /// <https://regex101.com/r/VX7uQk>
 pub const SEMVER_REGEX: &str =
   r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([a-zA-Z-]+)(?:\.(\d+)))?$";
-
-pub enum ReleaseType {
-  Major,
-  Minor,
-  Patch,
-  PreMajor,
-  PreMinor,
-  PrePatch,
-  PreRelease,
-}
 
 #[derive(Clone, Debug)]
 pub struct Version {
@@ -37,7 +30,7 @@ impl Version {
     let major = groups.get(1).ok_or(anyhow!("Invalid major: {}", raw))?;
     let minor = groups.get(2).ok_or(anyhow!("Invalid minor: {}", raw))?;
     let patch = groups.get(3).ok_or(anyhow!("Invalid patch: {}", raw))?;
-    
+
     let pre_id = groups.get(4).map(|id| id.as_str().to_owned());
 
     let pre_version = match groups.get(5) {
@@ -131,26 +124,9 @@ pub fn is_valid(version: &str) -> bool {
   regex.is_match(version)
 }
 
-pub fn to_release_type(raw: &str) -> Result<ReleaseType> {
-  let release_type = raw.to_lowercase();
-  let release_type = match release_type.trim() {
-    "major" => ReleaseType::Major,
-    "minor" => ReleaseType::Minor,
-    "patch" => ReleaseType::Patch,
-    "premajor" => ReleaseType::PreMajor,
-    "preminor" => ReleaseType::PreMinor,
-    "prepatch" => ReleaseType::PrePatch,
-    "prerelease" => ReleaseType::PreRelease,
-    _ => return Err(anyhow!("Cannot convert {} into a release type.", raw)),
-  };
-
-  Ok(release_type)
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
-  use anyhow::Result;
 
   #[test]
   fn should_be_valid() {
@@ -169,13 +145,12 @@ mod tests {
   }
 
   #[test]
-  fn should_build_version_struct() -> Result<()> {
-    let version = Version::new("6.2.3-beta.1")?;
+  fn should_build_version_struct() {
+    let version = Version::new("6.2.3-beta.1").unwrap();
     assert_eq!(6, version.major);
     assert_eq!(2, version.minor);
     assert_eq!(3, version.patch);
     assert_eq!("beta", version.pre_id.unwrap());
     assert_eq!(1, version.pre_version.unwrap());
-    Ok(())
   }
 }

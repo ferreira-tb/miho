@@ -17,54 +17,12 @@ impl MihoStdio {
   }
 }
 
-impl From<&str> for MihoStdio {
-  fn from(val: &str) -> Self {
-    let string = val.to_lowercase();
-    match string.as_str() {
+impl<T: AsRef<str>> From<T> for MihoStdio {
+  fn from(val: T) -> Self {
+    match val.as_ref() {
       "null" => MihoStdio::Null,
       "piped" => MihoStdio::Piped,
       _ => MihoStdio::Inherit,
-    }
-  }
-}
-
-impl From<MihoStdio> for &str {
-  fn from(item: MihoStdio) -> Self {
-    match item {
-      MihoStdio::Null => "null",
-      MihoStdio::Piped => "piped",
-      MihoStdio::Inherit => "inherit",
-    }
-  }
-}
-
-impl From<String> for MihoStdio {
-  fn from(val: String) -> Self {
-    let string = val.to_lowercase();
-    string.as_str().into()
-  }
-}
-
-impl From<MihoStdio> for String {
-  fn from(item: MihoStdio) -> Self {
-    let string: &str = item.into();
-    string.to_string()
-  }
-}
-
-impl From<&String> for MihoStdio {
-  fn from(val: &String) -> Self {
-    let string = val.to_lowercase();
-    string.as_str().into()
-  }
-}
-
-impl From<MihoStdio> for Stdio {
-  fn from(item: MihoStdio) -> Self {
-    match item {
-      MihoStdio::Null => Self::null(),
-      MihoStdio::Piped => Self::piped(),
-      MihoStdio::Inherit => Self::inherit(),
     }
   }
 }

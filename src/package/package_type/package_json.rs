@@ -1,5 +1,6 @@
-use super::{MihoPackage, Package, PackageType};
-use crate::semver::{ReleaseType, Version};
+use super::{PackageAction, PackageData};
+use crate::package::Package;
+use crate::semver::Version;
 use anyhow::Result;
 use serde::Deserialize;
 use serde_json::Value;
@@ -25,12 +26,12 @@ impl PackageJson {
   }
 }
 
-impl MihoPackage for PackageJson {
-  fn bump(package: &Package, release_type: &ReleaseType, pre_id: Option<&str>) -> Result<()> {
+impl PackageAction for PackageJson {
+  fn bump(package: &Package) -> Result<()> {
     let mut package_json = PackageJson::read_as_value(&package.path)?;
 
-    let new_version = PackageJson::new_version(package, release_type, pre_id)?;
-    package_json["version"] = Value::String(new_version.raw());
+    let new_version = package.op.new_version.raw();
+    package_json["version"] = Value::String(new_version);
 
     let json_string = serde_json::to_string_pretty(&package_json)?;
     fs::write(&package.path, json_string)?;
@@ -38,16 +39,14 @@ impl MihoPackage for PackageJson {
     Ok(())
   }
 
-  fn to_package(path: &str) -> Result<Package> {
+  fn data(path: &str) -> Result<PackageData> {
     let package_json = PackageJson::read(path)?;
 
-    let package = Package {
+    let data = PackageData {
       name: package_json.name,
       version: Version::new(&package_json.version)?,
-      package_type: PackageType::PackageJson,
-      path: path.to_owned(),
     };
 
-    Ok(package)
+    Ok(data)
   }
 }

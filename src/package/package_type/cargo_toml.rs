@@ -1,5 +1,6 @@
-use super::{MihoPackage, Package, PackageType};
-use crate::semver::{ReleaseType, Version};
+use super::{PackageAction, PackageData};
+use crate::package::Package;
+use crate::semver::Version;
 use anyhow::Result;
 use serde::Deserialize;
 use std::fs;
@@ -30,12 +31,12 @@ impl CargoToml {
   }
 }
 
-impl MihoPackage for CargoToml {
-  fn bump(package: &Package, release_type: &ReleaseType, pre_id: Option<&str>) -> Result<()> {
+impl PackageAction for CargoToml {
+  fn bump(package: &Package) -> Result<()> {
     let mut cargo_toml = CargoToml::read_as_value(&package.path)?;
 
-    let new_version = CargoToml::new_version(package, release_type, pre_id)?;
-    cargo_toml["package"]["version"] = Value::String(new_version.raw());
+    let new_version = package.op.new_version.raw();
+    cargo_toml["package"]["version"] = Value::String(new_version);
 
     let toml_string = toml::to_string_pretty(&cargo_toml)?;
     fs::write(&package.path, toml_string)?;
@@ -43,16 +44,13 @@ impl MihoPackage for CargoToml {
     Ok(())
   }
 
-  fn to_package(path: &str) -> Result<Package> {
+  fn data(path: &str) -> Result<PackageData> {
     let cargo_toml = CargoToml::read(path)?;
-
-    let package = Package {
+    let data = PackageData {
       name: cargo_toml.package.name,
       version: Version::new(&cargo_toml.package.version)?,
-      package_type: PackageType::CargoToml,
-      path: path.to_owned(),
     };
 
-    Ok(package)
+    Ok(data)
   }
 }
