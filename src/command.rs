@@ -30,7 +30,19 @@ impl Command {
     self
   }
 
-  pub fn args(&mut self, args: Vec<&str>) -> &mut Command {
+  pub fn args<I, S>(&mut self, args: I) -> &mut Command
+  where
+    I: IntoIterator<Item = S>,
+    S: AsRef<str>,
+  {
+    let iter = args.into_iter();
+    let mut args: Vec<String> = vec![];
+
+    for arg in iter {
+      let arg = arg.as_ref();
+      args.push(arg.to_string());
+    }
+
     self.cmd.args(args);
     self
   }
@@ -39,8 +51,7 @@ impl Command {
     self.cmd
   }
 
-  pub fn stdio<M: AsRef<MihoStdio>>(&mut self, cfg: M) -> &mut Command {
-    let cfg = cfg.as_ref();
+  pub fn stdio(&mut self, cfg: MihoStdio) -> &mut Command {
     self.cmd.stderr(cfg.as_stdio());
     self.cmd.stdout(cfg.as_stdio());
     self
