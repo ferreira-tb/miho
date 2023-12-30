@@ -4,6 +4,7 @@ use crate::semver::Version;
 use anyhow::Result;
 use serde::Deserialize;
 use std::fs;
+use std::process::{Command, Stdio};
 use toml::Value;
 
 #[derive(Debug, Deserialize)]
@@ -40,6 +41,13 @@ impl PackageAction for CargoToml {
 
     let toml_string = toml::to_string_pretty(&cargo_toml)?;
     fs::write(&package.path, toml_string)?;
+
+    // Ensures that `Cargo.lock` is updated immediately.
+    Command::new("cargo")
+      .args(["update", &package.name])
+      .stdout(Stdio::null())
+      .stderr(Stdio::null())
+      .output()?;
 
     Ok(())
   }

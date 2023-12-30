@@ -13,4 +13,5 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      - run: cargo clippy -- -D warnings
       - run: cargo test
