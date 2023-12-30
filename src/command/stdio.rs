@@ -1,28 +1,28 @@
-use std::process::Stdio;
+use std::process;
 
 #[derive(Copy, Clone)]
-pub enum MihoStdio {
+pub enum Stdio {
   Null,
   Piped,
   Inherit,
 }
 
-impl MihoStdio {
-  pub fn as_stdio(&self) -> Stdio {
+impl Stdio {
+  pub fn as_std_stdio(&self) -> process::Stdio {
     match self {
-      MihoStdio::Null => Stdio::null(),
-      MihoStdio::Piped => Stdio::piped(),
-      MihoStdio::Inherit => Stdio::inherit(),
+      Stdio::Null => process::Stdio::null(),
+      Stdio::Piped => process::Stdio::piped(),
+      Stdio::Inherit => process::Stdio::inherit(),
     }
   }
 }
 
-impl<T: AsRef<str>> From<T> for MihoStdio {
+impl<T: AsRef<str>> From<T> for Stdio {
   fn from(val: T) -> Self {
     match val.as_ref() {
-      "null" => MihoStdio::Null,
-      "piped" => MihoStdio::Piped,
-      _ => MihoStdio::Inherit,
+      "null" => Stdio::Null,
+      "piped" => Stdio::Piped,
+      _ => Stdio::Inherit,
     }
   }
 }

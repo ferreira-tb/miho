@@ -3,10 +3,9 @@ use clap::{Args, Parser};
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select};
 use miho::git::{self, GitCommit};
-use miho::package;
+use miho::{package, Stdio};
 use miho::package::transaction::Transaction;
 use miho::semver::ReleaseType;
-use miho::command::MihoStdio;
 
 #[derive(Debug, Parser)]
 #[command(name = "miho")]
@@ -150,10 +149,10 @@ impl BumpCommand {
     Ok(rt)
   }
 
-  fn stdio(&self) -> MihoStdio {
+  fn stdio(&self) -> Stdio {
     match &self.stdio {
       Some(m) => m.into(),
-      None => MihoStdio::Inherit,
+      None => Stdio::Inherit,
     }
   }
 }

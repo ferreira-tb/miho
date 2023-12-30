@@ -3,7 +3,7 @@ mod stdio;
 use anyhow::Result;
 use std::env;
 use std::process::{self, Output};
-pub use stdio::MihoStdio;
+pub use stdio::Stdio;
 
 pub struct Command {
   cmd: process::Command,
@@ -51,9 +51,9 @@ impl Command {
     self.cmd
   }
 
-  pub fn stdio(&mut self, cfg: MihoStdio) -> &mut Command {
-    self.cmd.stderr(cfg.as_stdio());
-    self.cmd.stdout(cfg.as_stdio());
+  pub fn stdio(&mut self, cfg: Stdio) -> &mut Command {
+    self.cmd.stderr(cfg.as_std_stdio());
+    self.cmd.stdout(cfg.as_std_stdio());
     self
   }
 
