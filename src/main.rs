@@ -6,7 +6,7 @@ use miho::git::{self, GitCommit};
 use miho::package;
 use miho::package::transaction::Transaction;
 use miho::semver::ReleaseType;
-use miho::stdio::MihoStdio;
+use miho::command::MihoStdio;
 
 #[derive(Debug, Parser)]
 #[command(name = "miho")]

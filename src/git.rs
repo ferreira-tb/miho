@@ -1,4 +1,4 @@
-use crate::stdio::MihoStdio;
+use crate::command::MihoStdio;
 use anyhow::Result;
 use std::process::Command;
 
