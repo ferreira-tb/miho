@@ -46,8 +46,8 @@ impl PackageAction for CargoToml {
     let manifest_path = format!("--manifest-path={}", package.path);
     Command::new("cargo")
       .args(["update", &manifest_path, &package.name])
-      .stdout(Stdio::null())
-      .stderr(Stdio::null())
+      .stdout(Stdio::inherit())
+      .stderr(Stdio::inherit())
       .output()?;
 
     Ok(())
