@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "3.2.0"
+version = "3.2.1"
 description = "Easily bump your project version"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
