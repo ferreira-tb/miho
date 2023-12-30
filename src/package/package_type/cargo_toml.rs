@@ -43,8 +43,9 @@ impl PackageAction for CargoToml {
     fs::write(&package.path, toml_string)?;
 
     // Ensures that `Cargo.lock` is updated immediately.
+    let manifest_path = format!("--manifest-path={}", package.path);
     Command::new("cargo")
-      .args(["update", &package.name])
+      .args(["update", &manifest_path, &package.name])
       .stdout(Stdio::null())
       .stderr(Stdio::null())
       .output()?;
