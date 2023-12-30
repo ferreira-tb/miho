@@ -117,3 +117,19 @@ pub fn is_package_of_type(path: &str, package_type: PackageType) -> Result<bool>
   let glob = package_type.glob();
   Ok(Glob::new(glob)?.compile_matcher().is_match(path))
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn should_find_package() {
+    let entries = search().unwrap();
+    let cwd = env::current_dir().unwrap();
+    let toml = cwd.join("Cargo.toml").canonicalize().unwrap();
+
+    if !entries.iter().any(|p| p.to_str() == toml.to_str()) {
+      panic!("Cargo.toml not found");
+    }
+  }
+}
