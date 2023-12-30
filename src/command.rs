@@ -13,7 +13,7 @@ impl Command {
   pub fn new<S: AsRef<str>>(program: S) -> Self {
     let program = program.as_ref();
 
-    let mut cmd: process::Command = match env::consts::OS {
+    let mut cmd = match env::consts::OS {
       "windows" => process::Command::new("cmd"),
       _ => process::Command::new(program),
     };
