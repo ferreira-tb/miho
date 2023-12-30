@@ -2,10 +2,10 @@ use anyhow::Result;
 use clap::{Args, Parser};
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select};
-use miho::bump;
 use miho::git::{self, GitCommit};
-use miho::packages::{self, Package};
-use miho::semver::{self, ReleaseType};
+use miho::package;
+use miho::package::transaction::Transaction;
+use miho::semver::ReleaseType;
 use miho::stdio::MihoStdio;
 
 #[derive(Debug, Parser)]
@@ -56,16 +56,15 @@ struct BumpCommand {
 
 impl BumpCommand {
   fn execute(&self) -> Result<()> {
-    let entries = miho::search()?;
-    let packages = packages::create_packages(entries)?;
+    let entries = package::search()?;
+    let release_type = self.release_type()?;
+    let pre_id = self.pre_id.as_deref();
+    let packages = package::parse_packages(entries, &release_type, pre_id)?;
 
     if packages.is_empty() {
       println!("{}", "No valid package found.".bold().red());
       return Ok(());
     }
-
-    let release_type = self.release_type()?;
-    let pre_id = self.pre_id();
 
     for package in &packages {
       let new_version = package.version.inc(&release_type, pre_id)?;
@@ -78,10 +77,12 @@ impl BumpCommand {
       );
     }
 
+    let transaction = Transaction::new(packages);
+
     if !self.no_ask {
-      self.prompt(packages, release_type)?;
+      self.prompt(transaction)?;
     } else {
-      bump::bump(packages, release_type, pre_id)?;
+      transaction.commit()?;
     }
 
     if !self.no_commit {
@@ -111,41 +112,39 @@ impl BumpCommand {
     Ok(())
   }
 
-  fn prompt(&self, packages: Vec<Package>, release_type: ReleaseType) -> Result<()> {
-    if packages.len() == 1 {
-      let name = &packages.first().unwrap().name;
+  fn prompt(&self, mut transaction: Transaction) -> Result<()> {
+    if transaction.packages.len() == 1 {
+      let name = &transaction.packages.first().unwrap().name;
       let message = format!("Bump {}?", name);
       let response = Confirm::new(&message).with_default(true).prompt()?;
 
       if response {
-        bump::bump(packages, release_type, self.pre_id())?;
+        transaction.commit()
+      } else {
+        Ok(())
       }
-
-      Ok(())
     } else {
       let options = vec!["All", "Some", "None"];
       let response = Select::new("Select what to bump.", options).prompt()?;
 
       match response {
-        "All" => bump::bump(packages, release_type, self.pre_id()),
+        "All" => transaction.commit(),
         "Some" => {
           let message = "Select the packages to bump.";
-          let packages = MultiSelect::new(message, packages).prompt()?;
-          bump::bump(packages, release_type, self.pre_id())
+          let packages = transaction.packages;
+          transaction.packages = MultiSelect::new(message, packages).prompt()?;
+          transaction.commit()
         }
         _ => Ok(()),
       }
     }
   }
 
-  fn pre_id(&self) -> Option<&str> {
-    self.pre_id.as_deref()
-  }
-
   fn release_type(&self) -> Result<ReleaseType> {
-    let rt = match &self.release_type {
-      Some(rt) => semver::to_release_type(rt)?,
-      None => semver::to_release_type("patch")?,
+    let rt = self.release_type.as_deref();
+    let rt = match rt {
+      Some(rt) => rt.try_into()?,
+      None => ReleaseType::Patch,
     };
 
     Ok(rt)
