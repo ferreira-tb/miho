@@ -78,6 +78,7 @@ fn build_globset() -> Result<GlobSet> {
 
   builder.add(Glob::new(package_type::GLOB_PACKAGE_JSON)?);
   builder.add(Glob::new(package_type::GLOB_CARGO_TOML)?);
+  builder.add(Glob::new(package_type::GLOB_TAURI_CONF_JSON)?);
 
   Ok(builder.build()?)
 }
