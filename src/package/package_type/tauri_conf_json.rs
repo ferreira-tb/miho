@@ -7,13 +7,12 @@ use serde_json::Value;
 use std::fs;
 
 #[derive(Debug, Deserialize)]
-#[serde(rename_all(serialize = "camelCase", deserialize = "snake_case"))]
 pub struct TauriConfJson {
   pub package: TauriPackage,
 }
 
 #[derive(Debug, Deserialize)]
-#[serde(rename_all(serialize = "camelCase", deserialize = "snake_case"))]
+#[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
 pub struct TauriPackage {
   pub product_name: String,
   pub version: String,
