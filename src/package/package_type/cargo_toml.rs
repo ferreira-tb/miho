@@ -2,17 +2,17 @@ use super::{PackageAction, PackageData};
 use crate::package::Package;
 use crate::semver::Version;
 use anyhow::Result;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::process::{Command, Stdio};
 use toml::Value;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct CargoToml {
   pub package: CargoPackage,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct CargoPackage {
   pub name: String,
   pub version: String,

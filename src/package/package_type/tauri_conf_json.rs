@@ -8,15 +8,21 @@ use std::fs;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
-pub struct PackageJson {
-  pub name: String,
+pub struct TauriConfJson {
+  pub package: TauriPackage,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
+pub struct TauriPackage {
+  pub product_name: String,
   pub version: String,
 }
 
-impl PackageJson {
+impl TauriConfJson {
   pub fn read(path: &str) -> Result<Self> {
     let json_string = fs::read_to_string(path)?;
-    let package_json: PackageJson = serde_json::from_str(&json_string)?;
+    let package_json: TauriConfJson = serde_json::from_str(&json_string)?;
     Ok(package_json)
   }
 
@@ -27,25 +33,25 @@ impl PackageJson {
   }
 }
 
-impl PackageAction for PackageJson {
+impl PackageAction for TauriConfJson {
   fn bump(package: &Package) -> Result<()> {
-    let mut package_json = PackageJson::read_as_value(&package.path)?;
+    let mut tauri_conf = TauriConfJson::read_as_value(&package.path)?;
 
     let new_version = package.op.new_version.raw();
-    package_json["version"] = Value::String(new_version);
+    tauri_conf["package"]["version"] = Value::String(new_version);
 
-    let json_string = serde_json::to_string_pretty(&package_json)?;
+    let json_string = serde_json::to_string_pretty(&tauri_conf)?;
     fs::write(&package.path, json_string)?;
 
     Ok(())
   }
 
   fn data(path: &str) -> Result<PackageData> {
-    let package_json = PackageJson::read(path)?;
+    let tauri_conf = TauriConfJson::read(path)?;
 
     let data = PackageData {
-      name: package_json.name,
-      version: Version::new(&package_json.version)?,
+      name: tauri_conf.package.product_name,
+      version: Version::new(&tauri_conf.package.version)?,
     };
 
     Ok(data)

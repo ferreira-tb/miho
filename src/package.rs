@@ -78,6 +78,7 @@ fn build_globset() -> Result<GlobSet> {
 
   builder.add(Glob::new(package_type::GLOB_PACKAGE_JSON)?);
   builder.add(Glob::new(package_type::GLOB_CARGO_TOML)?);
+  builder.add(Glob::new(package_type::GLOB_TAURI_CONF_JSON)?);
 
   Ok(builder.build()?)
 }
@@ -108,6 +109,8 @@ pub fn parse_package_type(path: &str) -> Result<PackageType> {
     return Ok(PackageType::CargoToml);
   } else if is_package_of_type(path, PackageType::PackageJson)? {
     return Ok(PackageType::PackageJson);
+  } else if is_package_of_type(path, PackageType::TauriConfJson)? {
+    return Ok(PackageType::TauriConfJson);
   }
 
   Err(anyhow!("Could not parse package type for:\n{}", path))

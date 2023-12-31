@@ -1,19 +1,23 @@
 mod cargo_toml;
 mod package_json;
+mod tauri_conf_json;
 
 use super::{transaction::Operation, Package};
 use crate::semver::{ReleaseType, Version};
 use anyhow::Result;
 use cargo_toml::CargoToml;
 use package_json::PackageJson;
+use tauri_conf_json::TauriConfJson;
 
 pub const GLOB_CARGO_TOML: &str = "**/Cargo.toml";
 pub const GLOB_PACKAGE_JSON: &str = "**/package.json";
+pub const GLOB_TAURI_CONF_JSON: &str = "**/tauri.conf.json";
 
 #[derive(Copy, Clone, Debug)]
 pub enum PackageType {
   CargoToml,
   PackageJson,
+  TauriConfJson,
 }
 
 impl PackageType {
@@ -21,6 +25,7 @@ impl PackageType {
     match self {
       PackageType::CargoToml => CargoToml::bump(package),
       PackageType::PackageJson => PackageJson::bump(package),
+      PackageType::TauriConfJson => TauriConfJson::bump(package),
     }
   }
 
@@ -28,6 +33,7 @@ impl PackageType {
     match self {
       PackageType::CargoToml => "Cargo.toml",
       PackageType::PackageJson => "package.json",
+      PackageType::TauriConfJson => "tauri.conf.json",
     }
   }
 
@@ -35,6 +41,7 @@ impl PackageType {
     match self {
       PackageType::CargoToml => GLOB_CARGO_TOML,
       PackageType::PackageJson => GLOB_PACKAGE_JSON,
+      PackageType::TauriConfJson => GLOB_TAURI_CONF_JSON,
     }
   }
 
@@ -62,6 +69,7 @@ impl PackageType {
     match self {
       PackageType::CargoToml => CargoToml::data(path),
       PackageType::PackageJson => PackageJson::data(path),
+      PackageType::TauriConfJson => TauriConfJson::data(path),
     }
   }
 }
