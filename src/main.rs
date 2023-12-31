@@ -81,7 +81,7 @@ impl BumpCommand {
     if !self.no_ask {
       let should_continue = self.prompt(transaction)?;
       if !should_continue {
-        return Ok(())
+        return Ok(());
       }
     } else {
       transaction.commit()?;
