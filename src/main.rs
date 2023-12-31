@@ -3,9 +3,9 @@ use clap::{Args, Parser};
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select};
 use miho::git::{self, GitCommit};
-use miho::{package, Stdio};
 use miho::package::transaction::Transaction;
 use miho::semver::ReleaseType;
+use miho::{package, Stdio};
 
 #[derive(Debug, Parser)]
 #[command(name = "miho")]
@@ -79,7 +79,10 @@ impl BumpCommand {
     let transaction = Transaction::new(packages);
 
     if !self.no_ask {
-      self.prompt(transaction)?;
+      let should_continue = self.prompt(transaction)?;
+      if !should_continue {
+        return Ok(())
+      }
     } else {
       transaction.commit()?;
     }
@@ -111,30 +114,35 @@ impl BumpCommand {
     Ok(())
   }
 
-  fn prompt(&self, mut transaction: Transaction) -> Result<()> {
+  fn prompt(&self, mut transaction: Transaction) -> Result<bool> {
     if transaction.packages.len() == 1 {
       let name = &transaction.packages.first().unwrap().name;
       let message = format!("Bump {}?", name);
       let response = Confirm::new(&message).with_default(true).prompt()?;
 
       if response {
-        transaction.commit()
+        transaction.commit()?;
+        Ok(true)
       } else {
-        Ok(())
+        Ok(false)
       }
     } else {
       let options = vec!["All", "Some", "None"];
       let response = Select::new("Select what to bump.", options).prompt()?;
 
       match response {
-        "All" => transaction.commit(),
+        "All" => {
+          transaction.commit()?;
+          Ok(true)
+        }
         "Some" => {
           let message = "Select the packages to bump.";
           let packages = transaction.packages;
           transaction.packages = MultiSelect::new(message, packages).prompt()?;
-          transaction.commit()
+          transaction.commit()?;
+          Ok(true)
         }
-        _ => Ok(()),
+        _ => Ok(false),
       }
     }
   }

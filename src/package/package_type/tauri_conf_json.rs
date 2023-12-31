@@ -2,16 +2,17 @@ use super::{PackageAction, PackageData};
 use crate::package::Package;
 use crate::semver::Version;
 use anyhow::Result;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fs;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
 pub struct TauriConfJson {
   pub package: TauriPackage,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
 pub struct TauriPackage {
   pub product_name: String,
