@@ -59,7 +59,7 @@ struct BumpCommand {
 
 impl BumpCommand {
   fn execute(&self) -> Result<()> {
-    let entries: Vec<std::path::PathBuf> = match &self.globs {
+    let entries = match &self.globs {
       Some(globs) if !globs.is_empty() => {
         let mut globs: Vec<&str> = globs.iter().map(|g| g.as_str()).collect();
         let last = globs.pop().unwrap_or(".");

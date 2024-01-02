@@ -9,6 +9,7 @@
     "deps": "taze -w -f -l",
     "format": "prettier . --write",
     "format-check": "prettier . --check",
+    "mock": "cargo run -- bump -i mocks --no-commit --no-push --no-verify",
     "prepare": "husky install"
   },
   "devDependencies": {
