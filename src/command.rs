@@ -10,7 +10,7 @@ pub struct Command {
 }
 
 impl Command {
-  pub fn new<S: AsRef<str>>(program: S) -> Self {
+  pub fn new<P: AsRef<str>>(program: P) -> Self {
     let program = program.as_ref();
 
     let mut cmd = match env::consts::OS {
@@ -25,7 +25,10 @@ impl Command {
     Self { cmd }
   }
 
-  pub fn arg<S: AsRef<str>>(&mut self, arg: S) -> &mut Command {
+  pub fn arg<A>(&mut self, arg: A) -> &mut Command
+  where
+    A: AsRef<str>,
+  {
     self.cmd.arg(arg.as_ref());
     self
   }

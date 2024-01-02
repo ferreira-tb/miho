@@ -8,7 +8,7 @@ use std::fs;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
-pub struct PackageJson {
+pub(crate) struct PackageJson {
   pub name: String,
   pub version: String,
 }

@@ -12,7 +12,9 @@ pub struct GitCommit {
 }
 
 /// <https://git-scm.com/docs/git-add>
-pub fn add(stdio: Stdio, pathspec: &str) -> Result<()> {
+pub fn add<P: AsRef<str>>(stdio: Stdio, pathspec: P) -> Result<()> {
+  let pathspec = pathspec.as_ref();
+
   Command::new("git")
     .args(["add", pathspec])
     .stdout(stdio.as_std_stdio())
