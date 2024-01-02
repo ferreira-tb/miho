@@ -8,12 +8,12 @@ use std::process::{Command, Stdio};
 use toml::Value;
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct CargoToml {
+pub(crate) struct CargoToml {
   pub package: CargoPackage,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct CargoPackage {
+pub(crate) struct CargoPackage {
   pub name: String,
   pub version: String,
 }

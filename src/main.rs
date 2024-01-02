@@ -4,6 +4,7 @@ use colored::*;
 use inquire::{Confirm, MultiSelect, Select};
 use miho::git::{self, GitCommit};
 use miho::package::transaction::Transaction;
+use miho::package::PackageParser;
 use miho::semver::ReleaseType;
 use miho::{package, Stdio};
 
@@ -61,8 +62,14 @@ impl BumpCommand {
       None => ReleaseType::Patch,
     };
 
-    let packages = package::parse_packages(entries, &release_type, pre_id)?;
+    let mut parser = PackageParser::new(entries);
+    parser.release(&release_type);
 
+    if let Some(id) = pre_id {
+      parser.pre_id(id);
+    }
+
+    let packages = parser.parse()?;
     if packages.is_empty() {
       println!("{}", "No valid package found.".bold().red());
       return Ok(());

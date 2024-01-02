@@ -1,14 +1,16 @@
-mod package_type;
+pub mod package_type;
+mod parser;
 pub mod transaction;
 
-use self::transaction::Operation;
 use crate::semver::{ReleaseType, Version};
-use anyhow::{anyhow, Context, Result};
+use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
-pub use package_type::PackageType;
+use package_type::PackageType;
+pub use parser::PackageParser;
 use std::path::PathBuf;
 use std::{env, fmt};
+use transaction::Operation;
 
 /// Represents a package of a given type.
 pub struct Package {
@@ -30,7 +32,7 @@ impl Package {
     pre_id: Option<&str>,
   ) -> Result<Self> {
     let path = path.as_ref();
-    let package_type = parse_package_type(path)?;
+    let package_type = package_type::parse_type(path)?;
     let package = package_type.to_package(path, release_type, pre_id)?;
     Ok(package)
   }
@@ -81,49 +83,6 @@ fn build_globset() -> Result<GlobSet> {
   builder.add(Glob::new(package_type::GLOB_TAURI_CONF_JSON)?);
 
   Ok(builder.build()?)
-}
-
-pub fn parse_packages(
-  entries: Vec<PathBuf>,
-  release_type: &ReleaseType,
-  pre_id: Option<&str>,
-) -> Result<Vec<Package>> {
-  let mut packages: Vec<Package> = vec![];
-
-  for entry in entries {
-    let path = entry
-      .to_str()
-      .ok_or(anyhow!("Invalid package path"))
-      .with_context(|| "Could not parse the packages")?;
-
-    let path = path.to_owned();
-    let pkg = Package::new(path, release_type, pre_id)?;
-    packages.push(pkg);
-  }
-
-  Ok(packages)
-}
-
-pub fn parse_package_type<P>(path: P) -> Result<PackageType>
-where
-  P: AsRef<str>,
-{
-  let path = path.as_ref();
-
-  if is_package_of_type(path, PackageType::CargoToml)? {
-    return Ok(PackageType::CargoToml);
-  } else if is_package_of_type(path, PackageType::PackageJson)? {
-    return Ok(PackageType::PackageJson);
-  } else if is_package_of_type(path, PackageType::TauriConfJson)? {
-    return Ok(PackageType::TauriConfJson);
-  }
-
-  Err(anyhow!("Could not parse package type for:\n{}", path))
-}
-
-pub fn is_package_of_type(path: &str, package_type: PackageType) -> Result<bool> {
-  let glob = package_type.glob();
-  Ok(Glob::new(glob)?.compile_matcher().is_match(path))
 }
 
 #[cfg(test)]

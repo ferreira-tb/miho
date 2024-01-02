@@ -126,10 +126,7 @@ impl Version {
   }
 }
 
-pub fn is_valid<V>(version: V) -> bool
-where
-  V: AsRef<str>,
-{
+pub fn is_valid<V: AsRef<str>>(version: V) -> bool {
   let version = version.as_ref();
   let regex = Regex::new(SEMVER_REGEX).unwrap();
   regex.is_match(version)

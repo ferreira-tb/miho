@@ -8,13 +8,13 @@ use std::fs;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
-pub struct TauriConfJson {
+pub(crate) struct TauriConfJson {
   pub package: TauriPackage,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
-pub struct TauriPackage {
+pub(crate) struct TauriPackage {
   pub product_name: String,
   pub version: String,
 }

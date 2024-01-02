@@ -10,10 +10,7 @@ pub struct Command {
 }
 
 impl Command {
-  pub fn new<P>(program: P) -> Self
-  where
-    P: AsRef<str>,
-  {
+  pub fn new<P: AsRef<str>>(program: P) -> Self {
     let program = program.as_ref();
 
     let mut cmd = match env::consts::OS {
