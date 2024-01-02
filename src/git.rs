@@ -1,66 +1,21 @@
-use crate::command::Stdio;
+mod add;
+mod commit;
+mod flag;
+mod push;
+mod status;
+
+use crate::MihoCommand;
+pub use add::Add;
 use anyhow::Result;
-use std::process::Command;
+pub use commit::Commit;
+pub use flag::Flag;
+pub use push::Push;
+pub use status::Status;
+use std::process::Stdio;
 
-const ALL: &str = "--all";
-const MESSAGE: &str = "--message";
-const NO_VERIFY: &str = "--no-verify";
-
-pub struct GitCommit {
-  pub message: String,
-  pub no_verify: bool,
-}
-
-/// <https://git-scm.com/docs/git-add>
-pub fn add<P: AsRef<str>>(stdio: Stdio, pathspec: P) -> Result<()> {
-  let pathspec = pathspec.as_ref();
-
-  Command::new("git")
-    .args(["add", pathspec])
-    .stdout(stdio.as_std_stdio())
-    .stderr(stdio.as_std_stdio())
-    .output()?;
-
-  Ok(())
-}
-
-/// <https://git-scm.com/docs/git-commit>
-pub fn commit(stdio: Stdio, flags: GitCommit) -> Result<()> {
-  let message = flags.message.as_str();
-  let mut args = vec!["commit", MESSAGE, message];
-
-  if flags.no_verify {
-    args.push(NO_VERIFY);
-  }
-
-  // Should be the last.
-  args.push(ALL);
-
-  Command::new("git")
-    .args(args)
-    .stdout(stdio.as_std_stdio())
-    .stderr(stdio.as_std_stdio())
-    .output()?;
-
-  Ok(())
-}
-
-/// <https://git-scm.com/docs/git-push>
-pub fn push(stdio: Stdio) -> Result<()> {
-  Command::new("git")
-    .arg("push")
-    .stdout(stdio.as_std_stdio())
-    .stderr(stdio.as_std_stdio())
-    .output()?;
-
-  Ok(())
-}
-
-/// <https://git-scm.com/docs/git-status>
+/// Determine whether there are uncommitted changes.
 pub fn is_dirty() -> Result<bool> {
-  let output = Command::new("git")
-    .args(["status", "--porcelain"])
-    .output()?;
+  let output = Status::new().stdout(Stdio::piped()).output()?;
 
   if output.stdout.is_empty() {
     Ok(false)
