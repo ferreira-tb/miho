@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::{Args, Parser};
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select};
-use miho::git::{self, Commit};
+use miho::git::{Add, Commit, Push};
 use miho::package::transaction::Transaction;
 use miho::package::{PackageParser, SearchBuilder};
 use miho::semver::ReleaseType;
@@ -124,8 +124,11 @@ impl BumpCommand {
         None => "inherit",
       };
 
-      if let Some(add) = &self.add {
-        git::add(add)?;
+      if let Some(pathspec) = &self.add {
+        Add::new(pathspec)
+          .stderr(stdio.to_stdio())
+          .stdout(stdio.to_stdio())
+          .output()?;
       }
 
       let message = match &self.commit_message {
@@ -143,7 +146,10 @@ impl BumpCommand {
       commit.all().output()?;
 
       if !self.no_push {
-        git::push()?;
+        Push::new()
+          .stderr(stdio.to_stdio())
+          .stdout(stdio.to_stdio())
+          .output()?;
       }
     }
 

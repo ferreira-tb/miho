@@ -1,40 +1,21 @@
+mod add;
 mod commit;
 mod flag;
+mod push;
+mod status;
 
+use crate::MihoCommand;
+pub use add::Add;
 use anyhow::Result;
 pub use commit::Commit;
 pub use flag::Flag;
-use std::process::{Command, Stdio};
+pub use push::Push;
+pub use status::Status;
+use std::process::Stdio;
 
-/// <https://git-scm.com/docs/git-add>
-pub fn add<P: AsRef<str>>(pathspec: P) -> Result<()> {
-  let pathspec = pathspec.as_ref();
-
-  Command::new("git")
-    .args(["add", pathspec])
-    .stdout(Stdio::inherit())
-    .stderr(Stdio::inherit())
-    .output()?;
-
-  Ok(())
-}
-
-/// <https://git-scm.com/docs/git-push>
-pub fn push() -> Result<()> {
-  Command::new("git")
-    .arg("push")
-    .stdout(Stdio::inherit())
-    .stderr(Stdio::inherit())
-    .output()?;
-
-  Ok(())
-}
-
-/// <https://git-scm.com/docs/git-status>
+/// Determine whether there are uncommitted changes.
 pub fn is_dirty() -> Result<bool> {
-  let output = Command::new("git")
-    .args(["status", Flag::Porcelain.into()])
-    .output()?;
+  let output = Status::new().stdout(Stdio::piped()).output()?;
 
   if output.stdout.is_empty() {
     Ok(false)
