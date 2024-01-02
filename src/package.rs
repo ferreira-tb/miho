@@ -104,7 +104,12 @@ pub fn parse_packages(
   Ok(packages)
 }
 
-pub fn parse_package_type(path: &str) -> Result<PackageType> {
+pub fn parse_package_type<P>(path: P) -> Result<PackageType>
+where
+  P: AsRef<str>,
+{
+  let path = path.as_ref();
+
   if is_package_of_type(path, PackageType::CargoToml)? {
     return Ok(PackageType::CargoToml);
   } else if is_package_of_type(path, PackageType::PackageJson)? {

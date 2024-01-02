@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub enum ReleaseType {
   Major,
   Minor,
@@ -9,6 +9,7 @@ pub enum ReleaseType {
   PreMinor,
   PrePatch,
   PreRelease,
+  Literal(String),
 }
 
 impl TryFrom<&str> for ReleaseType {
@@ -24,7 +25,13 @@ impl TryFrom<&str> for ReleaseType {
       "preminor" => ReleaseType::PreMinor,
       "prepatch" => ReleaseType::PrePatch,
       "prerelease" => ReleaseType::PreRelease,
-      rt => return Err(anyhow!("Cannot convert {rt} into a release type.")),
+      rt => {
+        if super::is_valid(rt) {
+          ReleaseType::Literal(rt.to_string())
+        } else {
+          return Err(anyhow!("Cannot convert {rt} into a release type."));
+        }
+      }
     };
 
     Ok(release_type)

@@ -49,7 +49,7 @@ impl PackageType {
     let data = self.get_data(path)?;
 
     let operation = Operation {
-      release_type: *rt,
+      release_type: rt.clone(),
       pre_id: pre_id.map(|id| id.to_string()),
       new_version: data.version.inc(rt, pre_id)?,
     };

@@ -8,6 +8,8 @@ pub use release_type::ReleaseType;
 pub const SEMVER_REGEX: &str =
   r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([a-zA-Z-]+)(?:\.(\d+)))?$";
 
+/// It represents a version, based on the [SemVer](https://semver.org/) specification,
+/// but stricter in the [accepted values](https://regex101.com/r/VX7uQk).
 #[derive(Clone, Debug)]
 pub struct Version {
   pub major: usize,
@@ -18,7 +20,11 @@ pub struct Version {
 }
 
 impl Version {
-  pub fn new(raw: &str) -> Result<Self> {
+  pub fn new<R>(raw: R) -> Result<Self>
+  where
+    R: AsRef<str>,
+  {
+    let raw = raw.as_ref();
     let raw = raw.trim().to_owned();
     if !is_valid(&raw) {
       return Err(anyhow!("Invalid semver: {}", raw));
@@ -86,6 +92,7 @@ impl Version {
       ReleaseType::PreMajor => self.inc_pre(ReleaseType::Major, pre_id)?,
       ReleaseType::PreMinor => self.inc_pre(ReleaseType::Minor, pre_id)?,
       ReleaseType::PrePatch => self.inc_pre(ReleaseType::Patch, pre_id)?,
+      ReleaseType::Literal(v) => Version::new(v)?,
     };
 
     Ok(version)
@@ -119,7 +126,11 @@ impl Version {
   }
 }
 
-pub fn is_valid(version: &str) -> bool {
+pub fn is_valid<V>(version: V) -> bool
+where
+  V: AsRef<str>,
+{
+  let version = version.as_ref();
   let regex = Regex::new(SEMVER_REGEX).unwrap();
   regex.is_match(version)
 }

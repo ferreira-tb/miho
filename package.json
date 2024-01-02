@@ -1,5 +1,6 @@
 {
   "name": "miho",
+  "description": "Repository management tools",
   "version": "3.3.3",
   "type": "module",
   "private": true,

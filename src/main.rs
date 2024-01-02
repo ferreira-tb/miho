@@ -16,6 +16,9 @@ enum MihoCli {
 
 #[derive(Debug, Args)]
 struct BumpCommand {
+  /// Type of the release.
+  release_type: Option<String>,
+
   /// Include untracked files with `git add <PATHSPEC>`.
   #[arg(short = 'a', long, value_name = "PATHSPEC")]
   add: Option<String>,
@@ -44,10 +47,6 @@ struct BumpCommand {
   #[arg(short = 'i', long, value_name = "IDENTIFIER")]
   pre_id: Option<String>,
 
-  /// Type of the release.
-  #[arg(short = 't', long, value_name = "TYPE")]
-  release_type: Option<String>,
-
   /// Describes what to do with the standard I/O stream.
   #[arg(long, default_value = "inherit")]
   stdio: Option<String>,
@@ -56,8 +55,12 @@ struct BumpCommand {
 impl BumpCommand {
   fn execute(&self) -> Result<()> {
     let entries = package::search()?;
-    let release_type = self.release_type()?;
     let pre_id = self.pre_id.as_deref();
+    let release_type = match self.release_type.as_deref() {
+      Some(rt) => rt.try_into()?,
+      None => ReleaseType::Patch,
+    };
+
     let packages = package::parse_packages(entries, &release_type, pre_id)?;
 
     if packages.is_empty() {
@@ -88,7 +91,10 @@ impl BumpCommand {
     }
 
     if !self.no_commit {
-      let stdio = self.stdio();
+      let stdio = match &self.stdio {
+        Some(m) => m.into(),
+        None => Stdio::Inherit,
+      };
 
       if let Some(add) = &self.add {
         git::add(stdio, add)?;
@@ -144,23 +150,6 @@ impl BumpCommand {
         }
         _ => Ok(false),
       }
-    }
-  }
-
-  fn release_type(&self) -> Result<ReleaseType> {
-    let rt = self.release_type.as_deref();
-    let rt = match rt {
-      Some(rt) => rt.try_into()?,
-      None => ReleaseType::Patch,
-    };
-
-    Ok(rt)
-  }
-
-  fn stdio(&self) -> Stdio {
-    match &self.stdio {
-      Some(m) => m.into(),
-      None => Stdio::Inherit,
     }
   }
 }

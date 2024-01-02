@@ -9,20 +9,19 @@ cargo install miho
 ## CLI
 
 ```sh
-miho bump [OPTIONS]
+miho bump [OPTIONS] [RELEASE_TYPE]
 ```
 
-|      Command       | Description                                               |
-| :----------------: | :-------------------------------------------------------- |
-|      `--add`       | Include untracked files with `git add <PATHSPEC>`.        |
-| `--commit-message` | Message of the commit, if any.                            |
-|     `--no-ask`     | Do not ask for consent before bumping.                    |
-|   `--no-commit`    | Do not commit the modified files.                         |
-|    `--no-push`     | Do not push the commit.                                   |
-|   `--no-verify`    | Bypass `pre-commit` and `commit-msg` hooks.               |
-|     `--pre-id`     | Prerelease identifier, like the `beta` in `1.0.0-beta.1`. |
-|  `--release-type`  | Type of the release.                                      |
-|     `--stdio`      | Describes what to do with the standard I/O stream.        |
+|      Options       | Alias | Description                                               |
+| :----------------: | :---- | :-------------------------------------------------------- |
+|      `--add`       | `-a`  | Include untracked files with `git add <PATHSPEC>`.        |
+| `--commit-message` | `-m`  | Message of the commit, if any.                            |
+|     `--no-ask`     | none  | Do not ask for consent before bumping.                    |
+|   `--no-commit`    | none  | Do not commit the modified files.                         |
+|    `--no-push`     | none  | Do not push the commit.                                   |
+|   `--no-verify`    | none  | Bypass `pre-commit` and `commit-msg` hooks.               |
+|     `--pre-id`     | `-i`  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`. |
+|     `--stdio`      | none  | Describes what to do with the standard I/O stream.        |
 
 ## License
 
