@@ -8,6 +8,8 @@ cargo install miho
 
 ## CLI
 
+### Bump
+
 ```sh
 miho bump [OPTIONS] [RELEASE_TYPE]
 ```
