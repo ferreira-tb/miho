@@ -26,8 +26,7 @@ pub trait MihoCommand {
   }
 }
 
-/// Wrap the `Command` of the standard library,
-/// executing it in `cmd` if the current OS is Windows.
+/// Wrap [std::process::Command], executing `cmd` as the program if the current OS is Windows.
 ///
 /// This is only useful in some very specific cases.
 /// Prefer the standard library version.
