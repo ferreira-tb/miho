@@ -1,56 +1,30 @@
-use crate::command::Stdio;
+mod commit;
+mod flag;
+
 use anyhow::Result;
-use std::process::Command;
-
-const ALL: &str = "--all";
-const MESSAGE: &str = "--message";
-const NO_VERIFY: &str = "--no-verify";
-
-pub struct GitCommit {
-  pub message: String,
-  pub no_verify: bool,
-}
+pub use flag::Flag;
+pub use commit::Commit;
+use std::process::{Command, Stdio};
 
 /// <https://git-scm.com/docs/git-add>
-pub fn add<P: AsRef<str>>(stdio: Stdio, pathspec: P) -> Result<()> {
+pub fn add<P: AsRef<str>>(pathspec: P) -> Result<()> {
   let pathspec = pathspec.as_ref();
 
   Command::new("git")
     .args(["add", pathspec])
-    .stdout(stdio.as_std_stdio())
-    .stderr(stdio.as_std_stdio())
-    .output()?;
-
-  Ok(())
-}
-
-/// <https://git-scm.com/docs/git-commit>
-pub fn commit(stdio: Stdio, flags: GitCommit) -> Result<()> {
-  let message = flags.message.as_str();
-  let mut args = vec!["commit", MESSAGE, message];
-
-  if flags.no_verify {
-    args.push(NO_VERIFY);
-  }
-
-  // Should be the last.
-  args.push(ALL);
-
-  Command::new("git")
-    .args(args)
-    .stdout(stdio.as_std_stdio())
-    .stderr(stdio.as_std_stdio())
+    .stdout(Stdio::inherit())
+    .stderr(Stdio::inherit())
     .output()?;
 
   Ok(())
 }
 
 /// <https://git-scm.com/docs/git-push>
-pub fn push(stdio: Stdio) -> Result<()> {
+pub fn push() -> Result<()> {
   Command::new("git")
     .arg("push")
-    .stdout(stdio.as_std_stdio())
-    .stderr(stdio.as_std_stdio())
+    .stdout(Stdio::inherit())
+    .stderr(Stdio::inherit())
     .output()?;
 
   Ok(())
@@ -59,7 +33,7 @@ pub fn push(stdio: Stdio) -> Result<()> {
 /// <https://git-scm.com/docs/git-status>
 pub fn is_dirty() -> Result<bool> {
   let output = Command::new("git")
-    .args(["status", "--porcelain"])
+    .args(["status", Flag::Porcelain.into()])
     .output()?;
 
   if output.stdout.is_empty() {

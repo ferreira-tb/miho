@@ -2,11 +2,12 @@ use anyhow::Result;
 use clap::{Args, Parser};
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select};
-use miho::git::{self, GitCommit};
+use miho::git::{self, Commit};
 use miho::package::transaction::Transaction;
 use miho::package::{PackageParser, SearchBuilder};
 use miho::semver::ReleaseType;
-use miho::Stdio;
+use miho::MihoCommand;
+use std::process::Stdio;
 
 #[derive(Debug, Parser)]
 #[command(name = "miho")]
@@ -119,28 +120,30 @@ impl BumpCommand {
 
     if !self.no_commit {
       let stdio = match &self.stdio {
-        Some(m) => m.into(),
-        None => Stdio::Inherit,
+        Some(m) => m.as_str(),
+        None => "inherit",
       };
 
       if let Some(add) = &self.add {
-        git::add(stdio, add)?;
+        git::add(add)?;
       }
 
       let message = match &self.commit_message {
-        Some(m) => m.clone(),
-        None => String::from("chore: bump version"),
+        Some(m) => m,
+        None => "chore: bump version",
       };
 
-      let commit_flags = GitCommit {
-        message,
-        no_verify: self.no_verify,
-      };
+      let mut commit = Commit::new(message);
+      commit.stderr(stdio.to_stdio()).stdout(stdio.to_stdio());
 
-      git::commit(stdio, commit_flags)?;
+      if self.no_verify {
+        commit.no_verify();
+      }
+
+      commit.all().output()?;
 
       if !self.no_push {
-        git::push(stdio)?;
+        git::push()?;
       }
     }
 
@@ -177,6 +180,22 @@ impl BumpCommand {
         }
         _ => Ok(false),
       }
+    }
+  }
+}
+
+pub trait StdioStr<T: AsRef<str>> {
+  fn to_stdio(&self) -> Stdio;
+}
+
+impl<T: AsRef<str>> StdioStr<T> for T {
+  fn to_stdio(&self) -> Stdio {
+    let value = self.as_ref();
+    let value = value.trim().to_lowercase();
+    match value.as_str() {
+      "null" => Stdio::null(),
+      "pipe" | "piped" => Stdio::piped(),
+      _ => Stdio::inherit(),
     }
   }
 }

@@ -1,10 +1,36 @@
-mod stdio;
-
 use anyhow::Result;
 use std::env;
-use std::process::{self, Output};
-pub use stdio::Stdio;
+use std::process::{self, Child, Output, Stdio};
 
+pub trait MihoCommand {
+  fn cmd(&mut self) -> &mut process::Command;
+
+  fn spawn(&mut self) -> Result<Child> {
+    let child = self.cmd().spawn()?;
+    Ok(child)
+  }
+
+  fn output(&mut self) -> Result<Output> {
+    let output = self.cmd().output()?;
+    Ok(output)
+  }
+
+  fn stderr(&mut self, cfg: Stdio) -> &mut Self {
+    self.cmd().stderr(cfg);
+    self
+  }
+
+  fn stdout(&mut self, cfg: Stdio) -> &mut Self {
+    self.cmd().stdout(cfg);
+    self
+  }
+}
+
+/// Wrap the `Command` of the standard library,
+/// executing it in `cmd` if the current OS is Windows.
+///
+/// This is only useful in some very specific cases.
+/// Prefer the standard library version.
 pub struct Command {
   cmd: process::Command,
 }
@@ -25,10 +51,7 @@ impl Command {
     Self { cmd }
   }
 
-  pub fn arg<A>(&mut self, arg: A) -> &mut Command
-  where
-    A: AsRef<str>,
-  {
+  pub fn arg<A: AsRef<str>>(&mut self, arg: A) -> &mut Command {
     self.cmd.arg(arg.as_ref());
     self
   }
@@ -49,19 +72,10 @@ impl Command {
     self.cmd.args(args);
     self
   }
+}
 
-  pub fn raw(self) -> process::Command {
-    self.cmd
-  }
-
-  pub fn stdio(&mut self, cfg: Stdio) -> &mut Command {
-    self.cmd.stderr(cfg.as_std_stdio());
-    self.cmd.stdout(cfg.as_std_stdio());
-    self
-  }
-
-  pub fn output(&mut self) -> Result<Output> {
-    let output = self.cmd.output()?;
-    Ok(output)
+impl MihoCommand for Command {
+  fn cmd(&mut self) -> &mut process::Command {
+    &mut self.cmd
   }
 }
