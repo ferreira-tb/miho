@@ -1,5 +1,6 @@
 use std::process;
 
+/// Describes what to do with a standard I/O stream for a child process spawned by [super::Command].
 #[derive(Copy, Clone)]
 pub enum Stdio {
   Null,

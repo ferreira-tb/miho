@@ -126,6 +126,7 @@ impl Version {
   }
 }
 
+/// Whether the slice is a version accepted by Miho.
 pub fn is_valid<V: AsRef<str>>(version: V) -> bool {
   let version = version.as_ref();
   let regex = Regex::new(SEMVER_REGEX).unwrap();

@@ -4,9 +4,9 @@ use colored::*;
 use inquire::{Confirm, MultiSelect, Select};
 use miho::git::{self, GitCommit};
 use miho::package::transaction::Transaction;
-use miho::package::PackageParser;
+use miho::package::{PackageParser, SearchBuilder};
 use miho::semver::ReleaseType;
-use miho::{package, Stdio};
+use miho::Stdio;
 
 #[derive(Debug, Parser)]
 #[command(name = "miho")]
@@ -28,6 +28,10 @@ struct BumpCommand {
   #[arg(short = 'm', long, value_name = "MESSAGE")]
   commit_message: Option<String>,
 
+  /// Where to search for packages.
+  #[arg(short = 'i', long = "include", value_name = "GLOB")]
+  globs: Option<Vec<String>>,
+
   /// Do not ask for consent before bumping.
   #[arg(long)]
   no_ask: bool,
@@ -45,17 +49,33 @@ struct BumpCommand {
   no_verify: bool,
 
   /// Prerelease identifier.
-  #[arg(short = 'i', long, value_name = "IDENTIFIER")]
+  #[arg(long, value_name = "IDENTIFIER")]
   pre_id: Option<String>,
 
   /// Describes what to do with the standard I/O stream.
-  #[arg(long, default_value = "inherit")]
+  #[arg(short = 's', long, default_value = "inherit")]
   stdio: Option<String>,
 }
 
 impl BumpCommand {
   fn execute(&self) -> Result<()> {
-    let entries = package::search()?;
+    let entries: Vec<std::path::PathBuf> = match &self.globs {
+      Some(globs) if !globs.is_empty() => {
+        let mut globs: Vec<&str> = globs.iter().map(|g| g.as_str()).collect();
+        let last = globs.pop().unwrap_or(".");
+        let mut builder = SearchBuilder::new(last);
+        for glob in globs {
+          builder.add(glob);
+        }
+
+        builder.search()?
+      }
+      _ => {
+        let builder = SearchBuilder::new(".");
+        builder.search()?
+      }
+    };
+
     let pre_id = self.pre_id.as_deref();
     let release_type = match self.release_type.as_deref() {
       Some(rt) => rt.try_into()?,

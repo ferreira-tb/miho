@@ -1,6 +1,6 @@
 # Miho
 
-Easily manage your project version.
+Repository management tools.
 
 ```sh
 cargo install miho
@@ -15,13 +15,14 @@ miho bump [OPTIONS] [RELEASE_TYPE]
 |      Options       | Alias | Description                                               |
 | :----------------: | :---- | :-------------------------------------------------------- |
 |      `--add`       | `-a`  | Include untracked files with `git add <PATHSPEC>`.        |
-| `--commit-message` | `-m`  | Message of the commit, if any.                            |
+| `--commit-message` | `-m`  | Message of the commit.                                    |
+|    `--include`     | `-i`  | Where to search for packages.                             |
 |     `--no-ask`     | none  | Do not ask for consent before bumping.                    |
 |   `--no-commit`    | none  | Do not commit the modified files.                         |
 |    `--no-push`     | none  | Do not push the commit.                                   |
 |   `--no-verify`    | none  | Bypass `pre-commit` and `commit-msg` hooks.               |
-|     `--pre-id`     | `-i`  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`. |
-|     `--stdio`      | none  | Describes what to do with the standard I/O stream.        |
+|     `--pre-id`     | none  | Prerelease identifier, like the `beta` in `1.0.0-beta.1`. |
+|     `--stdio`      | `-s`  | Describes what to do with the standard I/O stream.        |
 
 ## License
 
