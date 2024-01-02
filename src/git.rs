@@ -2,8 +2,8 @@ mod commit;
 mod flag;
 
 use anyhow::Result;
-pub use flag::Flag;
 pub use commit::Commit;
+pub use flag::Flag;
 use std::process::{Command, Stdio};
 
 /// <https://git-scm.com/docs/git-add>
