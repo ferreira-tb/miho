@@ -13,6 +13,7 @@ const FILENAME_PACKAGE_JSON: &str = "package.json";
 pub(super) struct PackageJson {
   pub name: String,
   pub version: String,
+  pub package_manager: Option<String>,
 }
 
 impl Manifest for PackageJson {
