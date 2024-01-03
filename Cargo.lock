@@ -150,6 +150,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "convert_case"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
+dependencies = [
+ "unicode-segmentation",
+]
+
+[[package]]
 name = "crossbeam-deque"
 version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -334,11 +343,22 @@ dependencies = [
  "globset",
  "ignore",
  "inquire",
+ "miho_derive",
  "regex",
  "serde",
  "serde_json",
  "thiserror",
  "toml",
+]
+
+[[package]]
+name = "miho_derive"
+version = "3.6.1"
+dependencies = [
+ "convert_case",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

@@ -16,6 +16,7 @@ ignore = "0.4"
 inquire = "0.6"
 regex = "1.10"
 thiserror = "1.0"
+miho_derive = { path = "miho_derive" }
 
 [dependencies.clap]
 version = "4"
