@@ -91,9 +91,10 @@ impl BumpCommand {
     }
 
     if !self.no_ask {
-      let Ok(true) = self.prompt(packages, release_type) else {
+      let should_continue = self.prompt(packages, release_type)?;
+      if !should_continue {
         return Ok(());
-      };
+      }
     } else {
       self.bump_all(packages, release_type)?;
     }
