@@ -38,7 +38,7 @@ pub struct BumpCommand {
   no_push: bool,
 
   /// Bypass `pre-commit` and `commit-msg` hooks.
-  #[arg(long)]
+  #[arg(short = 'n', long)]
   no_verify: bool,
 
   /// Prerelease identifier.

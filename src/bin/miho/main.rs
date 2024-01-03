@@ -8,6 +8,7 @@ use commands::*;
 #[command(name = "miho")]
 #[command(version, about, long_about = None)]
 enum MihoCli {
+  /// Recursively bump your projects version.
   Bump(BumpCommand),
 }
 
