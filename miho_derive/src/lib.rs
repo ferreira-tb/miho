@@ -3,7 +3,7 @@ use proc_macro::TokenStream;
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use std::path::Path;
-use syn::{self};
+use syn::{self, DeriveInput};
 
 #[proc_macro_derive(Manifest)]
 pub fn manifest_derive(input: TokenStream) -> TokenStream {
@@ -11,7 +11,7 @@ pub fn manifest_derive(input: TokenStream) -> TokenStream {
   impl_manifest(&ast)
 }
 
-fn impl_manifest(ast: &syn::DeriveInput) -> TokenStream {
+fn impl_manifest(ast: &DeriveInput) -> TokenStream {
   let name = &ast.ident;
 
   let kebak = name.to_string().to_case(Case::Kebab);
@@ -39,6 +39,38 @@ fn impl_manifest(ast: &syn::DeriveInput) -> TokenStream {
           let contents = std::fs::read_to_string(path)?;
           let manifest: Self::Value = #parser::from_str(&contents)?;
           Ok(manifest)
+        }
+      }
+  };
+
+  gen.into()
+}
+
+#[proc_macro_derive(Git)]
+pub fn git_derive(input: TokenStream) -> TokenStream {
+  let ast = syn::parse(input).unwrap();
+  impl_git(&ast)
+}
+
+fn impl_git(ast: &DeriveInput) -> TokenStream {
+  let name = &ast.ident;
+
+  let gen = quote! {
+      impl MihoCommand for #name {
+        fn cmd(&mut self) -> &mut Command {
+          &mut self.cmd
+        }
+
+        fn output(&mut self) -> Result<Output> {
+          let args = self.args.as_slice();
+          let output = self.cmd.args(args).output()?;
+          Ok(output)
+        }
+
+        fn spawn(&mut self) -> Result<Child> {
+          let args = self.args.as_slice();
+          let child = self.cmd.args(args).spawn()?;
+          Ok(child)
         }
       }
   };

@@ -1,9 +1,11 @@
 use super::flag::Flag;
 use crate::util::MihoCommand;
 use anyhow::Result;
+use miho_derive::Git;
 use std::process::{Child, Command, Output};
 
 /// <https://git-scm.com/docs/git-status>
+#[derive(Git)]
 pub struct Status {
   cmd: Command,
   args: Vec<String>,
@@ -27,23 +29,5 @@ impl Status {
 impl Default for Status {
   fn default() -> Self {
     Status::new()
-  }
-}
-
-impl MihoCommand for Status {
-  fn cmd(&mut self) -> &mut Command {
-    &mut self.cmd
-  }
-
-  fn output(&mut self) -> Result<Output> {
-    let args = self.args.as_slice();
-    let output = self.cmd.args(args).output()?;
-    Ok(output)
-  }
-
-  fn spawn(&mut self) -> Result<Child> {
-    let args = self.args.as_slice();
-    let child = self.cmd.args(args).spawn()?;
-    Ok(child)
   }
 }
