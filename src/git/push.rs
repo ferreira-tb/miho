@@ -1,10 +1,9 @@
 use crate::util::MihoCommand;
-use anyhow::Result;
-use miho_derive::Git;
-use std::process::{Child, Command, Output};
+use miho_derive::GitCommand;
+use std::process::Command;
 
 /// <https://git-scm.com/docs/git-push>
-#[derive(Git)]
+#[derive(GitCommand)]
 pub struct Push {
   cmd: Command,
   args: Vec<String>,
