@@ -17,6 +17,7 @@ impl Status {
     }
   }
 
+  /// <https://git-scm.com/docs/git-status#Documentation/git-status.txt---porcelainltversiongt>
   pub fn porcelain(&mut self) -> &mut Self {
     self.args.push(Flag::Porcelain.into());
     self

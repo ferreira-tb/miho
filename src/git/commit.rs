@@ -18,11 +18,13 @@ impl Commit {
     }
   }
 
+  /// <https://git-scm.com/docs/git-commit#Documentation/git-commit.txt---all>
   pub fn all(&mut self) -> &mut Self {
     self.args.push(Flag::All.into());
     self
   }
 
+  /// <https://git-scm.com/docs/git-commit#Documentation/git-commit.txt---no-verify>
   pub fn no_verify(&mut self) -> &mut Self {
     self.args.push(Flag::NoVerify.into());
     self

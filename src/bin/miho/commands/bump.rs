@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::{Args, Parser};
+use clap::Args;
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select};
 use miho::git::{Add, Commit, Push};
@@ -8,15 +8,8 @@ use miho::semver::ReleaseType;
 use miho::MihoCommand;
 use std::process::Stdio;
 
-#[derive(Debug, Parser)]
-#[command(name = "miho")]
-#[command(version, about, long_about = None)]
-enum MihoCli {
-  Bump(BumpCommand),
-}
-
 #[derive(Debug, Args)]
-struct BumpCommand {
+pub struct BumpCommand {
   /// Type of the release.
   release_type: Option<String>,
 
@@ -58,7 +51,7 @@ struct BumpCommand {
 }
 
 impl BumpCommand {
-  fn execute(&self) -> Result<()> {
+  pub fn execute(&self) -> Result<()> {
     let entries = match &self.globs {
       Some(globs) if !globs.is_empty() => {
         let mut globs: Vec<&str> = globs.iter().map(|g| g.as_str()).collect();
@@ -189,7 +182,7 @@ impl BumpCommand {
   }
 }
 
-pub trait StdioStr<T: AsRef<str>> {
+trait StdioStr<T: AsRef<str>> {
   fn to_stdio(&self) -> Stdio;
 }
 
@@ -202,13 +195,5 @@ impl<T: AsRef<str>> StdioStr<T> for T {
       "pipe" | "piped" => Stdio::piped(),
       _ => Stdio::inherit(),
     }
-  }
-}
-
-fn main() -> Result<()> {
-  let cli = MihoCli::parse();
-
-  match cli {
-    MihoCli::Bump(cmd) => cmd.execute(),
   }
 }
