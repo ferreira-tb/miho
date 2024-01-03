@@ -1,15 +1,15 @@
-pub mod package_type;
+mod package_type;
 mod parser;
 mod search;
-pub mod transaction;
+mod transaction;
 
 use crate::semver::{ReleaseType, Version};
 use anyhow::Result;
-use package_type::PackageType;
+pub use package_type::PackageType;
 pub use parser::PackageParser;
 pub use search::SearchBuilder;
 use std::fmt;
-use transaction::Operation;
+pub use transaction::{Operation, Transaction};
 
 /// Represents a package of a given type.
 pub struct Package {
