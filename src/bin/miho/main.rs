@@ -2,7 +2,7 @@ mod commands;
 
 use anyhow::Result;
 use clap::Parser;
-use commands::BumpCommand;
+use commands::*;
 
 #[derive(Debug, Parser)]
 #[command(name = "miho")]

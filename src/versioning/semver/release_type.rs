@@ -29,7 +29,7 @@ impl TryFrom<&str> for ReleaseType {
         if super::is_valid(rt) {
           ReleaseType::Literal(rt.to_string())
         } else {
-          return Err(anyhow!("Cannot convert {rt} into a release type."));
+          return Err(anyhow!("cannot convert {rt} into a release type."));
         }
       }
     };

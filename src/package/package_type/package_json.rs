@@ -1,20 +1,22 @@
-use super::{PackageAction, PackageData};
-use crate::package::Package;
-use crate::semver::Version;
+use crate::package::{Package, PackageHandler};
+use crate::versioning::semver::Version;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fs;
+use std::path::Path;
+
+const FILENAME_PACKAGE_JSON: &str = "package.json";
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
-pub(crate) struct PackageJson {
+pub(super) struct PackageJson {
   pub name: String,
   pub version: String,
 }
 
 impl PackageJson {
-  pub fn read(path: &str) -> Result<Self> {
+  pub fn read<P: AsRef<Path>>(path: P) -> Result<Self> {
     let json_string = fs::read_to_string(path)?;
     let package_json: PackageJson = serde_json::from_str(&json_string)?;
     Ok(package_json)
@@ -27,12 +29,10 @@ impl PackageJson {
   }
 }
 
-impl PackageAction for PackageJson {
-  fn bump(package: &Package) -> Result<()> {
+impl PackageHandler for PackageJson {
+  fn bump(&self, package: &Package, new_version: Version) -> Result<()> {
     let mut package_json = PackageJson::read_as_value(&package.path)?;
-
-    let new_version = package.op.new_version.raw();
-    package_json["version"] = Value::String(new_version);
+    package_json["version"] = Value::String(new_version.raw());
 
     let json_string = serde_json::to_string_pretty(&package_json)?;
     fs::write(&package.path, json_string)?;
@@ -40,14 +40,15 @@ impl PackageAction for PackageJson {
     Ok(())
   }
 
-  fn data(path: &str) -> Result<PackageData> {
-    let package_json = PackageJson::read(path)?;
+  fn filename(&self) -> &str {
+    FILENAME_PACKAGE_JSON
+  }
 
-    let data = PackageData {
-      name: package_json.name,
-      version: Version::new(&package_json.version)?,
-    };
+  fn name(&self) -> &str {
+    self.name.as_str()
+  }
 
-    Ok(data)
+  fn version(&self) -> Result<Version> {
+    Version::new(&self.version)
   }
 }

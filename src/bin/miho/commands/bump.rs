@@ -1,11 +1,11 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::Args;
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select};
 use miho::git::{Add, Commit, Push};
-use miho::package::{PackageParser, SearchBuilder, Transaction};
-use miho::semver::ReleaseType;
-use miho::MihoCommand;
+use miho::package::{Package, SearchBuilder};
+use miho::util::MihoCommand;
+use miho::versioning::semver::ReleaseType;
 use std::process::Stdio;
 
 #[derive(Debug, Args)]
@@ -52,7 +52,7 @@ pub struct BumpCommand {
 
 impl BumpCommand {
   pub fn execute(&self) -> Result<()> {
-    let entries = match &self.globs {
+    let packages = match &self.globs {
       Some(globs) if !globs.is_empty() => {
         let mut globs: Vec<&str> = globs.iter().map(|g| g.as_str()).collect();
         let last = globs.pop().unwrap_or(".");
@@ -69,28 +69,19 @@ impl BumpCommand {
       }
     };
 
+    if packages.is_empty() {
+      println!("{}", "No valid package found.".bold().red());
+      return Ok(());
+    }
+
     let pre_id = self.pre_id.as_deref();
     let release_type = match self.release_type.as_deref() {
       Some(rt) => rt.try_into()?,
       None => ReleaseType::Patch,
     };
 
-    let mut parser = PackageParser::new(entries);
-    parser.release(&release_type);
-
-    if let Some(id) = pre_id {
-      parser.pre_id(id);
-    }
-
-    let packages = parser.parse()?;
-    if packages.is_empty() {
-      println!("{}", "No valid package found.".bold().red());
-      return Ok(());
-    }
-
     for package in &packages {
       let new_version = package.version.inc(&release_type, pre_id)?;
-
       println!(
         "[ {} ]  {}  =>  {}",
         package.name.bold(),
@@ -99,15 +90,12 @@ impl BumpCommand {
       );
     }
 
-    let transaction = Transaction::new(packages);
-
     if !self.no_ask {
-      let should_continue = self.prompt(transaction)?;
-      if !should_continue {
+      let Ok(true) = self.prompt(packages, release_type) else {
         return Ok(());
-      }
+      };
     } else {
-      transaction.commit()?;
+      self.bump_all(packages, release_type)?;
     }
 
     if !self.no_commit {
@@ -120,7 +108,8 @@ impl BumpCommand {
         Add::new(pathspec)
           .stderr(stdio.to_stdio())
           .stdout(stdio.to_stdio())
-          .output()?;
+          .output()
+          .with_context(|| "failed to update git index")?;
       }
 
       let message = match &self.commit_message {
@@ -135,27 +124,33 @@ impl BumpCommand {
         commit.no_verify();
       }
 
-      commit.all().output()?;
+      commit
+        .all()
+        .output()
+        .with_context(|| "failed to commit packages")?;
 
       if !self.no_push {
         Push::new()
           .stderr(stdio.to_stdio())
           .stdout(stdio.to_stdio())
-          .output()?;
+          .output()
+          .with_context(|| "failed to push commit")?;
       }
     }
 
     Ok(())
   }
 
-  fn prompt(&self, mut transaction: Transaction) -> Result<bool> {
-    if transaction.packages.len() == 1 {
-      let name = &transaction.packages.first().unwrap().name;
-      let message = format!("Bump {}?", name);
+  fn prompt(&self, packages: Vec<Package>, rt: ReleaseType) -> Result<bool> {
+    let pre_id = self.pre_id.as_deref();
+
+    if packages.len() == 1 {
+      let package = packages.first().unwrap();
+      let message = format!("Bump {}?", package.name);
       let response = Confirm::new(&message).with_default(true).prompt()?;
 
       if response {
-        transaction.commit()?;
+        package.bump(&rt, pre_id)?;
         Ok(true)
       } else {
         Ok(false)
@@ -166,19 +161,29 @@ impl BumpCommand {
 
       match response {
         "All" => {
-          transaction.commit()?;
+          self.bump_all(packages, rt)?;
           Ok(true)
         }
         "Some" => {
           let message = "Select the packages to bump.";
-          let packages = transaction.packages;
-          transaction.packages = MultiSelect::new(message, packages).prompt()?;
-          transaction.commit()?;
+          let packages = MultiSelect::new(message, packages).prompt()?;
+          self.bump_all(packages, rt)?;
           Ok(true)
         }
         _ => Ok(false),
       }
     }
+  }
+
+  fn bump_all(&self, packages: Vec<Package>, rt: ReleaseType) -> Result<()> {
+    let pre_id = self.pre_id.as_deref();
+    for package in packages {
+      package
+        .bump(&rt, pre_id)
+        .with_context(|| "failed to bump all packages")?;
+    }
+
+    Ok(())
   }
 }
 

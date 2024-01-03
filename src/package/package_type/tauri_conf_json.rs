@@ -1,26 +1,28 @@
-use super::{PackageAction, PackageData};
-use crate::package::Package;
-use crate::semver::Version;
+use crate::package::{Package, PackageHandler};
+use crate::versioning::semver::Version;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fs;
+use std::path::Path;
+
+const FILENAME_TAURI_CONF_JSON: &str = "tauri.conf.json";
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
-pub(crate) struct TauriConfJson {
+pub(super) struct TauriConfJson {
   pub package: TauriPackage,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
-pub(crate) struct TauriPackage {
+pub(super) struct TauriPackage {
   pub product_name: String,
   pub version: String,
 }
 
 impl TauriConfJson {
-  pub fn read(path: &str) -> Result<Self> {
+  pub fn read<P: AsRef<Path>>(path: P) -> Result<Self> {
     let json_string = fs::read_to_string(path)?;
     let package_json: TauriConfJson = serde_json::from_str(&json_string)?;
     Ok(package_json)
@@ -33,12 +35,10 @@ impl TauriConfJson {
   }
 }
 
-impl PackageAction for TauriConfJson {
-  fn bump(package: &Package) -> Result<()> {
+impl PackageHandler for TauriConfJson {
+  fn bump(&self, package: &Package, new_version: Version) -> Result<()> {
     let mut tauri_conf = TauriConfJson::read_as_value(&package.path)?;
-
-    let new_version = package.op.new_version.raw();
-    tauri_conf["package"]["version"] = Value::String(new_version);
+    tauri_conf["package"]["version"] = Value::String(new_version.raw());
 
     let json_string = serde_json::to_string_pretty(&tauri_conf)?;
     fs::write(&package.path, json_string)?;
@@ -46,14 +46,15 @@ impl PackageAction for TauriConfJson {
     Ok(())
   }
 
-  fn data(path: &str) -> Result<PackageData> {
-    let tauri_conf = TauriConfJson::read(path)?;
+  fn filename(&self) -> &str {
+    FILENAME_TAURI_CONF_JSON
+  }
 
-    let data = PackageData {
-      name: tauri_conf.package.product_name,
-      version: Version::new(&tauri_conf.package.version)?,
-    };
+  fn name(&self) -> &str {
+    self.package.product_name.as_str()
+  }
 
-    Ok(data)
+  fn version(&self) -> Result<Version> {
+    Version::new(&self.package.version)
   }
 }

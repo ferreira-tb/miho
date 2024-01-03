@@ -1,4 +1,4 @@
-use crate::MihoCommand;
+use crate::util::MihoCommand;
 use anyhow::Result;
 use std::process::{Child, Command, Output};
 
