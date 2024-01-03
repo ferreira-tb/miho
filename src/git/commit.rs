@@ -1,9 +1,10 @@
 use super::flag::Flag;
 use crate::util::MihoCommand;
-use anyhow::Result;
-use std::process::{Child, Command, Output};
+use miho_derive::GitCommand;
+use std::process::Command;
 
 /// <https://git-scm.com/docs/git-commit>
+#[derive(GitCommand)]
 pub struct Commit {
   cmd: Command,
   args: Vec<String>,
@@ -28,23 +29,5 @@ impl Commit {
   pub fn no_verify(&mut self) -> &mut Self {
     self.args.push(Flag::NoVerify.into());
     self
-  }
-}
-
-impl MihoCommand for Commit {
-  fn cmd(&mut self) -> &mut Command {
-    &mut self.cmd
-  }
-
-  fn output(&mut self) -> Result<Output> {
-    let args = self.args.as_slice();
-    let output = self.cmd.args(args).output()?;
-    Ok(output)
-  }
-
-  fn spawn(&mut self) -> Result<Child> {
-    let args = self.args.as_slice();
-    let child = self.cmd.args(args).spawn()?;
-    Ok(child)
   }
 }
