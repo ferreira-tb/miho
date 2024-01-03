@@ -41,7 +41,9 @@ impl SearchBuilder {
           .ok_or(anyhow!("invalid path:\n{}", path.display()))
           .with_context(|| "package search failed")?;
 
-        let package = Package::new(path)?;
+        let package =
+          Package::new(path).with_context(|| format!("could not parse package:\n{}", path))?;
+
         packages.push(package);
       }
     }

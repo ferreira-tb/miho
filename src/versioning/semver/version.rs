@@ -1,5 +1,6 @@
+use super::is_valid;
 use super::release_type::ReleaseType;
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, bail, Result};
 use regex::Regex;
 
 /// It represents a version, based on the [SemVer](https://semver.org/) specification,
@@ -17,8 +18,8 @@ impl Version {
   pub fn new<R: AsRef<str>>(raw: R) -> Result<Self> {
     let raw = raw.as_ref();
     let raw = raw.trim().to_owned();
-    if !super::is_valid(&raw) {
-      return Err(anyhow!("invalid semver: {}", raw));
+    if !is_valid(&raw) {
+      bail!("invalid semver: {}", raw);
     }
 
     let regex = Regex::new(super::SEMVER_REGEX).unwrap();

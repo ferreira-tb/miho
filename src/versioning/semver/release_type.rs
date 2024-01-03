@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{bail, Result};
 
 #[derive(Clone, Debug)]
 pub enum ReleaseType {
@@ -29,7 +29,7 @@ impl TryFrom<&str> for ReleaseType {
         if super::is_valid(rt) {
           ReleaseType::Literal(rt.to_string())
         } else {
-          return Err(anyhow!("cannot convert {rt} into a release type."));
+          bail!("cannot convert {rt} into a release type.");
         }
       }
     };
