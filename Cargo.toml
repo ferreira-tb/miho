@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "3.6.1"
+version = "3.7.0"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -16,7 +16,9 @@ ignore = "0.4"
 inquire = "0.6"
 regex = "1.10"
 thiserror = "1.0"
-miho_derive = { path = "miho_derive" }
+
+[dependencies.miho_derive]
+path = "miho_derive"
 
 [dependencies.clap]
 version = "4"
