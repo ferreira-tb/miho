@@ -10,7 +10,7 @@ cargo install miho
 
 ### Bump
 
-Recursively bump your projects version.
+Recursively bump your packages version.
 
 ```sh
 miho bump [OPTIONS] [RELEASE_TYPE]
@@ -20,7 +20,7 @@ miho bump [OPTIONS] [RELEASE_TYPE]
 | :----------------: | :---- | :-------------------------------------------------------- |
 |      `--add`       | `-a`  | Include untracked files with `git add <PATHSPEC>`.        |
 | `--commit-message` | `-m`  | Message of the commit.                                    |
-|    `--include`     | `-i`  | Where to search for projects.                             |
+|    `--include`     | `-i`  | Where to search for packages.                             |
 |     `--no-ask`     | none  | Do not ask for consent before bumping.                    |
 |   `--no-commit`    | none  | Do not commit the modified files.                         |
 |    `--no-push`     | none  | Do not push the commit.                                   |

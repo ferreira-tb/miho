@@ -1,4 +1,4 @@
-use super::{package_type, Package};
+use super::{manifest, Package};
 use anyhow::{anyhow, Context, Result};
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
@@ -60,9 +60,9 @@ impl SearchBuilder {
   fn build_globset(&self) -> Result<GlobSet> {
     let mut builder = GlobSetBuilder::new();
 
-    builder.add(Glob::new(package_type::GLOB_CARGO_TOML)?);
-    builder.add(Glob::new(package_type::GLOB_PACKAGE_JSON)?);
-    builder.add(Glob::new(package_type::GLOB_TAURI_CONF_JSON)?);
+    builder.add(Glob::new(manifest::GLOB_CARGO_TOML)?);
+    builder.add(Glob::new(manifest::GLOB_PACKAGE_JSON)?);
+    builder.add(Glob::new(manifest::GLOB_TAURI_CONF_JSON)?);
 
     Ok(builder.build()?)
   }
@@ -81,7 +81,7 @@ mod tests {
     let toml = cwd.join("Cargo.toml").canonicalize().unwrap();
     let toml = toml.to_str().unwrap();
 
-    if !entries.iter().any(|p| p.path.as_str() == toml) {
+    if !entries.iter().any(|p| p.path.to_str().unwrap() == toml) {
       panic!("Cargo.toml not found");
     }
   }

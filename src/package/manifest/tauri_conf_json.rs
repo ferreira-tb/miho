@@ -1,8 +1,8 @@
-use crate::package::{Package, PackageHandler};
+use super::{Manifest, ManifestHandler};
+use crate::package::Package;
 use crate::versioning::semver::Version;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::fs;
 use std::path::Path;
 
@@ -21,27 +21,29 @@ pub(super) struct TauriPackage {
   pub version: String,
 }
 
-impl TauriConfJson {
-  pub fn read<P: AsRef<Path>>(path: P) -> Result<Self> {
-    let json_string = fs::read_to_string(path)?;
-    let package_json: TauriConfJson = serde_json::from_str(&json_string)?;
-    Ok(package_json)
+impl Manifest for TauriConfJson {
+  type Value = serde_json::Value;
+
+  fn read<P: AsRef<Path>>(path: P) -> Result<Box<dyn ManifestHandler>> {
+    let contents = fs::read_to_string(path)?;
+    let manifest: TauriConfJson = serde_json::from_str(&contents)?;
+    Ok(Box::new(manifest))
   }
 
-  pub fn read_as_value(path: &str) -> Result<Value> {
-    let json_string = fs::read_to_string(path)?;
-    let package_json: Value = serde_json::from_str(&json_string)?;
-    Ok(package_json)
+  fn read_as_value<P: AsRef<Path>>(path: P) -> Result<Self::Value> {
+    let contents = fs::read_to_string(path)?;
+    let manifest: Self::Value = serde_json::from_str(&contents)?;
+    Ok(manifest)
   }
 }
 
-impl PackageHandler for TauriConfJson {
+impl ManifestHandler for TauriConfJson {
   fn bump(&self, package: &Package, new_version: Version) -> Result<()> {
-    let mut tauri_conf = TauriConfJson::read_as_value(&package.path)?;
-    tauri_conf["package"]["version"] = Value::String(new_version.raw());
+    let mut manifest = TauriConfJson::read_as_value(&package.path)?;
+    manifest["package"]["version"] = serde_json::Value::String(new_version.raw());
 
-    let json_string = serde_json::to_string_pretty(&tauri_conf)?;
-    fs::write(&package.path, json_string)?;
+    let contents = serde_json::to_string_pretty(&manifest)?;
+    fs::write(&package.path, contents)?;
 
     Ok(())
   }
