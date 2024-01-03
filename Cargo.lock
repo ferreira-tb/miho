@@ -326,7 +326,7 @@ checksum = "523dc4f511e55ab87b694dc30d0f820d60906ef06413f93d4d7a1385599cc149"
 
 [[package]]
 name = "miho"
-version = "3.5.2"
+version = "3.6.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -337,6 +337,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+ "thiserror",
  "toml",
 ]
 

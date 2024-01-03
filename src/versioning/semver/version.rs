@@ -1,12 +1,6 @@
-mod release_type;
-
+use super::release_type::ReleaseType;
 use anyhow::{anyhow, Result};
 use regex::Regex;
-pub use release_type::ReleaseType;
-
-/// <https://regex101.com/r/VX7uQk>
-pub const SEMVER_REGEX: &str =
-  r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([a-zA-Z-]+)(?:\.(\d+)))?$";
 
 /// It represents a version, based on the [SemVer](https://semver.org/) specification,
 /// but stricter in the [accepted values](https://regex101.com/r/VX7uQk).
@@ -20,22 +14,19 @@ pub struct Version {
 }
 
 impl Version {
-  pub fn new<R>(raw: R) -> Result<Self>
-  where
-    R: AsRef<str>,
-  {
+  pub fn new<R: AsRef<str>>(raw: R) -> Result<Self> {
     let raw = raw.as_ref();
     let raw = raw.trim().to_owned();
-    if !is_valid(&raw) {
-      return Err(anyhow!("Invalid semver: {}", raw));
+    if !super::is_valid(&raw) {
+      return Err(anyhow!("invalid semver: {}", raw));
     }
 
-    let regex = Regex::new(SEMVER_REGEX).unwrap();
+    let regex = Regex::new(super::SEMVER_REGEX).unwrap();
     let groups = regex.captures(&raw).unwrap();
 
-    let major = groups.get(1).ok_or(anyhow!("Invalid major: {}", raw))?;
-    let minor = groups.get(2).ok_or(anyhow!("Invalid minor: {}", raw))?;
-    let patch = groups.get(3).ok_or(anyhow!("Invalid patch: {}", raw))?;
+    let major = groups.get(1).ok_or(anyhow!("invalid major: {}", raw))?;
+    let minor = groups.get(2).ok_or(anyhow!("invalid minor: {}", raw))?;
+    let patch = groups.get(3).ok_or(anyhow!("invalid patch: {}", raw))?;
 
     let pre_id = groups.get(4).map(|id| id.as_str().to_owned());
 
@@ -106,7 +97,7 @@ impl Version {
         version.pre_version = Some(1);
         Ok(version)
       }
-      None => Err(anyhow!("Missing id for prerelease.")),
+      None => Err(anyhow!("missing id for prerelease.")),
     }
   }
 
@@ -123,43 +114,5 @@ impl Version {
     }
 
     version
-  }
-}
-
-/// Whether the slice is a version accepted by Miho.
-pub fn is_valid<V: AsRef<str>>(version: V) -> bool {
-  let version = version.as_ref();
-  let regex = Regex::new(SEMVER_REGEX).unwrap();
-  regex.is_match(version)
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn should_be_valid() {
-    let versions = ["1.0.0", "0.2.3-beta.1"];
-    for version in versions {
-      assert!(is_valid(version));
-    }
-  }
-
-  #[test]
-  fn should_be_invalid() {
-    let versions = ["1", "3.5", "1.0.0-beta", "2.0.0-rc.1+build.123"];
-    for version in versions {
-      assert!(!is_valid(version));
-    }
-  }
-
-  #[test]
-  fn should_build_version_struct() {
-    let version = Version::new("6.2.3-beta.1").unwrap();
-    assert_eq!(6, version.major);
-    assert_eq!(2, version.minor);
-    assert_eq!(3, version.patch);
-    assert_eq!("beta", version.pre_id.unwrap());
-    assert_eq!(1, version.pre_version.unwrap());
   }
 }

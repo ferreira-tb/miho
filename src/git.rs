@@ -4,7 +4,7 @@ mod flag;
 mod push;
 mod status;
 
-use crate::MihoCommand;
+use crate::util::MihoCommand;
 pub use add::Add;
 use anyhow::Result;
 pub use commit::Commit;
