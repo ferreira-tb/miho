@@ -11,21 +11,21 @@ use std::path::{Path, PathBuf};
 pub struct Package {
   pub name: String,
   pub version: Version,
-  pub path: PathBuf,
+  pub manifest_path: PathBuf,
   manifest: Box<dyn ManifestHandler>,
 }
 
 impl Package {
   /// Create a representation of the package from the manifest at `path`.
-  pub fn new<P: AsRef<Path>>(path: P) -> Result<Self> {
-    let path = path.as_ref();
-    let package_type = ManifestType::try_from(path)?;
-    let manifest = package_type.read_source(path)?;
+  pub fn new<P: AsRef<Path>>(manifest_path: P) -> Result<Self> {
+    let manifest_path = manifest_path.as_ref();
+    let manifest_type = ManifestType::try_from(manifest_path)?;
+    let manifest = manifest_type.read_source(manifest_path)?;
 
     let package = Self {
       name: manifest.name().to_string(),
       version: manifest.version()?,
-      path: path.to_path_buf(),
+      manifest_path: manifest_path.to_path_buf(),
       manifest,
     };
 

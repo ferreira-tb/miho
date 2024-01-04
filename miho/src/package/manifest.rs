@@ -18,8 +18,8 @@ pub(super) const GLOB_TAURI_CONF_JSON: &str = "**/tauri.conf.json";
 trait Manifest {
   type Value;
 
-  fn read<P: AsRef<Path>>(path: P) -> Result<Box<dyn ManifestHandler>>;
-  fn read_as_value<P: AsRef<Path>>(path: P) -> Result<Self::Value>;
+  fn read<P: AsRef<Path>>(manifest_path: P) -> Result<Box<dyn ManifestHandler>>;
+  fn read_as_value<P: AsRef<Path>>(manifest_path: P) -> Result<Self::Value>;
 }
 
 pub(super) trait ManifestHandler {
@@ -37,12 +37,12 @@ pub enum ManifestType {
 }
 
 impl ManifestType {
-  pub(super) fn read_source<P: AsRef<Path>>(&self, path: P) -> Result<Box<dyn ManifestHandler>> {
-    let path = path.as_ref();
+  pub(super) fn read_source<P: AsRef<Path>>(&self, manifest_path: P) -> Result<Box<dyn ManifestHandler>> {
+    let manifest_path = manifest_path.as_ref();
     match self {
-      ManifestType::CargoToml => CargoToml::read(path),
-      ManifestType::PackageJson => PackageJson::read(path),
-      ManifestType::TauriConfJson => TauriConfJson::read(path),
+      ManifestType::CargoToml => CargoToml::read(manifest_path),
+      ManifestType::PackageJson => PackageJson::read(manifest_path),
+      ManifestType::TauriConfJson => TauriConfJson::read(manifest_path),
     }
   }
 
@@ -58,7 +58,7 @@ impl ManifestType {
 impl TryFrom<&Path> for ManifestType {
   type Error = anyhow::Error;
 
-  fn try_from(path: &Path) -> Result<Self> {
+  fn try_from(manifest_path: &Path) -> Result<Self> {
     let variants = [
       ManifestType::CargoToml,
       ManifestType::PackageJson,
@@ -68,7 +68,7 @@ impl TryFrom<&Path> for ManifestType {
     for variant in variants {
       let glob = variant.glob();
       let glob = Glob::new(glob)?.compile_matcher();
-      if glob.is_match(path) {
+      if glob.is_match(manifest_path) {
         return Ok(variant);
       }
     }

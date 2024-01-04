@@ -35,16 +35,15 @@ impl SearchBuilder {
     for result in self.walker.build() {
       let entry = result?;
       if self.is_match(&glob, &entry) {
-        let path = cwd.join(entry.path().canonicalize()?);
-        let path = path
+        let manifest_path = cwd.join(entry.path().canonicalize()?);
+        let manifest_path = manifest_path
           .to_str()
-          .ok_or(anyhow!("invalid path:\n{}", path.display()))
+          .ok_or(anyhow!("invalid path:\n{}", manifest_path.display()))
           .with_context(|| "package search failed")?;
 
-        let package =
-          Package::new(path).with_context(|| format!("could not parse package:\n{}", path))?;
-
-        packages.push(package);
+        if let Ok(package) = Package::new(manifest_path) {
+          packages.push(package);
+        }
       }
     }
 
@@ -83,7 +82,7 @@ mod tests {
     let toml = cwd.join("Cargo.toml").canonicalize().unwrap();
     let toml = toml.to_str().unwrap();
 
-    if !entries.iter().any(|p| p.path.to_str().unwrap() == toml) {
+    if !entries.iter().any(|p| p.manifest_path.to_str().unwrap() == toml) {
       panic!("Cargo.toml not found");
     }
   }

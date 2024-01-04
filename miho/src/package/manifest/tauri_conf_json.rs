@@ -23,11 +23,11 @@ pub(super) struct TauriPackage {
 
 impl ManifestHandler for TauriConfJson {
   fn bump(&self, package: &Package, new_version: Version) -> Result<()> {
-    let mut manifest = TauriConfJson::read_as_value(&package.path)?;
+    let mut manifest = TauriConfJson::read_as_value(&package.manifest_path)?;
     manifest["package"]["version"] = serde_json::Value::String(new_version.raw());
 
     let contents = serde_json::to_string_pretty(&manifest)?;
-    fs::write(&package.path, contents)?;
+    fs::write(&package.manifest_path, contents)?;
 
     Ok(())
   }

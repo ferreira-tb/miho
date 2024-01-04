@@ -8,8 +8,8 @@ use syn::{self, DeriveInput};
 pub fn impl_manifest(ast: &DeriveInput) -> TokenStream {
   let name = &ast.ident;
 
-  let kebak = name.to_string().to_case(Case::Kebab);
-  let filename = kebak.replace('-', ".");
+  let kebab = name.to_string().to_case(Case::Kebab);
+  let filename = kebab.replace('-', ".");
   let ext = Path::new(&filename).extension().unwrap();
   let ext = ext.to_str().unwrap().to_lowercase();
 
@@ -23,14 +23,14 @@ pub fn impl_manifest(ast: &DeriveInput) -> TokenStream {
       impl Manifest for #name {
         type Value = #parser::Value;
 
-        fn read<P: AsRef<std::path::Path>>(path: P) -> anyhow::Result<Box<dyn ManifestHandler>> {
-          let contents = std::fs::read_to_string(path)?;
+        fn read<P: AsRef<std::path::Path>>(manifest_path: P) -> anyhow::Result<Box<dyn ManifestHandler>> {
+          let contents = std::fs::read_to_string(manifest_path)?;
           let manifest: #name = #parser::from_str(&contents)?;
           Ok(Box::new(manifest))
         }
 
-        fn read_as_value<P: AsRef<std::path::Path>>(path: P) -> anyhow::Result<Self::Value> {
-          let contents = std::fs::read_to_string(path)?;
+        fn read_as_value<P: AsRef<std::path::Path>>(manifest_path: P) -> anyhow::Result<Self::Value> {
+          let contents = std::fs::read_to_string(manifest_path)?;
           let manifest: Self::Value = #parser::from_str(&contents)?;
           Ok(manifest)
         }
