@@ -1,6 +1,6 @@
 //! # Miho
 
 pub mod git;
-pub mod macros;
+mod macros;
 pub mod package;
 pub mod versioning;
