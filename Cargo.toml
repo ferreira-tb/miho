@@ -10,3 +10,6 @@ repository = "https://github.com/ferreira-tb/miho"
 authors = ["Andrew Ferreira <andrew.shien2@gmail.com>"]
 license = "MIT"
 edition = "2021"
+readme = "README.md"
+license-file = "LICENSE"
+keywords = ["miho", "repository"]
