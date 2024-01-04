@@ -353,7 +353,7 @@ dependencies = [
 
 [[package]]
 name = "miho_derive"
-version = "3.7.1"
+version = "3.7.2"
 dependencies = [
  "convert_case",
  "proc-macro2",
