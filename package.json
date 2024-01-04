@@ -1,7 +1,7 @@
 {
   "name": "miho",
   "description": "Repository management tools",
-  "version": "3.7.3",
+  "version": "3.7.4",
   "type": "module",
   "private": true,
   "packageManager": "pnpm@8.12.1",
