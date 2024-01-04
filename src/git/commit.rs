@@ -1,5 +1,4 @@
 use super::flag::Flag;
-use crate::util::MihoCommand;
 use miho_derive::GitCommand;
 use std::process::Command;
 
