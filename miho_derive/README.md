@@ -1,1 +1,0 @@
-Derive impl for [Miho](https://crates.io/crates/miho).
