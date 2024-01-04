@@ -8,8 +8,8 @@ use syn::{self, DeriveInput};
 pub fn impl_manifest(ast: &DeriveInput) -> TokenStream {
   let name = &ast.ident;
 
-  let kebak = name.to_string().to_case(Case::Kebab);
-  let filename = kebak.replace("-", ".");
+  let kebab = name.to_string().to_case(Case::Kebab);
+  let filename = kebab.replace('-', ".");
   let ext = Path::new(&filename).extension().unwrap();
   let ext = ext.to_str().unwrap().to_lowercase();
 
