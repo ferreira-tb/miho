@@ -2,7 +2,6 @@ mod git;
 mod manifest;
 
 use proc_macro::TokenStream;
-use syn;
 
 #[proc_macro_derive(Manifest)]
 pub fn manifest_derive(input: TokenStream) -> TokenStream {
