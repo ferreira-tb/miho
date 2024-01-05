@@ -3,7 +3,6 @@ members = ["miho", "miho_derive"]
 resolver = "2"
 
 [workspace.package]
-version = "3.7.6"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"

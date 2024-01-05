@@ -1,14 +1,30 @@
 [package]
 name = "miho_derive"
-version.workspace = true
-description.workspace = true
-homepage.workspace = true
-repository.workspace = true
-authors.workspace = true
-license.workspace = true
-edition.workspace = true
-readme.workspace = true
-keywords.workspace = true
+version = "3.7.7"
+
+[package.description]
+workspace = true
+
+[package.homepage]
+workspace = true
+
+[package.repository]
+workspace = true
+
+[package.authors]
+workspace = true
+
+[package.license]
+workspace = true
+
+[package.edition]
+workspace = true
+
+[package.readme]
+workspace = true
+
+[package.keywords]
+workspace = true
 
 [lib]
 proc-macro = true

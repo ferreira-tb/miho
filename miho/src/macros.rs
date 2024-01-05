@@ -17,3 +17,17 @@ macro_rules! win_cmd {
     cmd
   }};
 }
+
+#[macro_export]
+macro_rules! gh {
+  ($( $arg:literal ),*) => {{
+    let mut args: Vec<&str> = Vec::new();
+    $( args.push($arg); )*
+
+    std::process::Command::new("gh")
+      .args(args)
+      .stderr(std::process::Stdio::piped())
+      .stdout(std::process::Stdio::piped())
+      .output()
+  }};
+}
