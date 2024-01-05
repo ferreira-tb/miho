@@ -25,7 +25,7 @@ pub struct BumpCommand {
   globs: Option<Vec<String>>,
 
   /// Do not ask for consent before bumping.
-  #[arg(long)]
+  #[arg(short = 'k', long)]
   no_ask: bool,
 
   /// Do not commit the modified packages.
