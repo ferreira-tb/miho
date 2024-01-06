@@ -31,3 +31,17 @@ macro_rules! gh {
       .output()
   }};
 }
+
+#[macro_export]
+macro_rules! pnpm {
+  ($( $arg:literal ),*) => {{
+    let mut args: Vec<&str> = Vec::new();
+    $( args.push($arg); )*
+
+    win_cmd!("pnpm")
+      .args(args)
+      .stderr(std::process::Stdio::inherit())
+      .stdout(std::process::Stdio::inherit())
+      .output()
+  }};
+}

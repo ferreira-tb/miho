@@ -37,7 +37,10 @@ pub enum ManifestType {
 }
 
 impl ManifestType {
-  pub(super) fn read_source<P: AsRef<Path>>(&self, manifest_path: P) -> Result<Box<dyn ManifestHandler>> {
+  pub(super) fn read_source<P: AsRef<Path>>(
+    &self,
+    manifest_path: P,
+  ) -> Result<Box<dyn ManifestHandler>> {
     let manifest_path = manifest_path.as_ref();
     match self {
       ManifestType::CargoToml => CargoToml::read(manifest_path),
