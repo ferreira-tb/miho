@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "3.7.11"
+version = "3.7.12"
 
 [package.description]
 workspace = true

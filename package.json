@@ -1,7 +1,7 @@
 {
   "name": "miho",
   "description": "Repository management tools",
-  "version": "3.7.11",
+  "version": "3.7.12",
   "type": "module",
   "private": true,
   "packageManager": "pnpm@8.12.1",
@@ -11,7 +11,8 @@
     "format": "prettier . --write",
     "format-check": "prettier . --check",
     "mock": "cargo run -- bump -i mocks --no-commit --no-push --no-verify",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "release": "cargo test && nr bump && cargo publish -p miho_derive && cargo publish -p miho"
   },
   "devDependencies": {
     "husky": "^8.0.3",
