@@ -44,4 +44,11 @@ macro_rules! pnpm {
       .stdout(std::process::Stdio::inherit())
       .output()
   }};
+  ($args:expr) => {{
+    win_cmd!("pnpm")
+      .args($args)
+      .stderr(std::process::Stdio::inherit())
+      .stdout(std::process::Stdio::inherit())
+      .output()
+  }};
 }
