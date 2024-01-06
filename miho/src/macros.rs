@@ -30,6 +30,34 @@ macro_rules! gh {
       .stdout(std::process::Stdio::piped())
       .output()
   }};
+  ($args:expr) => {{
+    std::process::Command::new("gh")
+      .args($args)
+      .stderr(std::process::Stdio::piped())
+      .stdout(std::process::Stdio::piped())
+      .output()
+  }};
+}
+
+#[macro_export]
+macro_rules! cargo {
+  ($( $arg:literal ),*) => {{
+    let mut args: Vec<&str> = Vec::new();
+    $( args.push($arg); )*
+
+    std::process::Command::new("cargo")
+      .args(args)
+      .stderr(std::process::Stdio::inherit())
+      .stdout(std::process::Stdio::inherit())
+      .output()
+  }};
+  ($args:expr) => {{
+    std::process::Command::new("cargo")
+      .args($args)
+      .stderr(std::process::Stdio::inherit())
+      .stdout(std::process::Stdio::inherit())
+      .output()
+  }};
 }
 
 #[macro_export]
