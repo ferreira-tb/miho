@@ -66,14 +66,14 @@ macro_rules! pnpm {
     let mut args: Vec<&str> = Vec::new();
     $( args.push($arg); )*
 
-    win_cmd!("pnpm")
+    $crate::win_cmd!("pnpm")
       .args(args)
       .stderr(std::process::Stdio::inherit())
       .stdout(std::process::Stdio::inherit())
       .output()
   }};
   ($args:expr) => {{
-    win_cmd!("pnpm")
+    $crate::win_cmd!("pnpm")
       .args($args)
       .stderr(std::process::Stdio::inherit())
       .stdout(std::process::Stdio::inherit())
