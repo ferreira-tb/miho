@@ -4,7 +4,7 @@ use colored::*;
 use inquire::{Confirm, MultiSelect, Select};
 use miho::git::{Add, Commit, Push};
 use miho::package::{Package, SearchBuilder};
-use miho::versioning::semver::ReleaseType;
+use miho::semver::ReleaseType;
 use std::process::Stdio;
 
 #[derive(Debug, Args)]

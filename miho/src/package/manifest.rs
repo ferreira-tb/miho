@@ -3,11 +3,12 @@ mod package_json;
 mod tauri_conf_json;
 
 use super::Package;
-use crate::versioning::semver::Version;
+use crate::semver::Version;
 use anyhow::{bail, Result};
 use cargo_toml::CargoToml;
 use globset::Glob;
 use package_json::PackageJson;
+use serde::Serialize;
 use std::path::Path;
 use tauri_conf_json::TauriConfJson;
 
@@ -15,7 +16,7 @@ pub(super) const GLOB_CARGO_TOML: &str = "**/Cargo.toml";
 pub(super) const GLOB_PACKAGE_JSON: &str = "**/package.json";
 pub(super) const GLOB_TAURI_CONF_JSON: &str = "**/tauri.conf.json";
 
-trait Manifest {
+trait Manifest: Serialize {
   type Value;
 
   fn read<P: AsRef<Path>>(manifest_path: P) -> Result<Box<dyn ManifestHandler>>;

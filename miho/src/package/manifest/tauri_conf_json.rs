@@ -1,6 +1,6 @@
 use super::{Manifest, ManifestHandler};
 use crate::package::Package;
-use crate::versioning::semver::Version;
+use crate::semver::Version;
 use anyhow::Result;
 use miho_derive::Manifest;
 use serde::{Deserialize, Serialize};

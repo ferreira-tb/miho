@@ -1,5 +1,6 @@
 [workspace]
 members = ["miho", "miho_derive"]
+exclude = ["mocks"]
 resolver = "2"
 
 [workspace.package]

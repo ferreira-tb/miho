@@ -1,10 +1,11 @@
 use super::{Manifest, ManifestHandler};
 use crate::package::Package;
-use crate::versioning::semver::Version;
+use crate::semver::Version;
 use anyhow::Result;
 use miho_derive::{self, Manifest};
 use serde::{Deserialize, Serialize};
 use std::fs;
+
 const FILENAME_CARGO_TOML: &str = "Cargo.toml";
 
 #[derive(Manifest, Deserialize, Serialize)]
