@@ -4,7 +4,7 @@ mod tauri_conf_json;
 
 use super::Package;
 use crate::versioning::semver::Version;
-use anyhow::{anyhow, Result};
+use anyhow::{bail, Result};
 use cargo_toml::CargoToml;
 use globset::Glob;
 use package_json::PackageJson;
@@ -76,6 +76,6 @@ impl TryFrom<&Path> for ManifestType {
       }
     }
 
-    Err(anyhow!("could not parse manifest type"))
+    bail!("could not parse manifest type")
   }
 }

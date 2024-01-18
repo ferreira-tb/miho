@@ -7,16 +7,7 @@
   "packageManager": "pnpm@8.12.1",
   "scripts": {
     "bump": "cargo run -- bump --no-ask --add .",
-    "deps": "taze -w -f -l",
-    "format": "prettier . --write",
-    "format-check": "prettier . --check",
     "mock": "cargo run -- bump -i mocks --no-commit --no-push --no-verify",
-    "prepare": "husky install",
-    "release": "cargo test && nr bump && cargo publish -p miho_derive && cargo publish -p miho"
-  },
-  "devDependencies": {
-    "husky": "^8.0.3",
-    "prettier": "^3.1.1",
-    "taze": "^0.13.1"
+    "release": "cargo test && pnpm run bump && cargo publish -p miho_derive && cargo publish -p miho"
   }
 }
