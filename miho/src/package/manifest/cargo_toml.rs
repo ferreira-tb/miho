@@ -1,12 +1,10 @@
 use super::{Manifest, ManifestHandler};
 use crate::package::Package;
 use crate::versioning::semver::Version;
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use miho_derive::{self, Manifest};
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::process::{Command, Stdio};
-
 const FILENAME_CARGO_TOML: &str = "Cargo.toml";
 
 #[derive(Manifest, Deserialize, Serialize)]
@@ -27,19 +25,6 @@ impl ManifestHandler for CargoToml {
 
     let contents = toml::to_string_pretty(&manifest)?;
     fs::write(&package.manifest_path, contents)?;
-
-    // Ensures that `Cargo.lock` is updated immediately.
-    let manifest_path = package
-      .manifest_path
-      .to_str()
-      .ok_or(anyhow!("could not update Cargo.lock"))?;
-
-    let path_flag = format!("--manifest-path={}", manifest_path);
-    Command::new("cargo")
-      .args(["update", &path_flag, &package.name])
-      .stdout(Stdio::inherit())
-      .stderr(Stdio::inherit())
-      .output()?;
 
     Ok(())
   }

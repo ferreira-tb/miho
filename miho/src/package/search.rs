@@ -38,7 +38,7 @@ impl SearchBuilder {
         let manifest_path = cwd.join(entry.path().canonicalize()?);
         let manifest_path = manifest_path
           .to_str()
-          .ok_or(anyhow!("invalid path:\n{}", manifest_path.display()))
+          .ok_or_else(|| anyhow!("invalid path:\n{}", manifest_path.display()))
           .with_context(|| "package search failed")?;
 
         if let Ok(package) = Package::new(manifest_path) {

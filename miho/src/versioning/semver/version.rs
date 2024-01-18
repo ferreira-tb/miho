@@ -98,7 +98,7 @@ impl Version {
         version.pre_version = Some(1);
         Ok(version)
       }
-      None => Err(anyhow!("missing id for prerelease.")),
+      None => bail!("missing id for prerelease."),
     }
   }
 

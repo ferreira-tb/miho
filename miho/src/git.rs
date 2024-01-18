@@ -14,7 +14,10 @@ use std::process::Stdio;
 
 /// Determine whether there are uncommitted changes.
 pub fn is_dirty() -> Result<bool> {
-  let output = Status::new().stdout(Stdio::piped()).output()?;
+  let output = Status::new()
+    .stdout(Stdio::piped())
+    .stderr(Stdio::piped())
+    .output()?;
 
   if output.stdout.is_empty() {
     Ok(false)
