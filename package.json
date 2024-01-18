@@ -1,13 +1,13 @@
 {
   "name": "miho",
   "description": "Repository management tools",
-  "version": "3.7.15",
+  "version": "3.7.16",
   "type": "module",
   "private": true,
   "packageManager": "pnpm@8.12.1",
   "scripts": {
     "bump": "cargo run -- bump --no-ask --add .",
     "mock": "cargo run -- bump -i mocks --no-commit --no-push --no-verify",
-    "release": "cargo test && pnpm run bump && cargo publish -p miho_derive && cargo publish -p miho"
+    "release": "cargo test && cargo publish -p miho_derive && cargo publish -p miho"
   }
 }
