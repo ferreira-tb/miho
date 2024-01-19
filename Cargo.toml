@@ -12,3 +12,4 @@ license = "MIT"
 edition = "2021"
 readme = "README.md"
 keywords = ["miho", "repository"]
+categories = ["development-tools"]

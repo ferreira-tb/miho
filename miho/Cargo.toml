@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "3.7.19"
+version = "3.7.20"
 
 [package.description]
 workspace = true
@@ -28,7 +28,7 @@ workspace = true
 
 [dependencies]
 anyhow = "1.0"
-colored = "2"
+colored = "2.1"
 globset = "0.4"
 ignore = "0.4"
 inquire = "0.6"
@@ -36,19 +36,19 @@ regex = "1.10"
 thiserror = "1.0"
 
 [dependencies.miho_derive]
-version = "3"
+version = "3.7"
 path = "../miho_derive"
 
 [dependencies.clap]
-version = "4"
+version = "4.4"
 features = ["derive"]
 
 [dependencies.serde]
-version = "1"
+version = "1.0"
 features = ["derive"]
 
 [dependencies.serde_json]
-version = "1"
+version = "1.0"
 features = ["preserve_order"]
 
 [dependencies.toml]
