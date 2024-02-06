@@ -1,8 +1,8 @@
 use super::{Manifest, ManifestHandler};
 use crate::package::Package;
-use semver::Version;
 use anyhow::Result;
 use miho_derive::{self, Manifest};
+use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::fs;
 

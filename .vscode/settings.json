@@ -10,7 +10,5 @@
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },
   "rust-analyzer.showUnlinkedFileNotification": false,
-  "rust-analyzer.files.excludeDirs": [
-    "mocks"
-  ]
+  "rust-analyzer.files.excludeDirs": ["mocks"]
 }
