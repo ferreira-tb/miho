@@ -16,6 +16,6 @@ fn main() -> Result<()> {
   let cli = Cli::parse();
 
   match cli {
-    Cli::Bump(cmd) => cmd.execute(),
+    Cli::Bump(mut cmd) => cmd.execute(),
   }
 }

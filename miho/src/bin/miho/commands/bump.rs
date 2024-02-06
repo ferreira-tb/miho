@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use clap::Args;
 use colored::*;
-use inquire::{Confirm, MultiSelect, Select};
+use inquire::{Confirm, MultiSelect, Select, Text};
 use miho::git::{Add, Commit, Push};
 use miho::package::{BumpBuilder, Package, SearchBuilder};
 use miho::release::Release;
@@ -51,7 +51,7 @@ pub struct BumpCommand {
 }
 
 impl BumpCommand {
-  pub fn execute(&self) -> Result<()> {
+  pub fn execute(&mut self) -> Result<()> {
     let packages = match &self.globs {
       Some(globs) if !globs.is_empty() => {
         let mut globs: Vec<&str> = globs.iter().map(|g| g.as_str()).collect();
@@ -96,7 +96,7 @@ impl BumpCommand {
     }
 
     if !self.no_ask {
-      let should_continue = self.prompt(packages, release)?;
+      let should_continue = self.prompt_bump(packages, release)?;
       if !should_continue {
         return Ok(());
       }
@@ -113,9 +113,14 @@ impl BumpCommand {
           .with_context(|| "failed to update git index")?;
       }
 
-      let message = match &self.commit_message {
-        Some(m) => m.trim(),
-        None => "chore: bump version",
+      if !self.no_ask {
+        self.prompt_commit_message()?;
+      }
+
+      let message = self.commit_message.as_deref().map(|m| m.trim());
+      let message = match message {
+        Some(m) if !m.is_empty() => m,
+        _ => "chore: bump version",
       };
 
       let mut commit = Commit::new(message);
@@ -142,10 +147,18 @@ impl BumpCommand {
     Ok(())
   }
 
-  fn prompt(&self, mut packages: Vec<Package>, release: Release) -> Result<bool> {
+  fn prompt_bump(&self, mut packages: Vec<Package>, release: Release) -> Result<bool> {
     if packages.len() == 1 {
       let package = packages.swap_remove(0);
-      self.prompt_single(package, release)
+      let message = format!("Bump {}?", package.name);
+      let should_bump = Confirm::new(&message).with_default(true).prompt()?;
+
+      if should_bump {
+        self.bump(package, &release)?;
+        Ok(true)
+      } else {
+        Ok(false)
+      }
     } else {
       let options = vec!["All", "Some", "None"];
       let response = Select::new("Select what to bump.", options).prompt()?;
@@ -166,16 +179,13 @@ impl BumpCommand {
     }
   }
 
-  fn prompt_single(&self, package: Package, release: Release) -> Result<bool> {
-    let message = format!("Bump {}?", package.name);
-    let should_bump = Confirm::new(&message).with_default(true).prompt()?;
-
-    if should_bump {
-      self.bump(package, &release)?;
-      Ok(true)
-    } else {
-      Ok(false)
+  fn prompt_commit_message(&mut self) -> Result<()> {
+    let message = Text::new("Commit message").prompt_skippable()?;
+    if let Some(message) = message {
+      self.commit_message = Some(message);
     }
+
+    Ok(())
   }
 
   fn bump(&self, package: Package, release: &Release) -> Result<()> {
