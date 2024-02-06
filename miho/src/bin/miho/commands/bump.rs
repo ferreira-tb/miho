@@ -4,13 +4,14 @@ use colored::*;
 use inquire::{Confirm, MultiSelect, Select};
 use miho::git::{Add, Commit, Push};
 use miho::package::{Package, SearchBuilder};
-use miho::semver::ReleaseType;
+use miho::release::Release;
+use semver::Prerelease;
 use std::process::Stdio;
 
 #[derive(Debug, Args)]
 pub struct BumpCommand {
   /// Type of the release.
-  release_type: Option<String>,
+  release: Option<String>,
 
   /// Include untracked files with `git add <PATHSPEC>`.
   #[arg(short = 'a', long, value_name = "PATHSPEC")]
@@ -41,12 +42,12 @@ pub struct BumpCommand {
   no_verify: bool,
 
   /// Prerelease identifier.
-  #[arg(long, value_name = "IDENTIFIER")]
-  pre_id: Option<String>,
+  #[arg(short = 'p', long, value_name = "IDENTIFIER")]
+  pre: Option<String>,
 
-  /// Describes what to do with the standard I/O stream.
-  #[arg(short = 's', long, default_value = "inherit")]
-  stdio: Option<String>,
+  /// Build metadata.
+  #[arg(short = 'b', long, value_name = "METADATA")]
+  build: Option<String>,
 }
 
 impl BumpCommand {
@@ -56,6 +57,7 @@ impl BumpCommand {
         let mut globs: Vec<&str> = globs.iter().map(|g| g.as_str()).collect();
         let last = globs.pop().unwrap_or(".");
         let mut builder = SearchBuilder::new(last);
+
         for glob in globs {
           builder.add(glob);
         }
@@ -73,52 +75,51 @@ impl BumpCommand {
       return Ok(());
     }
 
-    let pre_id = self.pre_id.as_deref();
-    let release_type = match self.release_type.as_deref() {
+    let pre = self.pre.as_deref();
+    let release = match self.release.as_deref() {
       Some(rt) => rt.try_into()?,
-      None => ReleaseType::Patch,
+      None => Release::Patch,
     };
 
     for package in &packages {
-      let new_version = package.version.inc(&release_type, pre_id)?;
+      let new_version = match pre {
+        Some(pre) => release.increment_pre(&package.version, Prerelease::new(pre)?),
+        None => release.increment(&package.version),
+      };
+
       println!(
         "[ {} ]  {}  =>  {}",
         package.name.bold(),
-        package.version.raw().bright_blue(),
-        new_version.raw().bright_green()
+        package.version.to_string().bright_blue(),
+        new_version.to_string().bright_green()
       );
     }
 
     if !self.no_ask {
-      let should_continue = self.prompt(packages, release_type)?;
+      let should_continue = self.prompt(packages, release)?;
       if !should_continue {
         return Ok(());
       }
     } else {
-      self.bump_all(packages, release_type)?;
+      self.bump_all(packages, release)?;
     }
 
     if !self.no_commit {
-      let stdio = match &self.stdio {
-        Some(m) => m.as_str(),
-        None => "inherit",
-      };
-
       if let Some(pathspec) = &self.add {
         Add::new(pathspec)
-          .stderr(stdio.to_stdio())
-          .stdout(stdio.to_stdio())
+          .stderr(Stdio::inherit())
+          .stdout(Stdio::inherit())
           .output()
           .with_context(|| "failed to update git index")?;
       }
 
       let message = match &self.commit_message {
-        Some(m) => m,
+        Some(m) => m.trim(),
         None => "chore: bump version",
       };
 
       let mut commit = Commit::new(message);
-      commit.stderr(stdio.to_stdio()).stdout(stdio.to_stdio());
+      commit.stderr(Stdio::inherit()).stdout(Stdio::inherit());
 
       if self.no_verify {
         commit.no_verify();
@@ -131,8 +132,8 @@ impl BumpCommand {
 
       if !self.no_push {
         Push::new()
-          .stderr(stdio.to_stdio())
-          .stdout(stdio.to_stdio())
+          .stderr(Stdio::inherit())
+          .stdout(Stdio::inherit())
           .output()
           .with_context(|| "failed to push commit")?;
       }
@@ -141,33 +142,23 @@ impl BumpCommand {
     Ok(())
   }
 
-  fn prompt(&self, packages: Vec<Package>, rt: ReleaseType) -> Result<bool> {
-    let pre_id = self.pre_id.as_deref();
-
+  fn prompt(&self, mut packages: Vec<Package>, release: Release) -> Result<bool> {
     if packages.len() == 1 {
-      let package = packages.first().unwrap();
-      let message = format!("Bump {}?", package.name);
-      let response = Confirm::new(&message).with_default(true).prompt()?;
-
-      if response {
-        package.bump(&rt, pre_id)?;
-        Ok(true)
-      } else {
-        Ok(false)
-      }
+      let package = packages.swap_remove(0);
+      return self.prompt_single(package, release);
     } else {
       let options = vec!["All", "Some", "None"];
       let response = Select::new("Select what to bump.", options).prompt()?;
 
       match response {
         "All" => {
-          self.bump_all(packages, rt)?;
+          self.bump_all(packages, release)?;
           Ok(true)
         }
         "Some" => {
           let message = "Select the packages to bump.";
           let packages = MultiSelect::new(message, packages).prompt()?;
-          self.bump_all(packages, rt)?;
+          self.bump_all(packages, release)?;
           Ok(true)
         }
         _ => Ok(false),
@@ -175,30 +166,37 @@ impl BumpCommand {
     }
   }
 
-  fn bump_all(&self, packages: Vec<Package>, rt: ReleaseType) -> Result<()> {
-    let pre_id = self.pre_id.as_deref();
+  fn prompt_single(&self, package: Package, release: Release) -> Result<bool> {
+    let message = format!("Bump {}?", package.name);
+    let should_bump = Confirm::new(&message).with_default(true).prompt()?;
+
+    if should_bump {
+      self.bump(package, &release)?;
+      Ok(true)
+    } else {
+      Ok(false)
+    }
+  }
+
+  fn bump(&self, package: Package, release: &Release) -> Result<()> {
+    let mut builder = package.bump(release)?;
+    
+    if let Some(pre) = self.pre.as_deref() {
+      builder.pre(pre)?;
+    }
+
+    if let Some(build) = &self.build {
+      builder.build(build)?;
+    }
+
+    builder.bump()
+  }
+
+  fn bump_all(&self, packages: Vec<Package>, release: Release) -> Result<()> {
     for package in packages {
-      package
-        .bump(&rt, pre_id)
-        .with_context(|| "failed to bump all packages")?;
+      self.bump(package, &release)?;
     }
 
     Ok(())
-  }
-}
-
-trait StdioStr<T: AsRef<str>> {
-  fn to_stdio(&self) -> Stdio;
-}
-
-impl<T: AsRef<str>> StdioStr<T> for T {
-  fn to_stdio(&self) -> Stdio {
-    let value = self.as_ref();
-    let value = value.trim().to_lowercase();
-    match value.as_str() {
-      "null" => Stdio::null(),
-      "pipe" | "piped" => Stdio::piped(),
-      _ => Stdio::inherit(),
-    }
   }
 }

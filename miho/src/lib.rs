@@ -2,4 +2,4 @@
 
 pub mod git;
 pub mod package;
-pub mod semver;
+pub mod release;

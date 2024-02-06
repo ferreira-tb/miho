@@ -1,10 +1,13 @@
+mod bump;
 mod manifest;
 mod search;
 
-use crate::semver::{ReleaseType, Version};
+use crate::release::Release;
 use anyhow::Result;
+pub use bump::BumpBuilder;
 use manifest::{ManifestHandler, ManifestType};
 pub use search::SearchBuilder;
+use semver::Version;
 use std::fmt;
 use std::path::{Path, PathBuf};
 
@@ -12,7 +15,7 @@ pub struct Package {
   pub name: String,
   pub version: Version,
   pub manifest_path: PathBuf,
-  manifest: Box<dyn ManifestHandler>,
+  pub manifest: Box<dyn ManifestHandler>,
 }
 
 impl Package {
@@ -32,9 +35,9 @@ impl Package {
     Ok(package)
   }
 
-  pub fn bump(&self, rt: &ReleaseType, pre_id: Option<&str>) -> Result<()> {
-    let new_version = self.version.inc(rt, pre_id)?;
-    self.manifest.bump(self, new_version)
+  pub fn bump<'a>(&'a self, release: &'a Release) -> Result<BumpBuilder> {
+    let builder = BumpBuilder::new(self, release);
+    Ok(builder)
   }
 
   pub fn filename(&self) -> &str {
@@ -105,7 +108,7 @@ mod tests {
 
       let package = Package::new(&path).unwrap();
       let current_patch = package.version.patch;
-      package.bump(&ReleaseType::Patch, None).unwrap();
+      package.bump(&Release::Patch).unwrap();
 
       let package = Package::new(path).unwrap();
       assert_eq!(package.version.patch, current_patch + 1);
