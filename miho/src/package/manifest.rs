@@ -3,11 +3,11 @@ mod package_json;
 mod tauri_conf_json;
 
 use super::Package;
-use crate::semver::Version;
 use anyhow::{bail, Result};
 use cargo_toml::CargoToml;
 use globset::Glob;
 use package_json::PackageJson;
+use semver::Version;
 use serde::Serialize;
 use std::path::Path;
 use tauri_conf_json::TauriConfJson;
@@ -23,7 +23,7 @@ trait Manifest: Serialize {
   fn read_as_value<P: AsRef<Path>>(manifest_path: P) -> Result<Self::Value>;
 }
 
-pub(super) trait ManifestHandler {
+pub trait ManifestHandler {
   fn bump(&self, package: &Package, new_version: Version) -> Result<()>;
   fn filename(&self) -> &str;
   fn name(&self) -> &str;
@@ -38,15 +38,11 @@ pub enum ManifestType {
 }
 
 impl ManifestType {
-  pub(super) fn read_source<P: AsRef<Path>>(
-    &self,
-    manifest_path: P,
-  ) -> Result<Box<dyn ManifestHandler>> {
-    let manifest_path = manifest_path.as_ref();
+  pub(super) fn read_source<P: AsRef<Path>>(&self, path: P) -> Result<Box<dyn ManifestHandler>> {
     match self {
-      ManifestType::CargoToml => CargoToml::read(manifest_path),
-      ManifestType::PackageJson => PackageJson::read(manifest_path),
-      ManifestType::TauriConfJson => TauriConfJson::read(manifest_path),
+      ManifestType::CargoToml => CargoToml::read(path),
+      ManifestType::PackageJson => PackageJson::read(path),
+      ManifestType::TauriConfJson => TauriConfJson::read(path),
     }
   }
 

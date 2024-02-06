@@ -1,8 +1,8 @@
 use super::{Manifest, ManifestHandler};
 use crate::package::Package;
-use crate::semver::Version;
 use anyhow::Result;
 use miho_derive::Manifest;
+use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
@@ -17,9 +17,9 @@ pub(super) struct PackageJson {
 }
 
 impl ManifestHandler for PackageJson {
-  fn bump(&self, package: &Package, new_version: Version) -> Result<()> {
+  fn bump(&self, package: &Package, version: Version) -> Result<()> {
     let mut manifest = PackageJson::read_as_value(&package.manifest_path)?;
-    manifest["version"] = serde_json::Value::String(new_version.raw());
+    manifest["version"] = serde_json::Value::String(version.to_string());
 
     let contents = serde_json::to_string_pretty(&manifest)?;
     fs::write(&package.manifest_path, contents)?;
@@ -36,6 +36,7 @@ impl ManifestHandler for PackageJson {
   }
 
   fn version(&self) -> Result<Version> {
-    Version::new(&self.version)
+    let version = Version::parse(&self.version)?;
+    Ok(version)
   }
 }

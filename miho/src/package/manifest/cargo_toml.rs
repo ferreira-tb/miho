@@ -1,8 +1,8 @@
 use super::{Manifest, ManifestHandler};
 use crate::package::Package;
-use crate::semver::Version;
 use anyhow::Result;
 use miho_derive::{self, Manifest};
+use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
@@ -20,9 +20,9 @@ pub(super) struct CargoPackage {
 }
 
 impl ManifestHandler for CargoToml {
-  fn bump(&self, package: &Package, new_version: Version) -> Result<()> {
+  fn bump(&self, package: &Package, version: Version) -> Result<()> {
     let mut manifest = CargoToml::read_as_value(&package.manifest_path)?;
-    manifest["package"]["version"] = toml::Value::String(new_version.raw());
+    manifest["package"]["version"] = toml::Value::String(version.to_string());
 
     let contents = toml::to_string_pretty(&manifest)?;
     fs::write(&package.manifest_path, contents)?;
@@ -39,6 +39,7 @@ impl ManifestHandler for CargoToml {
   }
 
   fn version(&self) -> Result<Version> {
-    Version::new(&self.package.version)
+    let version = Version::parse(&self.package.version)?;
+    Ok(version)
   }
 }

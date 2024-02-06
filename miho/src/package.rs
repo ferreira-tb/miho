@@ -1,10 +1,12 @@
+mod bump;
 mod manifest;
 mod search;
 
-use crate::semver::{ReleaseType, Version};
 use anyhow::Result;
+pub use bump::BumpBuilder;
 use manifest::{ManifestHandler, ManifestType};
 pub use search::SearchBuilder;
+use semver::Version;
 use std::fmt;
 use std::path::{Path, PathBuf};
 
@@ -12,7 +14,7 @@ pub struct Package {
   pub name: String,
   pub version: Version,
   pub manifest_path: PathBuf,
-  manifest: Box<dyn ManifestHandler>,
+  pub manifest: Box<dyn ManifestHandler>,
 }
 
 impl Package {
@@ -32,11 +34,6 @@ impl Package {
     Ok(package)
   }
 
-  pub fn bump(&self, rt: &ReleaseType, pre_id: Option<&str>) -> Result<()> {
-    let new_version = self.version.inc(rt, pre_id)?;
-    self.manifest.bump(self, new_version)
-  }
-
   pub fn filename(&self) -> &str {
     self.manifest.filename()
   }
@@ -52,6 +49,7 @@ impl fmt::Display for Package {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::release::Release;
   use std::{env, fs};
 
   fn find_mocks_dir<P: AsRef<Path>>(path: P) -> Option<PathBuf> {
@@ -105,7 +103,9 @@ mod tests {
 
       let package = Package::new(&path).unwrap();
       let current_patch = package.version.patch;
-      package.bump(&ReleaseType::Patch, None).unwrap();
+
+      let builder = BumpBuilder::new(&package, &Release::Patch);
+      builder.bump().unwrap();
 
       let package = Package::new(path).unwrap();
       assert_eq!(package.version.patch, current_patch + 1);

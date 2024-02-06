@@ -1,16 +1,39 @@
 version: 2
 updates:
-  - package-ecosystem: 'cargo'
+  - package-ecosystem: 'npm'
     directory: '/'
+    groups:
+      non-major:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+    labels:
+      - 'dependencies'
+      - 'typescript'
     schedule:
       interval: 'daily'
 
-  - package-ecosystem: 'npm'
+  - package-ecosystem: 'cargo'
     directory: '/'
+    groups:
+      non-major:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+    labels:
+      - 'dependencies'
+      - 'rust'
     schedule:
-      interval: 'weekly'
+      interval: 'daily'
 
   - package-ecosystem: 'github-actions'
     directory: '/'
+    labels:
+      - 'dependencies'
+      - 'github actions'
     schedule:
       interval: 'weekly'

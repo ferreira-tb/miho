@@ -1,13 +1,19 @@
 {
   "name": "miho",
   "description": "Repository management tools",
-  "version": "3.7.21",
+  "version": "4.0.0",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@8.12.1",
+  "packageManager": "pnpm@8.15.1",
   "scripts": {
-    "bump": "cargo run -- bump --no-ask --add .",
-    "mock": "cargo run -- bump -i mocks --no-commit --no-push --no-verify",
+    "format": "prettier . --write && cargo fmt --all",
+    "mock": "cargo run -- bump -i mocks --no-commit",
+    "prepare": "husky",
     "release": "cargo test && cargo clippy && cargo publish -p miho_derive && cargo publish -p miho"
+  },
+  "devDependencies": {
+    "husky": "^9.0.10",
+    "prettier": "^3.2.5",
+    "taze": "^0.13.3"
   }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "miho_derive"
-version = "3.7.21"
+version = "4.0.0"
 
 [package.description]
 workspace = true

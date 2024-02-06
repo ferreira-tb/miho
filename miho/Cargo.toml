@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "3.7.21"
+version = "4.0.0"
 
 [package.description]
 workspace = true
@@ -36,10 +36,10 @@ globset = "0.4"
 ignore = "0.4"
 inquire = "0.6"
 regex = "1.10"
-thiserror = "1.0"
+semver = "1.0"
 
 [dependencies.miho_derive]
-version = "3.7"
+version = "4.0"
 path = "../miho_derive"
 
 [dependencies.clap]
