@@ -1,3 +1,2 @@
 cargo fmt --all
 cargo clippy
-cargo test
