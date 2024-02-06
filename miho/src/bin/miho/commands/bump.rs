@@ -145,7 +145,7 @@ impl BumpCommand {
   fn prompt(&self, mut packages: Vec<Package>, release: Release) -> Result<bool> {
     if packages.len() == 1 {
       let package = packages.swap_remove(0);
-      return self.prompt_single(package, release);
+      self.prompt_single(package, release)
     } else {
       let options = vec!["All", "Some", "None"];
       let response = Select::new("Select what to bump.", options).prompt()?;
@@ -180,7 +180,7 @@ impl BumpCommand {
 
   fn bump(&self, package: Package, release: &Release) -> Result<()> {
     let mut builder = package.bump(release)?;
-    
+
     if let Some(pre) = self.pre.as_deref() {
       builder.pre(pre)?;
     }
