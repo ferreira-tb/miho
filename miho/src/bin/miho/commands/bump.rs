@@ -3,7 +3,7 @@ use clap::Args;
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select};
 use miho::git::{Add, Commit, Push};
-use miho::package::{Package, SearchBuilder};
+use miho::package::{BumpBuilder, Package, SearchBuilder};
 use miho::release::Release;
 use semver::Prerelease;
 use std::process::Stdio;
@@ -179,13 +179,13 @@ impl BumpCommand {
   }
 
   fn bump(&self, package: Package, release: &Release) -> Result<()> {
-    let mut builder = package.bump(release)?;
+    let mut builder = BumpBuilder::new(&package, release);
 
     if let Some(pre) = self.pre.as_deref() {
       builder.pre(pre)?;
     }
 
-    if let Some(build) = &self.build {
+    if let Some(build) = self.build.as_deref() {
       builder.build(build)?;
     }
 

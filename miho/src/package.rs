@@ -2,7 +2,6 @@ mod bump;
 mod manifest;
 mod search;
 
-use crate::release::Release;
 use anyhow::Result;
 pub use bump::BumpBuilder;
 use manifest::{ManifestHandler, ManifestType};
@@ -35,11 +34,6 @@ impl Package {
     Ok(package)
   }
 
-  pub fn bump<'a>(&'a self, release: &'a Release) -> Result<BumpBuilder> {
-    let builder = BumpBuilder::new(self, release);
-    Ok(builder)
-  }
-
   pub fn filename(&self) -> &str {
     self.manifest.filename()
   }
@@ -55,6 +49,7 @@ impl fmt::Display for Package {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::release::Release;
   use std::{env, fs};
 
   fn find_mocks_dir<P: AsRef<Path>>(path: P) -> Option<PathBuf> {
@@ -108,7 +103,9 @@ mod tests {
 
       let package = Package::new(&path).unwrap();
       let current_patch = package.version.patch;
-      package.bump(&Release::Patch).unwrap();
+
+      let builder = BumpBuilder::new(&package, &Release::Patch);
+      builder.bump().unwrap();
 
       let package = Package::new(path).unwrap();
       assert_eq!(package.version.patch, current_patch + 1);
