@@ -68,25 +68,3 @@ impl SearchBuilder {
     Ok(builder.build()?)
   }
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn should_find_package() {
-    let builder = SearchBuilder::new(".");
-    let entries = builder.search().unwrap();
-    let cwd = env::current_dir().unwrap();
-
-    let toml = cwd.join("Cargo.toml").canonicalize().unwrap();
-    let toml = toml.to_str().unwrap();
-
-    if !entries
-      .iter()
-      .any(|p| p.manifest_path.to_str().unwrap() == toml)
-    {
-      panic!("Cargo.toml not found");
-    }
-  }
-}

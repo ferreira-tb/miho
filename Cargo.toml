@@ -1,5 +1,5 @@
 [workspace]
-members = ["miho", "miho_derive"]
+members = ["miho", "miho_derive", "tests"]
 exclude = ["mocks"]
 resolver = "2"
 

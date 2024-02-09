@@ -9,7 +9,9 @@ use commands::*;
 #[command(version, about, long_about = None)]
 enum Cli {
   /// Recursively bump your packages version.
-  Bump(BumpCommand),
+  Bump(Bump),
+
+  Update(Update),
 }
 
 fn main() -> Result<()> {
@@ -17,5 +19,6 @@ fn main() -> Result<()> {
 
   match cli {
     Cli::Bump(mut cmd) => cmd.execute(),
+    Cli::Update(mut cmd) => cmd.execute(),
   }
 }

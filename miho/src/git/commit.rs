@@ -14,7 +14,7 @@ impl Commit {
     let message = message.as_ref();
     Self {
       cmd: Command::new("git"),
-      args: vec!["commit".into(), Flag::Message.into(), message.to_string()],
+      args: vec!["commit".into(), Flag::Message.into(), message.into()],
     }
   }
 

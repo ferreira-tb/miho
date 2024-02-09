@@ -24,9 +24,6 @@ pub fn is_dirty() -> Result<bool> {
     bail!("Failed to get git status: {}", stderr);
   }
 
-  if output.stdout.is_empty() {
-    Ok(false)
-  } else {
-    Ok(true)
-  }
+  let is_empty = output.stdout.is_empty();
+  Ok(!is_empty)
 }

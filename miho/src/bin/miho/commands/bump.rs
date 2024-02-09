@@ -3,13 +3,12 @@ use clap::Args;
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select, Text};
 use miho::git::{Add, Commit, Push};
-use miho::package::{BumpBuilder, Package, SearchBuilder};
-use miho::release::Release;
+use miho::{BumpBuilder, Package, Release, SearchBuilder};
 use semver::Prerelease;
 use std::process::Stdio;
 
 #[derive(Debug, Args)]
-pub struct BumpCommand {
+pub struct Bump {
   /// Type of the release.
   release: Option<String>,
 
@@ -50,8 +49,8 @@ pub struct BumpCommand {
   build: Option<String>,
 }
 
-impl BumpCommand {
-  pub fn execute(&mut self) -> Result<()> {
+impl super::Command for Bump {
+  fn execute(&mut self) -> Result<()> {
     let packages = match &self.globs {
       Some(globs) if !globs.is_empty() => {
         let mut globs: Vec<&str> = globs.iter().map(|g| g.as_str()).collect();
@@ -77,7 +76,7 @@ impl BumpCommand {
 
     let pre = self.pre.as_deref();
     let release = match self.release.as_deref() {
-      Some(rt) => rt.try_into()?,
+      Some(r) => r.try_into()?,
       None => Release::Patch,
     };
 
@@ -146,7 +145,9 @@ impl BumpCommand {
 
     Ok(())
   }
+}
 
+impl Bump {
   fn prompt_bump(&self, mut packages: Vec<Package>, release: Release) -> Result<bool> {
     if packages.len() == 1 {
       let package = packages.swap_remove(0);
