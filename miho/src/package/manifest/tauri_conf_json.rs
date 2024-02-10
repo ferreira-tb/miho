@@ -8,7 +8,7 @@ use std::fs;
 
 const FILENAME_TAURI_CONF_JSON: &str = "tauri.conf.json";
 
-#[derive(Manifest, Deserialize, Serialize)]
+#[derive(Debug, Manifest, Deserialize, Serialize)]
 #[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
 pub(super) struct TauriConfJson {
   pub product_name: String,

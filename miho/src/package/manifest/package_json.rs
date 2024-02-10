@@ -4,16 +4,23 @@ use anyhow::Result;
 use miho_derive::Manifest;
 use semver::Version;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fs;
 
 const FILENAME_PACKAGE_JSON: &str = "package.json";
 
-#[derive(Manifest, Deserialize, Serialize)]
+#[derive(Debug, Manifest, Deserialize, Serialize)]
 #[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
 pub(super) struct PackageJson {
   pub name: String,
   pub version: String,
   pub package_manager: Option<String>,
+
+  pub scripts: Option<HashMap<String, String>>,
+
+  pub dependencies: Option<HashMap<String, String>>,
+  pub dev_dependencies: Option<HashMap<String, String>>,
+  pub peer_dependencies: Option<HashMap<String, String>>,
 }
 
 impl ManifestHandler for PackageJson {

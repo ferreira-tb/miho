@@ -8,12 +8,12 @@ use std::fs;
 
 const FILENAME_CARGO_TOML: &str = "Cargo.toml";
 
-#[derive(Manifest, Deserialize, Serialize)]
+#[derive(Debug, Manifest, Deserialize, Serialize)]
 pub(super) struct CargoToml {
   pub package: CargoPackage,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(super) struct CargoPackage {
   pub name: String,
   pub version: String,

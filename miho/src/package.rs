@@ -4,7 +4,7 @@ mod search;
 
 use anyhow::Result;
 pub use bump::BumpBuilder;
-use manifest::{ManifestHandler, ManifestType};
+pub use manifest::{ManifestHandler, ManifestType};
 pub use search::SearchBuilder;
 use semver::Version;
 use std::fmt;
