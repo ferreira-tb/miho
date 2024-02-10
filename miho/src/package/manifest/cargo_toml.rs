@@ -38,6 +38,10 @@ impl ManifestHandler for CargoToml {
     self.package.name.as_str()
   }
 
+  fn update(&self) -> Result<()> {
+    Ok(())
+  }
+
   fn version(&self) -> Result<Version> {
     let version = Version::parse(&self.package.version)?;
     Ok(version)

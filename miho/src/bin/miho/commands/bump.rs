@@ -54,7 +54,7 @@ impl super::Command for Bump {
     let packages = match &self.globs {
       Some(globs) if !globs.is_empty() => {
         let mut globs: Vec<&str> = globs.iter().map(|g| g.as_str()).collect();
-        let last = globs.pop().unwrap_or(".");
+        let last = globs.pop().unwrap();
         let mut builder = SearchBuilder::new(last);
 
         for glob in globs {

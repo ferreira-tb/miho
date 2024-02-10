@@ -24,9 +24,11 @@ trait Manifest: Serialize + std::fmt::Debug {
 }
 
 pub trait ManifestHandler {
+  /// Bump the package to a specific version.
   fn bump(&self, package: &Package, new_version: Version) -> Result<()>;
   fn filename(&self) -> &str;
   fn name(&self) -> &str;
+  fn update(&self) -> Result<()>;
   fn version(&self) -> Result<Version>;
 }
 

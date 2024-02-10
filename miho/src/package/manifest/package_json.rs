@@ -42,6 +42,10 @@ impl ManifestHandler for PackageJson {
     self.name.as_str()
   }
 
+  fn update(&self) -> Result<()> {
+    Ok(())
+  }
+
   fn version(&self) -> Result<Version> {
     let version = Version::parse(&self.version)?;
     Ok(version)
