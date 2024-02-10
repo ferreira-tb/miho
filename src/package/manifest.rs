@@ -3,7 +3,7 @@ mod package_json;
 mod tauri_conf_json;
 
 use super::Package;
-use anyhow::{bail, Result};
+use crate::error::{Error, Result};
 use cargo_toml::CargoToml;
 use globset::Glob;
 use package_json::PackageJson;
@@ -58,7 +58,7 @@ impl ManifestType {
 }
 
 impl TryFrom<&Path> for ManifestType {
-  type Error = anyhow::Error;
+  type Error = crate::Error;
 
   fn try_from(manifest_path: &Path) -> Result<Self> {
     let variants = [
@@ -68,13 +68,17 @@ impl TryFrom<&Path> for ManifestType {
     ];
 
     for variant in variants {
-      let glob = variant.glob();
-      let glob = Glob::new(glob)?.compile_matcher();
+      let glob = Glob::new(variant.glob())
+        .expect("hardcoded glob should always be valid")
+        .compile_matcher();
+
       if glob.is_match(manifest_path) {
         return Ok(variant);
       }
     }
 
-    bail!("could not parse manifest type")
+    Err(Error::InvalidManifestPath {
+      path: manifest_path.to_string_lossy().into_owned(),
+    })
   }
 }

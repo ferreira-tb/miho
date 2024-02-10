@@ -10,7 +10,7 @@ cargo install miho
 
 ### Bump
 
-Recursively bump your packages version.
+Bump your packages version.
 
 ```sh
 miho bump [OPTIONS] [RELEASE_TYPE]

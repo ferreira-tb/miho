@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use clap::Args;
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select, Text};
-use miho::git::{Add, Commit, Push};
+use miho::git::{Add, Commit, GitCommand, Push};
 use miho::{BumpBuilder, Package, Release, SearchBuilder};
 use semver::Prerelease;
 use std::process::Stdio;
@@ -54,7 +54,7 @@ impl super::Command for Bump {
     let packages = match &self.globs {
       Some(globs) if !globs.is_empty() => {
         let mut globs: Vec<&str> = globs.iter().map(|g| g.as_str()).collect();
-        let last = globs.pop().unwrap();
+        let last = globs.pop().expect("globs is not empty");
         let mut builder = SearchBuilder::new(last);
 
         for glob in globs {
@@ -181,7 +181,7 @@ impl Bump {
   }
 
   fn prompt_commit_message(&mut self) -> Result<()> {
-    let message = Text::new("Commit message").prompt_skippable()?;
+    let message = Text::new("Commit message: ").prompt_skippable()?;
     if let Some(message) = message {
       self.commit_message = Some(message);
     }
@@ -200,7 +200,9 @@ impl Bump {
       builder.build(build)?;
     }
 
-    builder.bump()
+    builder.bump()?;
+
+    Ok(())
   }
 
   fn bump_all(&self, packages: Vec<Package>, release: Release) -> Result<()> {

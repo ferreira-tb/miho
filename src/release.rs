@@ -1,4 +1,4 @@
-use anyhow::Result;
+use crate::error::Result;
 use semver::{BuildMetadata, Prerelease, Version};
 
 #[derive(Clone, Debug)]
@@ -70,7 +70,7 @@ impl Release {
 }
 
 impl TryFrom<&str> for Release {
-  type Error = anyhow::Error;
+  type Error = crate::error::Error;
 
   fn try_from(val: &str) -> Result<Self> {
     let release = val.to_lowercase();

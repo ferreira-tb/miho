@@ -1,11 +1,11 @@
 use super::flag::Flag;
-use miho_derive::GitCommand;
-use std::process::Command;
+use super::GitCommand;
+use crate::error::Result;
+use std::process::{Child, Command, Output, Stdio};
 
 /// <https://git-scm.com/docs/git-commit>
-#[derive(GitCommand)]
 pub struct Commit {
-  cmd: Command,
+  command: Command,
   args: Vec<String>,
 }
 
@@ -13,7 +13,7 @@ impl Commit {
   pub fn new<T: AsRef<str>>(message: T) -> Self {
     let message = message.as_ref();
     Self {
-      cmd: Command::new("git"),
+      command: Command::new("git"),
       args: vec!["commit".into(), Flag::Message.into(), message.into()],
     }
   }
@@ -28,5 +28,25 @@ impl Commit {
   pub fn no_verify(&mut self) -> &mut Self {
     self.args.push(Flag::NoVerify.into());
     self
+  }
+}
+
+impl GitCommand for Commit {
+  fn stderr(&mut self, cfg: Stdio) -> &mut Self {
+    self.command.stderr(cfg);
+    self
+  }
+
+  fn stdout(&mut self, cfg: Stdio) -> &mut Self {
+    self.command.stdout(cfg);
+    self
+  }
+
+  fn output(&mut self) -> Result<Output> {
+    self.command.args(&self.args).output().map_err(Into::into)
+  }
+
+  fn spawn(&mut self) -> Result<Child> {
+    self.command.args(&self.args).spawn().map_err(Into::into)
   }
 }

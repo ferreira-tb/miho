@@ -213,15 +213,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "convert_case"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
-dependencies = [
- "unicode-segmentation",
-]
-
-[[package]]
 name = "core-foundation"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -637,23 +628,13 @@ dependencies = [
  "globset",
  "ignore",
  "inquire",
- "miho_derive",
  "reqwest",
  "semver",
  "serde",
  "serde_json",
+ "thiserror",
  "tokio",
  "toml",
-]
-
-[[package]]
-name = "miho_derive"
-version = "4.0.0"
-dependencies = [
- "convert_case",
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
@@ -1149,13 +1130,6 @@ dependencies = [
  "fastrand",
  "rustix",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "tests"
-version = "4.0.0"
-dependencies = [
- "miho",
 ]
 
 [[package]]

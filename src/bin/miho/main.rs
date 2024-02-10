@@ -8,7 +8,7 @@ use commands::*;
 #[command(name = "miho")]
 #[command(version, about, long_about = None)]
 enum Cli {
-  /// Recursively bump your packages version.
+  /// Bump your packages version.
   Bump(Bump),
 
   Update(Update),

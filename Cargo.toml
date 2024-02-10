@@ -1,9 +1,6 @@
-[workspace]
-members = ["miho", "miho_derive", "tests"]
-exclude = ["mocks"]
-resolver = "2"
-
-[workspace.package]
+[package]
+name = "miho"
+version = "4.0.0"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -13,3 +10,30 @@ edition = "2021"
 readme = "README.md"
 keywords = ["miho", "repository"]
 categories = ["development-tools"]
+
+[dependencies]
+anyhow = "1.0"
+colored = "2.1"
+globset = "0.4"
+ignore = "0.4"
+inquire = "0.6"
+reqwest = { version = "0.11", features = ["json"] }
+semver = "1.0"
+thiserror = "1.0"
+tokio = { version = "1.36", features = [] }
+
+[dependencies.clap]
+version = "4.5"
+features = ["derive"]
+
+[dependencies.serde]
+version = "1.0"
+features = ["derive"]
+
+[dependencies.serde_json]
+version = "1.0"
+features = ["preserve_order"]
+
+[dependencies.toml]
+version = "0.8"
+features = ["preserve_order"]

@@ -2,7 +2,7 @@ mod bump;
 mod manifest;
 mod search;
 
-use anyhow::Result;
+use crate::error::Result;
 pub use bump::BumpBuilder;
 pub use manifest::{ManifestHandler, ManifestType};
 pub use search::SearchBuilder;

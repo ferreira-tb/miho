@@ -1,18 +1,34 @@
 use super::{Manifest, ManifestHandler};
+use crate::error::Result;
 use crate::package::Package;
-use anyhow::Result;
-use miho_derive::Manifest;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::fs;
+use std::path::Path;
 
 const FILENAME_TAURI_CONF_JSON: &str = "tauri.conf.json";
 
-#[derive(Debug, Manifest, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
 pub(super) struct TauriConfJson {
   pub product_name: String,
   pub version: String,
+}
+
+impl Manifest for TauriConfJson {
+  type Value = serde_json::Value;
+
+  fn read<P: AsRef<Path>>(manifest_path: P) -> Result<Box<dyn ManifestHandler>> {
+    let contents = fs::read_to_string(manifest_path)?;
+    let manifest: TauriConfJson = serde_json::from_str(&contents)?;
+    Ok(Box::new(manifest))
+  }
+
+  fn read_as_value<P: AsRef<Path>>(manifest_path: P) -> Result<Self::Value> {
+    let contents = fs::read_to_string(manifest_path)?;
+    let manifest: Self::Value = serde_json::from_str(&contents)?;
+    Ok(manifest)
+  }
 }
 
 impl ManifestHandler for TauriConfJson {

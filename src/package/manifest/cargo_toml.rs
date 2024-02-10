@@ -1,14 +1,14 @@
 use super::{Manifest, ManifestHandler};
+use crate::error::Result;
 use crate::package::Package;
-use anyhow::Result;
-use miho_derive::{self, Manifest};
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::fs;
+use std::path::Path;
 
 const FILENAME_CARGO_TOML: &str = "Cargo.toml";
 
-#[derive(Debug, Manifest, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(super) struct CargoToml {
   pub package: CargoPackage,
 }
@@ -17,6 +17,22 @@ pub(super) struct CargoToml {
 pub(super) struct CargoPackage {
   pub name: String,
   pub version: String,
+}
+
+impl Manifest for CargoToml {
+  type Value = toml::Value;
+
+  fn read<P: AsRef<Path>>(manifest_path: P) -> Result<Box<dyn ManifestHandler>> {
+    let contents = fs::read_to_string(manifest_path)?;
+    let manifest: CargoToml = toml::from_str(&contents)?;
+    Ok(Box::new(manifest))
+  }
+
+  fn read_as_value<P: AsRef<Path>>(manifest_path: P) -> Result<Self::Value> {
+    let contents = fs::read_to_string(manifest_path)?;
+    let manifest: Self::Value = toml::from_str(&contents)?;
+    Ok(manifest)
+  }
 }
 
 impl ManifestHandler for CargoToml {

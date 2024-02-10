@@ -1,6 +1,6 @@
 {
   "name": "package-json",
-  "version": "3.0.9",
+  "version": "3.0.13",
   "dependencies": {
     "manatsu": "^0.4.0"
   },
