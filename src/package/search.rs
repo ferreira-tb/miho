@@ -17,7 +17,7 @@ impl SearchBuilder {
     Self { walker }
   }
 
-  /// Adds a new path to the search.
+  /// Adds a file path to the underlying iterator.
   pub fn add<P: AsRef<Path>>(&mut self, path: P) -> &mut Self {
     self.walker.add(path);
     self

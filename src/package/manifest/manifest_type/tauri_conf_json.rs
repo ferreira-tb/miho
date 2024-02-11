@@ -1,11 +1,10 @@
+use crate::package::dependency::DependencyTree;
 use crate::package::manifest::{Manifest, ManifestHandler};
-use crate::package::Package;
+use crate::package::{Agent, Package};
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
-
-const FILENAME_TAURI_CONF_JSON: &str = "tauri.conf.json";
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
@@ -31,10 +30,10 @@ impl Manifest for TauriConfJson {
 }
 
 impl ManifestHandler for TauriConfJson {
-  fn agent(&self) -> super::Agent {
-    super::Agent::Tauri
+  fn agent(&self) -> Agent {
+    Agent::Tauri
   }
-  
+
   fn bump(&self, package: &Package, version: Version) -> crate::Result<()> {
     let mut manifest = TauriConfJson::read_as_value(&package.manifest_path)?;
     manifest["version"] = serde_json::Value::String(version.to_string());
@@ -45,8 +44,12 @@ impl ManifestHandler for TauriConfJson {
     Ok(())
   }
 
+  fn dependencies(&self) -> DependencyTree {
+    DependencyTree::default()
+  }
+
   fn filename(&self) -> &str {
-    FILENAME_TAURI_CONF_JSON
+    "tauri.conf.json"
   }
 
   fn name(&self) -> &str {

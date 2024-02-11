@@ -1,11 +1,10 @@
+use crate::package::dependency::DependencyTree;
 use crate::package::manifest::{Manifest, ManifestHandler};
-use crate::package::Package;
+use crate::package::{Agent, Package};
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
-
-const FILENAME_CARGO_TOML: &str = "Cargo.toml";
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(super) struct CargoToml {
@@ -35,8 +34,8 @@ impl Manifest for CargoToml {
 }
 
 impl ManifestHandler for CargoToml {
-  fn agent(&self) -> super::Agent {
-    super::Agent::Cargo
+  fn agent(&self) -> Agent {
+    Agent::Cargo
   }
 
   fn bump(&self, package: &Package, version: Version) -> crate::Result<()> {
@@ -49,8 +48,12 @@ impl ManifestHandler for CargoToml {
     Ok(())
   }
 
+  fn dependencies(&self) -> DependencyTree {
+    DependencyTree::default()
+  }
+
   fn filename(&self) -> &str {
-    FILENAME_CARGO_TOML
+    "Cargo.toml"
   }
 
   fn name(&self) -> &str {

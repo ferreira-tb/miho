@@ -9,16 +9,6 @@ use package_json::PackageJson;
 use std::path::Path;
 use tauri_conf_json::TauriConfJson;
 
-/// Agent responsible for the manifest.
-/// This tipically represents the package manager used.
-pub enum Agent {
-  Cargo,
-  Npm,
-  Pnpm,
-  Tauri,
-  Yarn,
-}
-
 #[derive(Debug)]
 pub enum ManifestType {
   CargoToml,

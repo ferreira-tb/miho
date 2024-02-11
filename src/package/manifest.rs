@@ -1,7 +1,8 @@
 mod manifest_type;
 
-use super::Package;
-pub use manifest_type::{Agent, ManifestType};
+use super::dependency::DependencyTree;
+use super::{Agent, Package};
+pub use manifest_type::ManifestType;
 use semver::Version;
 use serde::Serialize;
 // use std::collections::HashMap;
@@ -17,7 +18,7 @@ trait Manifest: Serialize + std::fmt::Debug {
 pub trait ManifestHandler {
   fn agent(&self) -> Agent;
   fn bump(&self, package: &Package, new_version: Version) -> crate::Result<()>;
-  // fn dependencies(&self) -> crate::Result<HashMap<String, Version>>;
+  fn dependencies(&self) -> DependencyTree;
   fn filename(&self) -> &str;
   fn name(&self) -> &str;
   fn update(&self) -> crate::Result<()>;

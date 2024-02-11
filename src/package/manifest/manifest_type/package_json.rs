@@ -1,12 +1,11 @@
+use crate::package::dependency::DependencyTree;
 use crate::package::manifest::{Manifest, ManifestHandler};
-use crate::package::Package;
+use crate::package::{Agent, Package};
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
-
-const FILENAME_PACKAGE_JSON: &str = "package.json";
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
@@ -39,16 +38,16 @@ impl Manifest for PackageJson {
 }
 
 impl ManifestHandler for PackageJson {
-  fn agent(&self) -> super::Agent {
+  fn agent(&self) -> Agent {
     if let Some(package_manager) = &self.package_manager {
       if package_manager.starts_with("pnpm") {
-        return super::Agent::Pnpm;
+        return Agent::Pnpm;
       } else if package_manager.starts_with("yarn") {
-        return super::Agent::Yarn;
+        return Agent::Yarn;
       }
     }
 
-    super::Agent::Npm
+    Agent::Npm
   }
 
   fn bump(&self, package: &Package, version: Version) -> crate::Result<()> {
@@ -61,8 +60,26 @@ impl ManifestHandler for PackageJson {
     Ok(())
   }
 
+  fn dependencies(&self) -> DependencyTree {
+    let mut builder = DependencyTree::builder();
+
+    if let Some(deps) = &self.dependencies {
+      builder.normal(deps);
+    }
+
+    if let Some(deps) = &self.dev_dependencies {
+      builder.dev(deps);
+    }
+
+    if let Some(deps) = &self.peer_dependencies {
+      builder.peer(deps);
+    }
+
+    builder.build()
+  }
+
   fn filename(&self) -> &str {
-    FILENAME_PACKAGE_JSON
+    "package.json"
   }
 
   fn name(&self) -> &str {

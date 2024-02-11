@@ -1,9 +1,10 @@
-use anyhow::{Context, Result};
+use crate::search_packages;
+use anyhow::Context;
 use clap::Args;
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select, Text};
 use miho::git::{Add, Commit, GitCommand, Push};
-use miho::{BumpBuilder, Package, Release, SearchBuilder};
+use miho::{BumpBuilder, Package, Release};
 use semver::Prerelease;
 use std::process::Stdio;
 
@@ -21,8 +22,8 @@ pub struct Bump {
   commit_message: Option<String>,
 
   /// Where to search for packages.
-  #[arg(short = 'i', long = "include", value_name = "GLOB")]
-  globs: Option<Vec<String>>,
+  #[arg(short = 'i', long = "include", value_name = "PATH")]
+  paths: Option<Vec<String>>,
 
   /// Do not ask for consent before bumping.
   #[arg(short = 'k', long)]
@@ -50,24 +51,9 @@ pub struct Bump {
 }
 
 impl super::Command for Bump {
-  fn execute(&mut self) -> Result<()> {
-    let packages = match &self.globs {
-      Some(globs) if !globs.is_empty() => {
-        let mut globs: Vec<&str> = globs.iter().map(|g| g.as_str()).collect();
-        let last = globs.pop().expect("globs is not empty");
-        let mut builder = SearchBuilder::new(last);
-
-        for glob in globs {
-          builder.add(glob);
-        }
-
-        builder.search()?
-      }
-      _ => {
-        let builder = SearchBuilder::new(".");
-        builder.search()?
-      }
-    };
+  fn execute(&mut self) -> anyhow::Result<()> {
+    let paths = self.paths.as_deref().unwrap_or_default();
+    let packages = search_packages(paths)?;
 
     if packages.is_empty() {
       println!("{}", "No valid package found.".bold().red());
@@ -95,7 +81,7 @@ impl super::Command for Bump {
     }
 
     if !self.no_ask {
-      let should_continue = self.prompt_bump(packages, release)?;
+      let should_continue = self.prompt(packages, release)?;
       if !should_continue {
         return Ok(());
       }
@@ -104,43 +90,7 @@ impl super::Command for Bump {
     }
 
     if !self.no_commit {
-      if let Some(pathspec) = &self.add {
-        Add::new(pathspec)
-          .stderr(Stdio::inherit())
-          .stdout(Stdio::inherit())
-          .output()
-          .with_context(|| "failed to update git index")?;
-      }
-
-      if !self.no_ask {
-        self.prompt_commit_message()?;
-      }
-
-      let message = self.commit_message.as_deref().map(|m| m.trim());
-      let message = match message {
-        Some(m) if !m.is_empty() => m,
-        _ => "chore: bump version",
-      };
-
-      let mut commit = Commit::new(message);
-      commit.stderr(Stdio::inherit()).stdout(Stdio::inherit());
-
-      if self.no_verify {
-        commit.no_verify();
-      }
-
-      commit
-        .all()
-        .output()
-        .with_context(|| "failed to commit packages")?;
-
-      if !self.no_push {
-        Push::new()
-          .stderr(Stdio::inherit())
-          .stdout(Stdio::inherit())
-          .output()
-          .with_context(|| "failed to push commit")?;
-      }
+      self.commit()?;
     }
 
     Ok(())
@@ -148,7 +98,7 @@ impl super::Command for Bump {
 }
 
 impl Bump {
-  fn prompt_bump(&self, mut packages: Vec<Package>, release: Release) -> Result<bool> {
+  fn prompt(&self, mut packages: Vec<Package>, release: Release) -> anyhow::Result<bool> {
     if packages.len() == 1 {
       let package = packages.swap_remove(0);
       let message = format!("Bump {}?", package.name);
@@ -180,16 +130,7 @@ impl Bump {
     }
   }
 
-  fn prompt_commit_message(&mut self) -> Result<()> {
-    let message = Text::new("Commit message: ").prompt_skippable()?;
-    if let Some(message) = message {
-      self.commit_message = Some(message);
-    }
-
-    Ok(())
-  }
-
-  fn bump(&self, package: Package, release: &Release) -> Result<()> {
+  fn bump(&self, package: Package, release: &Release) -> anyhow::Result<()> {
     let mut builder = BumpBuilder::new(&package, release);
 
     if let Some(pre) = self.pre.as_deref() {
@@ -205,9 +146,52 @@ impl Bump {
     Ok(())
   }
 
-  fn bump_all(&self, packages: Vec<Package>, release: Release) -> Result<()> {
+  fn bump_all(&self, packages: Vec<Package>, release: Release) -> anyhow::Result<()> {
     for package in packages {
       self.bump(package, &release)?;
+    }
+
+    Ok(())
+  }
+
+  fn commit(&mut self) -> anyhow::Result<()> {
+    if let Some(pathspec) = &self.add {
+      Add::new(pathspec)
+        .stderr(Stdio::inherit())
+        .stdout(Stdio::inherit())
+        .output()
+        .with_context(|| "failed to update git index")?;
+    }
+
+    let message = if !self.no_ask && self.commit_message.is_none() {
+      Text::new("Commit message: ").prompt_skippable()?
+    } else {
+      self.commit_message.take()
+    };
+
+    let message = match message.as_deref().map(|m| m.trim()) {
+      Some(m) if !m.is_empty() => m,
+      _ => "chore: bump version",
+    };
+
+    let mut commit = Commit::new(message);
+    commit.stderr(Stdio::inherit()).stdout(Stdio::inherit());
+
+    if self.no_verify {
+      commit.no_verify();
+    }
+
+    commit
+      .all()
+      .output()
+      .with_context(|| "failed to commit packages")?;
+
+    if !self.no_push {
+      Push::new()
+        .stderr(Stdio::inherit())
+        .stdout(Stdio::inherit())
+        .output()
+        .with_context(|| "failed to push commit")?;
     }
 
     Ok(())

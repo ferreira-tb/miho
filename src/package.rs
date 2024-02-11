@@ -1,9 +1,12 @@
+mod agent;
 mod bump;
+mod dependency;
 mod manifest;
 mod search;
 
+pub use agent::Agent;
 pub use bump::BumpBuilder;
-pub use manifest::{Agent, ManifestHandler, ManifestType};
+pub use manifest::{ManifestHandler, ManifestType};
 pub use search::SearchBuilder;
 use semver::Version;
 use std::fmt;
