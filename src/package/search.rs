@@ -34,11 +34,8 @@ impl SearchBuilder {
       let entry = match result {
         Ok(entry) => entry,
         Err(err) if err.is_io() => {
-          if let Some(io_err) = err.into_io_error() {
-            bail!(Error::Io(io_err));
-          } else {
-            continue;
-          }
+          let io_err = err.into_io_error().unwrap();
+          bail!(Error::Io(io_err));
         }
         _ => continue,
       };
