@@ -1,5 +1,5 @@
-use super::{manifest, Package};
-use crate::{bail, Error};
+use super::Package;
+use crate::{bail, Error, ManifestType};
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
 use std::path::Path;
@@ -69,9 +69,9 @@ fn build_globset() -> GlobSet {
     };
   }
 
-  add!(manifest::GLOB_CARGO_TOML);
-  add!(manifest::GLOB_PACKAGE_JSON);
-  add!(manifest::GLOB_TAURI_CONF_JSON);
+  add!(ManifestType::CargoToml.glob());
+  add!(ManifestType::PackageJson.glob());
+  add!(ManifestType::TauriConfJson.glob());
 
   builder.build().unwrap()
 }

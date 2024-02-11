@@ -2,7 +2,7 @@ mod cargo_toml;
 mod package_json;
 mod tauri_conf_json;
 
-use super::{Manifest, ManifestHandler, GLOB_CARGO_TOML, GLOB_PACKAGE_JSON, GLOB_TAURI_CONF_JSON};
+use super::{Manifest, ManifestHandler};
 use cargo_toml::CargoToml;
 use globset::Glob;
 use package_json::PackageJson;
@@ -28,11 +28,11 @@ impl ManifestType {
     }
   }
 
-  pub(super) fn glob(&self) -> &str {
+  pub(crate) fn glob(&self) -> &str {
     match self {
-      ManifestType::CargoToml => GLOB_CARGO_TOML,
-      ManifestType::PackageJson => GLOB_PACKAGE_JSON,
-      ManifestType::TauriConfJson => GLOB_TAURI_CONF_JSON,
+      ManifestType::CargoToml => "**/Cargo.toml",
+      ManifestType::PackageJson => "**/package.json",
+      ManifestType::TauriConfJson => "**/tauri.conf.json",
     }
   }
 }

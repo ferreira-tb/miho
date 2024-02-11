@@ -8,10 +8,6 @@ use serde::Serialize;
 // use std::collections::HashMap;
 use std::path::Path;
 
-pub(super) const GLOB_CARGO_TOML: &str = "**/Cargo.toml";
-pub(super) const GLOB_PACKAGE_JSON: &str = "**/package.json";
-pub(super) const GLOB_TAURI_CONF_JSON: &str = "**/tauri.conf.json";
-
 trait Manifest: Serialize + std::fmt::Debug {
   type Value;
 
