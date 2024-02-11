@@ -1,4 +1,3 @@
-use crate::error::Result;
 use semver::{BuildMetadata, Prerelease, Version};
 
 #[derive(Clone, Debug)]
@@ -72,7 +71,7 @@ impl Release {
 impl TryFrom<&str> for Release {
   type Error = crate::error::Error;
 
-  fn try_from(val: &str) -> Result<Self> {
+  fn try_from(val: &str) -> crate::Result<Self> {
     let release = val.to_lowercase();
     let release = match release.trim() {
       "major" => Release::Major,

@@ -1,5 +1,4 @@
-use super::{Manifest, ManifestHandler};
-use crate::error::Result;
+use crate::package::manifest::{Manifest, ManifestHandler};
 use crate::package::Package;
 use semver::Version;
 use serde::{Deserialize, Serialize};
@@ -22,13 +21,13 @@ pub(super) struct CargoPackage {
 impl Manifest for CargoToml {
   type Value = toml::Value;
 
-  fn read<P: AsRef<Path>>(manifest_path: P) -> Result<Box<dyn ManifestHandler>> {
+  fn read<P: AsRef<Path>>(manifest_path: P) -> crate::Result<Box<dyn ManifestHandler>> {
     let contents = fs::read_to_string(manifest_path)?;
     let manifest: CargoToml = toml::from_str(&contents)?;
     Ok(Box::new(manifest))
   }
 
-  fn read_as_value<P: AsRef<Path>>(manifest_path: P) -> Result<Self::Value> {
+  fn read_as_value<P: AsRef<Path>>(manifest_path: P) -> crate::Result<Self::Value> {
     let contents = fs::read_to_string(manifest_path)?;
     let manifest: Self::Value = toml::from_str(&contents)?;
     Ok(manifest)
@@ -36,7 +35,7 @@ impl Manifest for CargoToml {
 }
 
 impl ManifestHandler for CargoToml {
-  fn bump(&self, package: &Package, version: Version) -> Result<()> {
+  fn bump(&self, package: &Package, version: Version) -> crate::Result<()> {
     let mut manifest = CargoToml::read_as_value(&package.manifest_path)?;
     manifest["package"]["version"] = toml::Value::String(version.to_string());
 
@@ -54,11 +53,11 @@ impl ManifestHandler for CargoToml {
     self.package.name.as_str()
   }
 
-  fn update(&self) -> Result<()> {
+  fn update(&self) -> crate::Result<()> {
     Ok(())
   }
 
-  fn version(&self) -> Result<Version> {
+  fn version(&self) -> crate::Result<Version> {
     let version = Version::parse(&self.package.version)?;
     Ok(version)
   }

@@ -2,7 +2,6 @@ mod bump;
 mod manifest;
 mod search;
 
-use crate::error::Result;
 pub use bump::BumpBuilder;
 pub use manifest::{ManifestHandler, ManifestType};
 pub use search::SearchBuilder;
@@ -19,7 +18,7 @@ pub struct Package {
 
 impl Package {
   /// Create a representation of the package from the manifest at `path`.
-  pub fn new<P: AsRef<Path>>(manifest_path: P) -> Result<Self> {
+  pub fn new<P: AsRef<Path>>(manifest_path: P) -> crate::Result<Self> {
     let manifest_path = manifest_path.as_ref();
     let manifest_type = ManifestType::try_from(manifest_path)?;
     let manifest = manifest_type.read_source(manifest_path)?;

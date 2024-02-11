@@ -1,5 +1,5 @@
 use super::{manifest, Package};
-use crate::{bail, Error, Result};
+use crate::{bail, Error};
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
 use std::path::Path;
@@ -26,7 +26,7 @@ impl SearchBuilder {
   /// Searchs recursively for all packages in the given directory.
   ///
   /// This will respect `.gitignore` and `.mihoignore` files.
-  pub fn search(self) -> Result<Vec<Package>> {
+  pub fn search(self) -> crate::Result<Vec<Package>> {
     let mut packages: Vec<Package> = vec![];
     let glob = build_globset();
 

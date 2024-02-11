@@ -1,6 +1,5 @@
 use super::flag::Flag;
 use super::GitCommand;
-use crate::error::Result;
 use std::process::{Child, Command, Output, Stdio};
 
 /// <https://git-scm.com/docs/git-status>
@@ -35,11 +34,11 @@ impl GitCommand for Status {
     self
   }
 
-  fn output(&mut self) -> Result<Output> {
+  fn output(&mut self) -> crate::Result<Output> {
     self.command.args(&self.args).output().map_err(Into::into)
   }
 
-  fn spawn(&mut self) -> Result<Child> {
+  fn spawn(&mut self) -> crate::Result<Child> {
     self.command.args(&self.args).spawn().map_err(Into::into)
   }
 }

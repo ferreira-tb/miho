@@ -5,7 +5,7 @@ mod push;
 mod status;
 
 use crate::bail;
-use crate::error::{Error, Result};
+use crate::error::Error;
 pub use add::Add;
 pub use commit::Commit;
 pub use flag::Flag;
@@ -16,12 +16,12 @@ use std::process::{Child, Output, Stdio};
 pub trait GitCommand {
   fn stderr(&mut self, cfg: Stdio) -> &mut Self;
   fn stdout(&mut self, cfg: Stdio) -> &mut Self;
-  fn output(&mut self) -> Result<Output>;
-  fn spawn(&mut self) -> Result<Child>;
+  fn output(&mut self) -> crate::Result<Output>;
+  fn spawn(&mut self) -> crate::Result<Child>;
 }
 
 /// Determines whether there are uncommitted changes.
-pub fn is_dirty() -> Result<bool> {
+pub fn is_dirty() -> crate::Result<bool> {
   let output = Status::new()
     .stdout(Stdio::piped())
     .stderr(Stdio::piped())
