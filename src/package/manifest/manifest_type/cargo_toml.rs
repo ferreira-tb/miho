@@ -35,6 +35,10 @@ impl Manifest for CargoToml {
 }
 
 impl ManifestHandler for CargoToml {
+  fn agent(&self) -> super::Agent {
+    super::Agent::Cargo
+  }
+
   fn bump(&self, package: &Package, version: Version) -> crate::Result<()> {
     let mut manifest = CargoToml::read_as_value(&package.manifest_path)?;
     manifest["package"]["version"] = toml::Value::String(version.to_string());

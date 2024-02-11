@@ -39,6 +39,18 @@ impl Manifest for PackageJson {
 }
 
 impl ManifestHandler for PackageJson {
+  fn agent(&self) -> super::Agent {
+    if let Some(package_manager) = &self.package_manager {
+      if package_manager.starts_with("pnpm") {
+        return super::Agent::Pnpm;
+      } else if package_manager.starts_with("yarn") {
+        return super::Agent::Yarn;
+      }
+    }
+
+    super::Agent::Npm
+  }
+
   fn bump(&self, package: &Package, version: Version) -> crate::Result<()> {
     let mut manifest = PackageJson::read_as_value(&package.manifest_path)?;
     manifest["version"] = serde_json::Value::String(version.to_string());

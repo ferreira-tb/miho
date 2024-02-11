@@ -31,6 +31,10 @@ impl Manifest for TauriConfJson {
 }
 
 impl ManifestHandler for TauriConfJson {
+  fn agent(&self) -> super::Agent {
+    super::Agent::Tauri
+  }
+  
   fn bump(&self, package: &Package, version: Version) -> crate::Result<()> {
     let mut manifest = TauriConfJson::read_as_value(&package.manifest_path)?;
     manifest["version"] = serde_json::Value::String(version.to_string());

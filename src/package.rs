@@ -3,7 +3,7 @@ mod manifest;
 mod search;
 
 pub use bump::BumpBuilder;
-pub use manifest::{ManifestHandler, ManifestType};
+pub use manifest::{Agent, ManifestHandler, ManifestType};
 pub use search::SearchBuilder;
 use semver::Version;
 use std::fmt;

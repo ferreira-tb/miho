@@ -6,5 +6,5 @@ mod package;
 mod release;
 
 pub use error::{Error, Result};
-pub use package::{BumpBuilder, ManifestHandler, ManifestType, Package, SearchBuilder};
+pub use package::{Agent, BumpBuilder, ManifestHandler, ManifestType, Package, SearchBuilder};
 pub use release::Release;
