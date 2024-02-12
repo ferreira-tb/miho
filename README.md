@@ -13,7 +13,7 @@ cargo install miho
 Bump your packages version.
 
 ```sh
-miho bump [OPTIONS] [RELEASE_TYPE]
+miho bump [OPTIONS] [RELEASE]
 ```
 
 |      Options       | Alias | Description                                        |
@@ -33,7 +33,7 @@ miho bump [OPTIONS] [RELEASE_TYPE]
 Update your dependencies.
 
 ```sh
-miho update [OPTIONS]
+miho update [OPTIONS] [RELEASE]
 ```
 
 |   Options   | Alias | Description                             |
