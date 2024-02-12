@@ -84,7 +84,6 @@ impl DependencyTreeBuilder {
 
           // https://github.com/npm/registry/blob/master/docs/responses/package-metadata.md
           Agent::Npm | Agent::Pnpm | Agent::Yarn => {
-            let start = std::time::Instant::now();
             let url = format!("{NPM_REGISTRY}/{}", dep.name);
             let response = client
               .get(&url)
@@ -93,7 +92,6 @@ impl DependencyTreeBuilder {
               .await?;
 
             let json: NpmResponse = response.json().await?;
-            println!("END: {} ({:?})", dep.name, start.elapsed());
             json.versions.into_keys().collect()
           }
 
