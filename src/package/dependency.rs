@@ -50,6 +50,7 @@ impl DependencyTreeBuilder {
     }
   }
 
+  /// Adds a list of dependencies to the tree.
   pub fn add(&mut self, dependencies: &HashMap<String, String>, kind: DependencyKind) -> &mut Self {
     for (name, version) in dependencies {
       let Ok(requirement) = VersionReq::parse(version) else {
@@ -69,6 +70,7 @@ impl DependencyTreeBuilder {
     self
   }
 
+  /// Builds the dependency tree, fetching metadata from their respective registries.
   pub async fn build(mut self) -> crate::Result<DependencyTree> {
     let mut set = JoinSet::new();
     let client = Client::builder().gzip(true).build()?;
@@ -81,6 +83,7 @@ impl DependencyTreeBuilder {
       set.spawn(async move {
         let versions: Vec<String> = match agent {
           Agent::Cargo => bail!(Error::Unimplemented),
+          Agent::Tauri => bail!(Error::NotPackageManager),
 
           // https://github.com/npm/registry/blob/master/docs/responses/package-metadata.md
           Agent::Npm | Agent::Pnpm | Agent::Yarn => {
@@ -94,8 +97,6 @@ impl DependencyTreeBuilder {
             let json: NpmResponse = response.json().await?;
             json.versions.into_keys().collect()
           }
-
-          Agent::Tauri => bail!(Error::NotPackageManager),
         };
 
         dep.versions = versions;

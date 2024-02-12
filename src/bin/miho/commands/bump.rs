@@ -1,4 +1,4 @@
-use crate::search_packages;
+use crate::util::search_packages;
 use anyhow::Context;
 use clap::Args;
 use colored::*;
@@ -17,13 +17,13 @@ pub struct Bump {
   #[arg(short = 'a', long, value_name = "PATHSPEC")]
   add: Option<String>,
 
+  /// Build metadata.
+  #[arg(long, value_name = "METADATA")]
+  build: Option<String>,
+
   /// Commit the modified packages.
   #[arg(short = 'm', long, value_name = "MESSAGE")]
   commit_message: Option<String>,
-
-  /// Where to search for packages.
-  #[arg(short = 'i', long = "include", value_name = "PATH")]
-  paths: Option<Vec<String>>,
 
   /// Do not ask for consent before bumping.
   #[arg(short = 'k', long)]
@@ -41,19 +41,19 @@ pub struct Bump {
   #[arg(short = 'n', long)]
   no_verify: bool,
 
-  /// Prerelease identifier.
-  #[arg(short = 'p', long, value_name = "IDENTIFIER")]
-  pre: Option<String>,
+  /// Where to search for packages.
+  #[arg(short = 'p', long, value_name = "PATH")]
+  path: Option<Vec<String>>,
 
-  /// Build metadata.
-  #[arg(short = 'b', long, value_name = "METADATA")]
-  build: Option<String>,
+  /// Prerelease identifier.
+  #[arg(long, value_name = "IDENTIFIER")]
+  pre: Option<String>,
 }
 
 impl Bump {
   pub fn execute(&mut self) -> anyhow::Result<()> {
-    let paths = self.paths.as_deref().unwrap_or_default();
-    let packages = search_packages(paths)?;
+    let path = self.path.as_deref().unwrap_or_default();
+    let packages = search_packages(path)?;
 
     if packages.is_empty() {
       println!("{}", "No valid package found.".bold().red());
@@ -73,7 +73,13 @@ impl Bump {
       };
 
       println!(
-        "[ {} ]  {}  =>  {}",
+        "[ {}: {} ]  {}  =>  {}",
+        package
+          .agent()
+          .to_string()
+          .to_uppercase()
+          .bright_magenta()
+          .bold(),
         package.name.bold(),
         package.version.to_string().bright_blue(),
         new_version.to_string().bright_green()
@@ -99,32 +105,40 @@ impl Bump {
   fn prompt(&self, mut packages: Vec<Package>, release: Release) -> anyhow::Result<bool> {
     if packages.len() == 1 {
       let package = packages.swap_remove(0);
-      let message = format!("Bump {}?", package.name);
-      let should_bump = Confirm::new(&message).with_default(true).prompt()?;
-
-      if should_bump {
-        self.bump(package, &release)?;
-        Ok(true)
-      } else {
-        Ok(false)
-      }
+      self.prompt_single(package, release)
     } else {
-      let options = vec!["All", "Some", "None"];
-      let response = Select::new("Select what to bump.", options).prompt()?;
+      self.prompt_many(packages, release)
+    }
+  }
 
-      match response {
-        "All" => {
-          self.bump_all(packages, release)?;
-          Ok(true)
-        }
-        "Some" => {
-          let message = "Select the packages to bump.";
-          let packages = MultiSelect::new(message, packages).prompt()?;
-          self.bump_all(packages, release)?;
-          Ok(true)
-        }
-        _ => Ok(false),
+  fn prompt_single(&self, package: Package, release: Release) -> anyhow::Result<bool> {
+    let message = format!("Bump {}?", package.name);
+    let should_bump = Confirm::new(&message).with_default(true).prompt()?;
+
+    if should_bump {
+      self.bump(package, &release)?;
+      Ok(true)
+    } else {
+      Ok(false)
+    }
+  }
+
+  fn prompt_many(&self, packages: Vec<Package>, release: Release) -> anyhow::Result<bool> {
+    let options = vec!["All", "Some", "None"];
+    let response = Select::new("Select what to bump.", options).prompt()?;
+
+    match response {
+      "All" => {
+        self.bump_all(packages, release)?;
+        Ok(true)
       }
+      "Some" => {
+        let message = "Select the packages to bump.";
+        let packages = MultiSelect::new(message, packages).prompt()?;
+        self.bump_all(packages, release)?;
+        Ok(true)
+      }
+      _ => Ok(false),
     }
   }
 
