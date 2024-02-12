@@ -71,7 +71,8 @@ impl DependencyTreeBuilder {
 
   pub async fn build(mut self) -> crate::Result<DependencyTree> {
     let mut set = JoinSet::new();
-    let client = Arc::new(Client::new());
+    let client = Client::builder().gzip(true).build()?;
+    let client = Arc::new(client);
 
     for mut dep in &mut self.dependencies.drain(..) {
       let agent = self.agent.clone();
@@ -83,6 +84,7 @@ impl DependencyTreeBuilder {
 
           // https://github.com/npm/registry/blob/master/docs/responses/package-metadata.md
           Agent::Npm | Agent::Pnpm | Agent::Yarn => {
+            let start = std::time::Instant::now();
             let url = format!("{NPM_REGISTRY}/{}", dep.name);
             let response = client
               .get(&url)
@@ -91,6 +93,7 @@ impl DependencyTreeBuilder {
               .await?;
 
             let json: NpmResponse = response.json().await?;
+            println!("END: {} ({:?})", dep.name, start.elapsed());
             json.versions.into_keys().collect()
           }
 
