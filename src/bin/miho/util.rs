@@ -1,4 +1,5 @@
-use miho::{Package, SearchBuilder};
+use miho::package::builder::{self, Builder};
+use miho::package::Package;
 
 pub fn search_packages<P>(path: &[P]) -> anyhow::Result<Vec<Package>>
 where
@@ -7,11 +8,11 @@ where
   let mut paths: Vec<&str> = path.iter().map(|g| g.as_ref()).collect();
 
   let last = paths.pop().unwrap_or(".");
-  let mut builder = SearchBuilder::new(last);
+  let mut search = builder::Search::new(last);
 
   for path in paths {
-    builder.add(path);
+    search.add(path);
   }
 
-  Ok(builder.search()?)
+  Ok(search.execute()?)
 }

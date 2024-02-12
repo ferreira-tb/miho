@@ -1,6 +1,7 @@
 use super::agent::Agent;
 use crate::bail;
 use crate::error::Error;
+use reqwest::header::ACCEPT;
 use reqwest::Client;
 use semver::VersionReq;
 use serde::Deserialize;
@@ -8,12 +9,14 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::task::JoinSet;
 
+const CARGO_REGISTRY: &str = "https://crates.io/api/v1/crates";
 const NPM_REGISTRY: &str = "https://registry.npmjs.org";
 
 #[derive(Clone, Debug)]
 pub enum DependencyKind {
+  Build,
+  Development,
   Normal,
-  Dev,
   Peer,
 }
 
@@ -51,14 +54,18 @@ impl DependencyTreeBuilder {
   }
 
   /// Adds a list of dependencies to the tree.
-  pub fn add(&mut self, dependencies: &HashMap<String, String>, kind: DependencyKind) -> &mut Self {
+  pub fn add<K, V>(&mut self, dependencies: &HashMap<K, V>, kind: DependencyKind) -> &mut Self
+  where
+    K: AsRef<str>,
+    V: AsRef<str>,
+  {
     for (name, version) in dependencies {
-      let Ok(requirement) = VersionReq::parse(version) else {
+      let Ok(requirement) = VersionReq::parse(version.as_ref()) else {
         continue;
       };
 
       let dependency = Dependency {
-        name: name.to_owned(),
+        name: name.as_ref().to_owned(),
         requirement,
         kind: kind.clone(),
         versions: Vec::default(),
@@ -72,9 +79,14 @@ impl DependencyTreeBuilder {
 
   /// Builds the dependency tree, fetching metadata from their respective registries.
   pub async fn build(mut self) -> crate::Result<DependencyTree> {
-    let mut set = JoinSet::new();
-    let client = Client::builder().gzip(true).build()?;
+    let client = Client::builder()
+      .user_agent("Miho/4.0")
+      .brotli(true)
+      .gzip(true)
+      .build()?;
+
     let client = Arc::new(client);
+    let mut set = JoinSet::new();
 
     for mut dep in &mut self.dependencies.drain(..) {
       let agent = self.agent.clone();
@@ -82,21 +94,29 @@ impl DependencyTreeBuilder {
 
       set.spawn(async move {
         let versions: Vec<String> = match agent {
-          Agent::Cargo => bail!(Error::Unimplemented),
-          Agent::Tauri => bail!(Error::NotPackageManager),
+          // https://doc.rust-lang.org/cargo/reference/registry-web-api.html
+          Agent::Cargo => {
+            let url = format!("{CARGO_REGISTRY}/{}/versions", dep.name);
+            let response = client.get(&url).send().await?;
+
+            let json: CargoResponse = response.json().await?;
+            json.versions.into_iter().map(|v| v.num).collect()
+          }
 
           // https://github.com/npm/registry/blob/master/docs/responses/package-metadata.md
           Agent::Npm | Agent::Pnpm | Agent::Yarn => {
             let url = format!("{NPM_REGISTRY}/{}", dep.name);
             let response = client
               .get(&url)
-              .header("Accept", "application/vnd.npm.install-v1+json")
+              .header(ACCEPT, "application/vnd.npm.install-v1+json")
               .send()
               .await?;
 
             let json: NpmResponse = response.json().await?;
             json.versions.into_keys().collect()
           }
+
+          Agent::Tauri => bail!(Error::NotPackageManager),
         };
 
         dep.versions = versions;
@@ -119,6 +139,16 @@ impl DependencyTreeBuilder {
 
     Ok(tree)
   }
+}
+
+#[derive(Deserialize)]
+struct CargoResponse {
+  versions: Vec<CargoVersion>,
+}
+
+#[derive(Deserialize)]
+struct CargoVersion {
+  num: String,
 }
 
 #[derive(Deserialize)]

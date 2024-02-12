@@ -1,14 +1,14 @@
 use crate::package::manifest::{Manifest, ManifestBox, ManifestHandler};
 use crate::package::{Agent, Package};
 use semver::Version;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::fs;
 use std::path::Path;
 
 const FILENAME_TAURI_CONF_JSON: &str = "tauri.conf.json";
 
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
+#[derive(Deserialize)]
+#[serde(rename_all(deserialize = "camelCase"))]
 pub(super) struct TauriConfJson {
   pub product_name: String,
   pub version: String,

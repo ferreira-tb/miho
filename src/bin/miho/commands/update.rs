@@ -1,6 +1,5 @@
 use crate::util::search_packages;
 use clap::Args;
-use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinSet;
 
@@ -28,15 +27,15 @@ impl Update {
     let packages = search_packages(path)?;
 
     let mut set = JoinSet::new();
-    let trees = HashMap::with_capacity(packages.len());
+    let trees = Vec::with_capacity(packages.len());
     let trees = Arc::new(Mutex::new(trees));
 
     for package in packages {
-      let map = Arc::clone(&trees);
+      let tree_vec = Arc::clone(&trees);
       set.spawn(async move {
         let tree = package.dependency_tree().await;
-        let mut map = map.lock().unwrap();
-        map.insert(package, tree);
+        let mut tree_vec = tree_vec.lock().unwrap();
+        tree_vec.push((package, tree));
       });
     }
 
@@ -46,9 +45,9 @@ impl Update {
 
     let trees = Arc::into_inner(trees).unwrap().into_inner().unwrap();
     for (package, tree) in trees {
-      println!("{}:", package);
-      for dependency in tree?.dependencies {
-        println!("  - {:?}", dependency.name);
+      println!("Updating package: {}", package.name);
+      for dep in tree?.dependencies {
+        println!("  - {} ({:?})", dep.name, dep.requirement);
       }
     }
 

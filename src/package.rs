@@ -1,17 +1,13 @@
 mod agent;
-mod bump;
+pub mod builder;
 mod dependency;
-mod manifest;
-mod search;
+pub mod manifest;
 
 pub use agent::Agent;
-pub use bump::BumpBuilder;
 use dependency::DependencyTree;
-pub use manifest::{ManifestHandler, ManifestType};
-pub use search::SearchBuilder;
+use manifest::ManifestType;
 use semver::Version;
 use std::fmt;
-use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 
 pub struct Package {
@@ -64,13 +60,5 @@ impl fmt::Display for Package {
 impl PartialEq for Package {
   fn eq(&self, other: &Self) -> bool {
     self.path == other.path
-  }
-}
-
-impl Eq for Package {}
-
-impl Hash for Package {
-  fn hash<H: Hasher>(&self, state: &mut H) {
-    self.path.hash(state);
   }
 }

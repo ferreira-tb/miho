@@ -4,13 +4,11 @@ use super::dependency::DependencyTreeBuilder;
 use super::{Agent, Package};
 pub use manifest_type::ManifestType;
 use semver::Version;
-use serde::Serialize;
-// use std::collections::HashMap;
 use std::path::Path;
 
 pub(super) type ManifestBox = Box<dyn ManifestHandler + Send + Sync>;
 
-trait Manifest: Serialize + std::fmt::Debug {
+trait Manifest {
   type Value;
 
   fn read<P: AsRef<Path>>(manifest_path: P) -> crate::Result<ManifestBox>;

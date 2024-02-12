@@ -1,15 +1,34 @@
-use super::Package;
+use super::Builder;
+use crate::package::Package;
 use crate::release::Release;
 use semver::{BuildMetadata, Prerelease};
 
-pub struct BumpBuilder<'a> {
+pub struct Bump<'a> {
   package: &'a Package,
   release: &'a Release,
   pre: Prerelease,
   build: BuildMetadata,
 }
 
-impl<'a> BumpBuilder<'a> {
+impl Builder for Bump<'_> {
+  type Output = ();
+
+  fn execute(self) -> crate::Result<Self::Output> {
+    let mut new_version = if self.pre.is_empty() {
+      self.release.increment(&self.package.version)
+    } else {
+      self.release.increment_pre(&self.package.version, self.pre)
+    };
+
+    if !self.build.is_empty() {
+      new_version.build = self.build;
+    }
+
+    self.package.manifest.bump(self.package, new_version)
+  }
+}
+
+impl<'a> Bump<'a> {
   pub fn new(package: &'a Package, release: &'a Release) -> Self {
     Self {
       package,
@@ -29,15 +48,5 @@ impl<'a> BumpBuilder<'a> {
   pub fn build<B: AsRef<str>>(&mut self, build: B) -> crate::Result<&mut Self> {
     self.build = BuildMetadata::new(build.as_ref())?;
     Ok(self)
-  }
-
-  pub fn bump(self) -> crate::Result<()> {
-    let new_version = if self.pre.is_empty() {
-      self.release.increment(&self.package.version)
-    } else {
-      self.release.increment_pre(&self.package.version, self.pre)
-    };
-
-    self.package.manifest.bump(self.package, new_version)
   }
 }

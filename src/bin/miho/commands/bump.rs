@@ -4,8 +4,10 @@ use clap::Args;
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select, Text};
 use miho::git::{Add, Commit, GitCommand, Push};
-use miho::{BumpBuilder, Package, Release};
-use semver::Prerelease;
+use miho::package::builder::{self, Builder};
+use miho::package::Package;
+use miho::Release;
+use semver::{BuildMetadata, Prerelease};
 use std::process::Stdio;
 
 #[derive(Debug, Args)]
@@ -18,7 +20,7 @@ pub struct Bump {
   add: Option<String>,
 
   /// Build metadata.
-  #[arg(long, value_name = "METADATA")]
+  #[arg(short = 'B', long, value_name = "METADATA")]
   build: Option<String>,
 
   /// Commit the modified packages.
@@ -46,7 +48,7 @@ pub struct Bump {
   path: Option<Vec<String>>,
 
   /// Prerelease identifier.
-  #[arg(long, value_name = "IDENTIFIER")]
+  #[arg(short = 'P', long, value_name = "IDENTIFIER")]
   pre: Option<String>,
 }
 
@@ -60,30 +62,13 @@ impl Bump {
       return Ok(());
     }
 
-    let pre = self.pre.as_deref();
     let release = match self.release.as_deref() {
       Some(r) => r.try_into()?,
       None => Release::Patch,
     };
 
     for package in &packages {
-      let new_version = match pre {
-        Some(pre) => release.increment_pre(&package.version, Prerelease::new(pre)?),
-        None => release.increment(&package.version),
-      };
-
-      println!(
-        "[ {}: {} ]  {}  =>  {}",
-        package
-          .agent()
-          .to_string()
-          .to_uppercase()
-          .bright_magenta()
-          .bold(),
-        package.name.bold(),
-        package.version.to_string().bright_blue(),
-        new_version.to_string().bright_green()
-      );
+      self.preview(package, &release)?;
     }
 
     if !self.no_ask {
@@ -143,17 +128,17 @@ impl Bump {
   }
 
   fn bump(&self, package: Package, release: &Release) -> anyhow::Result<()> {
-    let mut builder = BumpBuilder::new(&package, release);
+    let mut bump = builder::Bump::new(&package, release);
 
     if let Some(pre) = self.pre.as_deref() {
-      builder.pre(pre)?;
+      bump.pre(pre)?;
     }
 
     if let Some(build) = self.build.as_deref() {
-      builder.build(build)?;
+      bump.build(build)?;
     }
 
-    builder.bump()?;
+    bump.execute()?;
 
     Ok(())
   }
@@ -205,6 +190,34 @@ impl Bump {
         .output()
         .with_context(|| "failed to push commit")?;
     }
+
+    Ok(())
+  }
+
+  fn preview(&self, package: &Package, release: &Release) -> anyhow::Result<()> {
+    let pre = self.pre.as_deref();
+
+    let mut new_version = match pre {
+      Some(pre) => release.increment_pre(&package.version, Prerelease::new(pre)?),
+      None => release.increment(&package.version),
+    };
+
+    if let Some(build) = self.build.as_deref() {
+      new_version.build = BuildMetadata::new(build)?;
+    }
+
+    println!(
+      "[ {}: {} ]  {}  =>  {}",
+      package
+        .agent()
+        .to_string()
+        .to_uppercase()
+        .bright_magenta()
+        .bold(),
+      package.name.bold(),
+      package.version.to_string().bright_blue(),
+      new_version.to_string().bright_green()
+    );
 
     Ok(())
   }

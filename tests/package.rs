@@ -1,4 +1,6 @@
-use miho::{BumpBuilder, Package, Release, SearchBuilder};
+use miho::package::builder::{Builder, Bump, Search};
+use miho::package::Package;
+use miho::Release;
 use std::path::{Path, PathBuf};
 use std::{env, fs};
 
@@ -20,8 +22,8 @@ fn find_mocks_dir<P: AsRef<Path>>(path: P) -> Option<PathBuf> {
 
 #[test]
 fn should_find_package() {
-  let builder = SearchBuilder::new(".");
-  let entries = builder.search().unwrap();
+  let search = Search::new(".");
+  let entries = search.execute().unwrap();
   let cwd = env::current_dir().unwrap();
 
   let toml = cwd.join("Cargo.toml").canonicalize().unwrap();
@@ -68,8 +70,8 @@ macro_rules! bump {
     let package = Package::new(&path).unwrap();
     let current_patch = package.version.patch;
 
-    let builder = BumpBuilder::new(&package, &Release::Patch);
-    builder.bump().unwrap();
+    let bump = Bump::new(&package, &Release::Patch);
+    bump.execute().unwrap();
 
     let package = Package::new(path).unwrap();
     assert_eq!(package.version.patch, current_patch + 1);

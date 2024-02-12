@@ -2,21 +2,19 @@ use crate::package::dependency::{DependencyKind, DependencyTreeBuilder};
 use crate::package::manifest::{Manifest, ManifestBox, ManifestHandler};
 use crate::package::{Agent, Package};
 use semver::Version;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
 const FILENAME_PACKAGE_JSON: &str = "package.json";
 
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
+#[derive(Deserialize)]
+#[serde(rename_all(deserialize = "camelCase"))]
 pub(super) struct PackageJson {
   pub name: String,
   pub version: String,
   pub package_manager: Option<String>,
-
-  pub scripts: Option<HashMap<String, String>>,
 
   pub dependencies: Option<HashMap<String, String>>,
   pub dev_dependencies: Option<HashMap<String, String>>,
@@ -61,17 +59,17 @@ impl ManifestHandler for PackageJson {
   fn dependency_tree_builder(&self) -> DependencyTreeBuilder {
     let mut builder = DependencyTreeBuilder::new(self.agent());
 
-    if let Some(deps) = &self.dependencies {
-      builder.add(deps, DependencyKind::Normal);
+    macro_rules! add {
+      ($deps:expr, $kind:expr) => {
+        if let Some(deps) = $deps {
+          builder.add(deps, $kind);
+        }
+      };
     }
 
-    if let Some(deps) = &self.dev_dependencies {
-      builder.add(deps, DependencyKind::Dev);
-    }
-
-    if let Some(deps) = &self.peer_dependencies {
-      builder.add(deps, DependencyKind::Peer);
-    }
+    add!(&self.dependencies, DependencyKind::Normal);
+    add!(&self.dev_dependencies, DependencyKind::Development);
+    add!(&self.peer_dependencies, DependencyKind::Peer);
 
     builder
   }

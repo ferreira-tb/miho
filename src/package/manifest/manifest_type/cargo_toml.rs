@@ -1,18 +1,27 @@
+use crate::package::dependency::{DependencyKind, DependencyTreeBuilder};
 use crate::package::manifest::{Manifest, ManifestBox, ManifestHandler};
 use crate::package::{Agent, Package};
 use semver::Version;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
 const FILENAME_CARGO_TOML: &str = "Cargo.toml";
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Deserialize)]
 pub(super) struct CargoToml {
   pub package: CargoPackage,
+  pub dependencies: Option<HashMap<String, toml::Value>>,
+
+  #[serde(rename(deserialize = "dev-dependencies"))]
+  pub dev_dependencies: Option<HashMap<String, toml::Value>>,
+
+  #[serde(rename(deserialize = "build-dependencies"))]
+  pub build_dependencies: Option<HashMap<String, toml::Value>>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Deserialize)]
 pub(super) struct CargoPackage {
   pub name: String,
   pub version: String,
@@ -49,6 +58,25 @@ impl ManifestHandler for CargoToml {
     Ok(())
   }
 
+  fn dependency_tree_builder(&self) -> DependencyTreeBuilder {
+    let mut builder = DependencyTreeBuilder::new(self.agent());
+
+    macro_rules! add {
+      ($dependencies:expr, $kind:expr) => {
+        if let Some(deps) = $dependencies {
+          let dependencies = parse_dependencies(deps);
+          builder.add(&dependencies, $kind);
+        }
+      };
+    }
+
+    add!(&self.dependencies, DependencyKind::Normal);
+    add!(&self.dev_dependencies, DependencyKind::Development);
+    add!(&self.build_dependencies, DependencyKind::Build);
+
+    builder
+  }
+
   fn filename(&self) -> &str {
     FILENAME_CARGO_TOML
   }
@@ -65,4 +93,28 @@ impl ManifestHandler for CargoToml {
     let version = Version::parse(&self.package.version)?;
     Ok(version)
   }
+}
+
+fn parse_dependencies(deps: &HashMap<String, toml::Value>) -> HashMap<String, String> {
+  let mut dependencies = HashMap::with_capacity(deps.len());
+  for (name, version) in deps {
+    if let Some(version) = parse_version(version) {
+      dependencies.insert(name.clone(), version);
+    }
+  }
+
+  dependencies
+}
+
+// Could we refactor this so less cloning is needed?
+fn parse_version(value: &toml::Value) -> Option<String> {
+  if let toml::Value::String(version) = value {
+    return Some(version.clone());
+  }
+
+  if let toml::Value::String(version) = &value["version"] {
+    return Some(version.clone());
+  }
+
+  None
 }
