@@ -1,4 +1,4 @@
-use crate::package::manifest::{Manifest, ManifestHandler};
+use crate::package::manifest::{Manifest, ManifestBox, ManifestHandler};
 use crate::package::{Agent, Package};
 use semver::Version;
 use serde::{Deserialize, Serialize};
@@ -21,14 +21,14 @@ pub(super) struct CargoPackage {
 impl Manifest for CargoToml {
   type Value = toml::Value;
 
-  fn read<P: AsRef<Path>>(manifest_path: P) -> crate::Result<Box<dyn ManifestHandler>> {
-    let contents = fs::read_to_string(manifest_path)?;
+  fn read<P: AsRef<Path>>(path: P) -> crate::Result<ManifestBox> {
+    let contents = fs::read_to_string(path)?;
     let manifest: CargoToml = toml::from_str(&contents)?;
     Ok(Box::new(manifest))
   }
 
-  fn read_as_value<P: AsRef<Path>>(manifest_path: P) -> crate::Result<Self::Value> {
-    let contents = fs::read_to_string(manifest_path)?;
+  fn read_as_value<P: AsRef<Path>>(path: P) -> crate::Result<Self::Value> {
+    let contents = fs::read_to_string(path)?;
     let manifest: Self::Value = toml::from_str(&contents)?;
     Ok(manifest)
   }
@@ -40,11 +40,11 @@ impl ManifestHandler for CargoToml {
   }
 
   fn bump(&self, package: &Package, version: Version) -> crate::Result<()> {
-    let mut manifest = CargoToml::read_as_value(&package.manifest_path)?;
+    let mut manifest = CargoToml::read_as_value(&package.path)?;
     manifest["package"]["version"] = toml::Value::String(version.to_string());
 
     let contents = toml::to_string_pretty(&manifest)?;
-    fs::write(&package.manifest_path, contents)?;
+    fs::write(&package.path, contents)?;
 
     Ok(())
   }

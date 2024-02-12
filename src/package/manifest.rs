@@ -8,10 +8,12 @@ use serde::Serialize;
 // use std::collections::HashMap;
 use std::path::Path;
 
+pub(super) type ManifestBox = Box<dyn ManifestHandler + Send + Sync>;
+
 trait Manifest: Serialize + std::fmt::Debug {
   type Value;
 
-  fn read<P: AsRef<Path>>(manifest_path: P) -> crate::Result<Box<dyn ManifestHandler>>;
+  fn read<P: AsRef<Path>>(manifest_path: P) -> crate::Result<ManifestBox>;
   fn read_as_value<P: AsRef<Path>>(manifest_path: P) -> crate::Result<Self::Value>;
 }
 
@@ -23,7 +25,7 @@ pub trait ManifestHandler {
   fn update(&self) -> crate::Result<()>;
   fn version(&self) -> crate::Result<Version>;
 
-  fn dependency_tree(&self) -> DependencyTreeBuilder {
+  fn dependency_tree_builder(&self) -> DependencyTreeBuilder {
     DependencyTreeBuilder::new(self.agent())
   }
 }

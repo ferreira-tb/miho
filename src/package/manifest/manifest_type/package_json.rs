@@ -1,5 +1,5 @@
 use crate::package::dependency::{DependencyKind, DependencyTreeBuilder};
-use crate::package::manifest::{Manifest, ManifestHandler};
+use crate::package::manifest::{Manifest, ManifestBox, ManifestHandler};
 use crate::package::{Agent, Package};
 use semver::Version;
 use serde::{Deserialize, Serialize};
@@ -26,14 +26,14 @@ pub(super) struct PackageJson {
 impl Manifest for PackageJson {
   type Value = serde_json::Value;
 
-  fn read<P: AsRef<Path>>(manifest_path: P) -> crate::Result<Box<dyn ManifestHandler>> {
-    let contents = fs::read_to_string(manifest_path)?;
+  fn read<P: AsRef<Path>>(path: P) -> crate::Result<ManifestBox> {
+    let contents = fs::read_to_string(path)?;
     let manifest: PackageJson = serde_json::from_str(&contents)?;
     Ok(Box::new(manifest))
   }
 
-  fn read_as_value<P: AsRef<Path>>(manifest_path: P) -> crate::Result<Self::Value> {
-    let contents = fs::read_to_string(manifest_path)?;
+  fn read_as_value<P: AsRef<Path>>(path: P) -> crate::Result<Self::Value> {
+    let contents = fs::read_to_string(path)?;
     let manifest: Self::Value = serde_json::from_str(&contents)?;
     Ok(manifest)
   }
@@ -41,28 +41,24 @@ impl Manifest for PackageJson {
 
 impl ManifestHandler for PackageJson {
   fn agent(&self) -> Agent {
-    if let Some(package_manager) = &self.package_manager {
-      if package_manager.starts_with("pnpm") {
-        return Agent::Pnpm;
-      } else if package_manager.starts_with("yarn") {
-        return Agent::Yarn;
-      }
+    match &self.package_manager {
+      Some(pm) if pm.starts_with("pnpm") => Agent::Pnpm,
+      Some(pm) if pm.starts_with("yarn") => Agent::Yarn,
+      _ => Agent::Npm,
     }
-
-    Agent::Npm
   }
 
   fn bump(&self, package: &Package, version: Version) -> crate::Result<()> {
-    let mut manifest = PackageJson::read_as_value(&package.manifest_path)?;
+    let mut manifest = PackageJson::read_as_value(&package.path)?;
     manifest["version"] = serde_json::Value::String(version.to_string());
 
     let contents = serde_json::to_string_pretty(&manifest)?;
-    fs::write(&package.manifest_path, contents)?;
+    fs::write(&package.path, contents)?;
 
     Ok(())
   }
 
-  fn dependency_tree(&self) -> DependencyTreeBuilder {
+  fn dependency_tree_builder(&self) -> DependencyTreeBuilder {
     let mut builder = DependencyTreeBuilder::new(self.agent());
 
     if let Some(deps) = &self.dependencies {

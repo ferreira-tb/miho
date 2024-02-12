@@ -16,9 +16,8 @@ impl Update {
 
     let mut set = JoinSet::new();
 
-    for package in &packages {
-      let builder = package.manifest.dependency_tree();
-      set.spawn(builder.build());
+    for package in packages {
+      set.spawn(async move { package.dependency_tree().await });
     }
 
     while let Some(result) = set.join_next().await {

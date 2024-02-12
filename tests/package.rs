@@ -27,10 +27,7 @@ fn should_find_package() {
   let toml = cwd.join("Cargo.toml").canonicalize().unwrap();
   let toml = toml.to_str().unwrap();
 
-  if !entries
-    .iter()
-    .any(|p| p.manifest_path.to_str().unwrap() == toml)
-  {
+  if !entries.iter().any(|p| p.path.to_str().unwrap() == toml) {
     panic!("Cargo.toml not found");
   }
 }

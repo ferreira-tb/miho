@@ -2,7 +2,7 @@ mod cargo_toml;
 mod package_json;
 mod tauri_conf_json;
 
-use super::{Manifest, ManifestHandler};
+use super::{Manifest, ManifestBox};
 use cargo_toml::CargoToml;
 use globset::Glob;
 use package_json::PackageJson;
@@ -21,7 +21,7 @@ pub enum ManifestType {
 }
 
 impl ManifestType {
-  pub(crate) fn read_source<P>(&self, path: P) -> crate::Result<Box<dyn ManifestHandler>>
+  pub(crate) fn read_source<P>(&self, path: P) -> crate::Result<ManifestBox>
   where
     P: AsRef<Path>,
   {
