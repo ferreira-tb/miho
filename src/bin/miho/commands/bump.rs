@@ -50,8 +50,8 @@ pub struct Bump {
   build: Option<String>,
 }
 
-impl super::Command for Bump {
-  fn execute(&mut self) -> anyhow::Result<()> {
+impl Bump {
+  pub fn execute(&mut self) -> anyhow::Result<()> {
     let paths = self.paths.as_deref().unwrap_or_default();
     let packages = search_packages(paths)?;
 
@@ -95,9 +95,7 @@ impl super::Command for Bump {
 
     Ok(())
   }
-}
 
-impl Bump {
   fn prompt(&self, mut packages: Vec<Package>, release: Release) -> anyhow::Result<bool> {
     if packages.len() == 1 {
       let package = packages.swap_remove(0);

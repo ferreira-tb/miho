@@ -1,5 +1,3 @@
-//! # Miho
-
 mod error;
 pub mod git;
 mod package;

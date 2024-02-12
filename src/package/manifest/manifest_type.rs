@@ -9,6 +9,10 @@ use package_json::PackageJson;
 use std::path::Path;
 use tauri_conf_json::TauriConfJson;
 
+const GLOB_CARGO_TOML: &str = "**/Cargo.toml";
+const GLOB_PACKAGE_JSON: &str = "**/package.json";
+const GLOB_TAURI_CONF_JSON: &str = "**/tauri.conf.json";
+
 #[derive(Debug)]
 pub enum ManifestType {
   CargoToml,
@@ -30,9 +34,9 @@ impl ManifestType {
 
   pub(crate) fn glob(&self) -> &str {
     match self {
-      ManifestType::CargoToml => "**/Cargo.toml",
-      ManifestType::PackageJson => "**/package.json",
-      ManifestType::TauriConfJson => "**/tauri.conf.json",
+      ManifestType::CargoToml => GLOB_CARGO_TOML,
+      ManifestType::PackageJson => GLOB_PACKAGE_JSON,
+      ManifestType::TauriConfJson => GLOB_TAURI_CONF_JSON,
     }
   }
 }

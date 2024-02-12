@@ -1,6 +1,6 @@
 [package]
 name = "cargo-toml"
-version = "2.0.13"
+version = "2.0.15"
 
 [a.b.c]
 d = "e"

@@ -12,15 +12,17 @@ enum Cli {
   /// Bump your packages version.
   Bump(Bump),
 
+  /// Update your dependencies.
   Update(Update),
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
   let cli = Cli::parse();
 
   match cli {
     Cli::Bump(mut cmd) => cmd.execute(),
-    Cli::Update(mut cmd) => cmd.execute(),
+    Cli::Update(cmd) => cmd.execute().await,
   }
 }
 

@@ -1,61 +1,125 @@
+use super::agent::Agent;
+use crate::bail;
+use crate::error::Error;
+use reqwest::Client;
 use semver::VersionReq;
+use serde::Deserialize;
 use std::collections::HashMap;
+use std::sync::Arc;
+use tokio::task::JoinSet;
 
-pub struct Dependency<'a> {
-  pub name: &'a str,
-  pub version: VersionReq,
+const NPM_REGISTRY: &str = "https://registry.npmjs.org";
+
+#[derive(Clone, Debug)]
+pub enum DependencyKind {
+  Normal,
+  Dev,
+  Peer,
 }
 
-impl<'a> TryFrom<(&'a str, &'a str)> for Dependency<'a> {
-  type Error = crate::error::Error;
+#[derive(Debug)]
+pub struct Dependency {
+  pub name: String,
+  pub requirement: VersionReq,
+  pub kind: DependencyKind,
+  pub versions: Vec<String>,
+}
 
-  fn try_from((name, version): (&'a str, &'a str)) -> crate::Result<Self> {
-    let dep = Self {
-      name,
-      version: VersionReq::parse(version)?,
-    };
+#[derive(Debug)]
+pub struct DependencyTree {
+  pub agent: Agent,
+  pub dependencies: Vec<Dependency>,
+}
 
-    Ok(dep)
+impl DependencyTree {
+  pub fn builder(agent: Agent) -> DependencyTreeBuilder {
+    DependencyTreeBuilder::new(agent)
   }
 }
 
-#[derive(Default)]
-pub struct DependencyTree<'a> {
-  pub normal: Option<Vec<Dependency<'a>>>,
-  pub dev: Option<Vec<Dependency<'a>>>,
-  pub peer: Option<Vec<Dependency<'a>>>,
+pub struct DependencyTreeBuilder {
+  agent: Agent,
+  dependencies: Vec<Dependency>,
 }
 
-impl<'a> DependencyTree<'a> {
-  pub fn builder() -> DependencyTreeBuilder<'a> {
-    DependencyTreeBuilder::new()
-  }
-}
-
-pub struct DependencyTreeBuilder<'a> {
-  tree: DependencyTree<'a>,
-}
-
-impl<'a> DependencyTreeBuilder<'a> {
-  pub fn new() -> Self {
+impl DependencyTreeBuilder {
+  pub fn new(agent: Agent) -> Self {
     Self {
-      tree: DependencyTree::default(),
+      agent,
+      dependencies: Vec::default(),
     }
   }
 
-  pub fn build(self) -> DependencyTree<'a> {
-    self.tree
+  pub fn add(&mut self, dependencies: &HashMap<String, String>, kind: DependencyKind) -> &mut Self {
+    for (name, version) in dependencies {
+      let Ok(requirement) = VersionReq::parse(version) else {
+        continue;
+      };
+
+      let dependency = Dependency {
+        name: name.to_owned(),
+        requirement,
+        kind: kind.clone(),
+        versions: Vec::default(),
+      };
+
+      self.dependencies.push(dependency);
+    }
+
+    self
   }
 
-  pub fn dev(&mut self, deps: &HashMap<String, String>) -> &mut Self {
-    unimplemented!()
-  }
+  pub async fn build(mut self) -> crate::Result<DependencyTree> {
+    let mut set = JoinSet::new();
+    let client = Arc::new(Client::new());
 
-  pub fn normal(&mut self, deps: &HashMap<String, String>) -> &mut Self {
-    unimplemented!()
-  }
+    for mut dep in &mut self.dependencies.drain(..) {
+      let agent = self.agent.clone();
+      let client = Arc::clone(&client);
 
-  pub fn peer(&mut self, deps: &HashMap<String, String>) -> &mut Self {
-    unimplemented!()
+      set.spawn(async move {
+        let versions: Vec<String> = match agent {
+          Agent::Cargo => bail!(Error::Unimplemented),
+
+          // https://github.com/npm/registry/blob/master/docs/responses/package-metadata.md
+          Agent::Npm | Agent::Pnpm | Agent::Yarn => {
+            let url = format!("{NPM_REGISTRY}/{}", dep.name);
+            let response = client
+              .get(&url)
+              .header("Accept", "application/vnd.npm.install-v1+json")
+              .send()
+              .await?;
+
+            let json: NpmResponse = response.json().await?;
+            json.versions.into_keys().collect()
+          }
+
+          Agent::Tauri => bail!(Error::NotPackageManager),
+        };
+
+        dep.versions = versions;
+
+        Ok(dep)
+      });
+    }
+
+    while let Some(result) = set.join_next().await {
+      let dep = result??;
+      self.dependencies.push(dep);
+    }
+
+    self.dependencies.shrink_to_fit();
+
+    let tree = DependencyTree {
+      agent: self.agent,
+      dependencies: self.dependencies,
+    };
+
+    Ok(tree)
   }
+}
+
+#[derive(Deserialize)]
+struct NpmResponse {
+  versions: HashMap<String, serde_json::Value>,
 }

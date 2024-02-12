@@ -1,6 +1,6 @@
 mod manifest_type;
 
-use super::dependency::DependencyTree;
+use super::dependency::DependencyTreeBuilder;
 use super::{Agent, Package};
 pub use manifest_type::ManifestType;
 use semver::Version;
@@ -18,9 +18,12 @@ trait Manifest: Serialize + std::fmt::Debug {
 pub trait ManifestHandler {
   fn agent(&self) -> Agent;
   fn bump(&self, package: &Package, new_version: Version) -> crate::Result<()>;
-  fn dependencies(&self) -> DependencyTree;
   fn filename(&self) -> &str;
   fn name(&self) -> &str;
   fn update(&self) -> crate::Result<()>;
   fn version(&self) -> crate::Result<Version>;
+
+  fn dependency_tree(&self) -> DependencyTreeBuilder {
+    DependencyTreeBuilder::new(self.agent())
+  }
 }
