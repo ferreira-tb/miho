@@ -3,7 +3,7 @@ use anyhow::Result;
 use clap::Args;
 use colored::Colorize;
 use miho::package::dependency::Tree;
-use miho::package::Package;
+use miho::package::{Agent, Package};
 use miho::Release;
 use std::convert::TryInto;
 use std::sync::{Arc, Mutex};
@@ -39,9 +39,15 @@ impl Update {
 
     let _release = self.release();
     let trees = self.fetch_trees(packages).await?;
+    let trees: Vec<(Package, Tree)> = trees
+      .into_iter()
+      .filter(|(_, tree)| tree.agent != Agent::Cargo)
+      .collect();
 
     for (package, tree) in &trees {
-      Self::preview(package, tree);
+      if !tree.dependencies.is_empty() {
+        Self::preview(package, tree);
+      }
     }
 
     Ok(())
@@ -87,6 +93,10 @@ impl Update {
   }
 
   fn preview(package: &Package, tree: &Tree) {
+    if tree.dependencies.iter().all(|d| d.versions.is_empty()) {
+      return;
+    }
+
     println!(
       "[ {} ] {}",
       package
@@ -99,10 +109,10 @@ impl Update {
     );
 
     for dependency in &tree.dependencies {
-      if let Some(max_version) = dependency.max_version() {
+      if let Some(max) = dependency.max_version() {
         println!(
           "{}   {}  =>  {},",
-          dependency.name, dependency.requirement, max_version
+          dependency.name, dependency.requirement, max
         );
       }
     }

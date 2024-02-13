@@ -2,9 +2,9 @@ mod kind;
 
 use super::dependency;
 use super::{Agent, Package};
+use crate::version::Version;
 use crate::Result;
 pub use kind::Kind;
-use semver::Version;
 use std::path::Path;
 
 pub(super) type ManifestBox = Box<dyn Handler + Send + Sync>;

@@ -1,4 +1,4 @@
-use semver::{BuildMetadata, Prerelease, Version};
+use crate::version::Version;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Release {
@@ -10,64 +10,6 @@ pub enum Release {
   PrePatch,
   PreRelease,
   Literal(Version),
-}
-
-impl Release {
-  #[must_use]
-  pub fn increment(&self, version: &Version) -> Version {
-    match self {
-      Release::Major => Self::major(version),
-      Release::Minor => Self::minor(version),
-      Release::Patch => Self::patch(version),
-      Release::Literal(v) => v.clone(),
-      _ => self.increment_with_pre(version, Prerelease::EMPTY),
-    }
-  }
-
-  #[must_use]
-  pub fn increment_with_pre(&self, version: &Version, pre: Prerelease) -> Version {
-    let mut new_version = match self {
-      Release::PreMajor => Self::major(version),
-      Release::PreMinor => Self::minor(version),
-      Release::PrePatch => Self::patch(version),
-      Release::PreRelease => version.clone(),
-      _ => self.increment(version),
-    };
-
-    new_version.pre = pre;
-
-    new_version
-  }
-
-  fn major(version: &Version) -> Version {
-    Version {
-      major: version.major + 1,
-      minor: 0,
-      patch: 0,
-      pre: Prerelease::EMPTY,
-      build: BuildMetadata::EMPTY,
-    }
-  }
-
-  fn minor(version: &Version) -> Version {
-    Version {
-      major: version.major,
-      minor: version.minor + 1,
-      patch: 0,
-      pre: Prerelease::EMPTY,
-      build: BuildMetadata::EMPTY,
-    }
-  }
-
-  fn patch(version: &Version) -> Version {
-    Version {
-      major: version.major,
-      minor: version.minor,
-      patch: version.patch + 1,
-      pre: Prerelease::EMPTY,
-      build: BuildMetadata::EMPTY,
-    }
-  }
 }
 
 impl TryFrom<&str> for Release {

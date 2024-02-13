@@ -3,9 +3,9 @@ pub mod builder;
 pub mod dependency;
 pub mod manifest;
 
+use crate::version::Version;
 use crate::Result;
 pub use agent::Agent;
-use semver::Version;
 use std::fmt;
 use std::path::{Path, PathBuf};
 

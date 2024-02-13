@@ -1,8 +1,8 @@
 use crate::package::dependency;
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::{Agent, Package};
+use crate::version::Version;
 use crate::Result;
-use semver::Version;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs;

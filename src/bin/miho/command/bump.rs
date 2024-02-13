@@ -6,8 +6,9 @@ use inquire::{Confirm, MultiSelect, Select, Text};
 use miho::git::{Add, Commit, Git, Push};
 use miho::package::builder::{self, Builder};
 use miho::package::Package;
+use miho::version::VersionExt;
+use miho::version::{BuildMetadata, Prerelease};
 use miho::Release;
-use semver::{BuildMetadata, Prerelease};
 use std::fmt;
 
 #[derive(Debug, Args)]
@@ -194,8 +195,8 @@ impl Bump {
     let pre = self.pre.as_deref();
 
     let mut new_version = match pre {
-      Some(pre) => release.increment_with_pre(&package.version, Prerelease::new(pre)?),
-      None => release.increment(&package.version),
+      Some(pre) => package.version.inc_with_pre(release, Prerelease::new(pre)?),
+      None => package.version.inc(release),
     };
 
     if let Some(build) = self.build.as_deref() {

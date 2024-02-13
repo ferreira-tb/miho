@@ -1,8 +1,8 @@
 use super::Builder;
 use crate::package::Package;
 use crate::release::Release;
+use crate::version::{BuildMetadata, Prerelease, VersionExt};
 use crate::Result;
-use semver::{BuildMetadata, Prerelease};
 
 pub struct Bump<'a> {
   package: Package,
@@ -16,11 +16,9 @@ impl Builder for Bump<'_> {
 
   fn execute(self) -> Result<Self::Output> {
     let mut new_version = if self.pre.is_empty() {
-      self.release.increment(&self.package.version)
+      self.package.version.inc(self.release)
     } else {
-      self
-        .release
-        .increment_with_pre(&self.package.version, self.pre)
+      self.package.version.inc_with_pre(self.release, self.pre)
     };
 
     if !self.build.is_empty() {

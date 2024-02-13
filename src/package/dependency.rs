@@ -1,9 +1,9 @@
 use super::agent::Agent;
 use crate::error::Error;
+use crate::version::{Version, VersionReq};
 use crate::{bail, Result};
 use reqwest::header::ACCEPT;
 use reqwest::Client;
-use semver::{Version, VersionReq};
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fmt;
