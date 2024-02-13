@@ -143,11 +143,9 @@ impl Bump {
   }
 
   fn bump_all(&self, packages: Vec<Package>, release: Release) -> anyhow::Result<()> {
-    for package in packages {
-      self.bump(package, &release)?;
-    }
-
-    Ok(())
+    packages
+      .into_iter()
+      .try_for_each(|package| self.bump(package, &release))
   }
 
   async fn commit(&mut self) -> anyhow::Result<()> {
