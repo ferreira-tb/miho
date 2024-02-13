@@ -8,6 +8,7 @@ use miho::package::builder::{self, Builder};
 use miho::package::Package;
 use miho::Release;
 use semver::{BuildMetadata, Prerelease};
+use std::fmt;
 
 #[derive(Debug, Args)]
 pub struct Bump {
@@ -108,26 +109,26 @@ impl Bump {
   }
 
   fn prompt_many(&self, packages: Vec<Package>, release: Release) -> anyhow::Result<bool> {
-    let options = vec!["All", "Some", "None"];
+    let options = vec![Prompt::All, Prompt::Some, Prompt::None];
     let response = Select::new("Select what to bump.", options).prompt()?;
 
     match response {
-      "All" => {
+      Prompt::All => {
         self.bump_all(packages, release)?;
         Ok(true)
       }
-      "Some" => {
+      Prompt::Some => {
         let message = "Select the packages to bump.";
         let packages = MultiSelect::new(message, packages).prompt()?;
         self.bump_all(packages, release)?;
         Ok(true)
       }
-      _ => Ok(false),
+      Prompt::None => Ok(false),
     }
   }
 
   fn bump(&self, package: Package, release: &Release) -> anyhow::Result<()> {
-    let mut bump = builder::Bump::new(&package, release);
+    let mut bump = builder::Bump::new(package, release);
 
     if let Some(pre) = self.pre.as_deref() {
       bump.pre(pre)?;
@@ -215,5 +216,21 @@ impl Bump {
     );
 
     Ok(())
+  }
+}
+
+enum Prompt {
+  All,
+  Some,
+  None,
+}
+
+impl fmt::Display for Prompt {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      Self::All => write!(f, "All"),
+      Self::Some => write!(f, "Some"),
+      Self::None => write!(f, "None"),
+    }
   }
 }

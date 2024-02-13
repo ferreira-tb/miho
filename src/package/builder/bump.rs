@@ -4,7 +4,7 @@ use crate::release::Release;
 use semver::{BuildMetadata, Prerelease};
 
 pub struct Bump<'a> {
-  package: &'a Package,
+  package: Package,
   release: &'a Release,
   pre: Prerelease,
   build: BuildMetadata,
@@ -24,13 +24,13 @@ impl Builder for Bump<'_> {
       new_version.build = self.build;
     }
 
-    self.package.manifest.bump(self.package, new_version)
+    self.package.manifest.bump(&self.package, new_version)
   }
 }
 
 impl<'a> Bump<'a> {
   #[must_use]
-  pub fn new(package: &'a Package, release: &'a Release) -> Self {
+  pub fn new(package: Package, release: &'a Release) -> Self {
     Self {
       package,
       release,
