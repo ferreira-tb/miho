@@ -8,6 +8,7 @@
   "scripts": {
     "format": "prettier . --write && cargo fmt",
     "mock": "cargo run -- bump -p mocks --no-commit",
+    "pedantic": "cargo clippy -- -W clippy::pedantic",
     "prepare": "husky",
     "release": "cargo test && cargo clippy && cargo publish"
   },

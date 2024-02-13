@@ -20,12 +20,12 @@ impl Release {
       Release::Minor => Self::minor(version),
       Release::Patch => Self::patch(version),
       Release::Literal(v) => v.clone(),
-      _ => self.increment_pre(version, Prerelease::EMPTY),
+      _ => self.increment_with_pre(version, Prerelease::EMPTY),
     }
   }
 
   #[must_use]
-  pub fn increment_pre(&self, version: &Version, pre: Prerelease) -> Version {
+  pub fn increment_with_pre(&self, version: &Version, pre: Prerelease) -> Version {
     let mut new_version = match self {
       Release::PreMajor => Self::major(version),
       Release::PreMinor => Self::minor(version),

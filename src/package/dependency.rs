@@ -37,7 +37,28 @@ pub struct Dependency {
   pub name: String,
   pub requirement: VersionReq,
   pub kind: Kind,
+
+  /// Available versions that satisfy the requirement.
+  ///
+  /// This field is empty until `fetch_metadata` is called.
   pub versions: Vec<Version>,
+}
+
+impl Dependency {
+  /// Returns the maximum version that satisfies the requirement.
+  #[must_use]
+  pub fn max_version(&self) -> Option<&Version> {
+    let max = self
+      .versions
+      .iter()
+      .max_by(|a, b| Version::cmp_precedence(a, b));
+
+    if matches!(max, Some(m) if self.requirement.matches(m)) {
+      max
+    } else {
+      None
+    }
+  }
 }
 
 #[derive(Debug)]
@@ -121,11 +142,12 @@ impl Tree {
           Agent::Tauri => bail!(Error::NotPackageManager),
         };
 
-        dependency.versions = versions
-          .into_iter()
-          .filter_map(|v| Version::parse(&v).ok())
-          .collect();
+        let version = versions.into_iter().filter_map(|v| {
+          let requirement = &dependency.requirement;
+          Version::parse(&v).ok().filter(|v| requirement.matches(v))
+        });
 
+        dependency.versions = version.collect();
         dependency.versions.shrink_to_fit();
 
         Ok(dependency)

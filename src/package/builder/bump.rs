@@ -18,7 +18,9 @@ impl Builder for Bump<'_> {
     let mut new_version = if self.pre.is_empty() {
       self.release.increment(&self.package.version)
     } else {
-      self.release.increment_pre(&self.package.version, self.pre)
+      self
+        .release
+        .increment_with_pre(&self.package.version, self.pre)
     };
 
     if !self.build.is_empty() {

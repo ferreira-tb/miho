@@ -21,7 +21,7 @@ impl Package {
   pub fn new<P: AsRef<Path>>(path: P) -> Result<Self> {
     let path = path.as_ref();
     let kind = manifest::Kind::try_from(path)?;
-    let manifest = kind.read_source(path)?;
+    let manifest = kind.read(path)?;
 
     let package = Self {
       name: manifest.name().to_owned(),
@@ -51,8 +51,7 @@ impl Package {
 
 impl fmt::Display for Package {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    let agent = self.agent();
-    write!(f, "{} ({})", self.name, agent.to_string())
+    write!(f, "{} ({})", self.name, self.agent())
   }
 }
 

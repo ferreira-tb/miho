@@ -53,7 +53,7 @@ pub struct Bump {
 }
 
 impl Bump {
-  pub async fn execute(&mut self) -> Result<()> {
+  pub async fn execute(mut self) -> Result<()> {
     let path = self.path.as_deref().unwrap_or_default();
     let packages = search_packages(path)?;
 
@@ -72,9 +72,9 @@ impl Bump {
     }
 
     if self.no_ask {
-      self.bump_all(packages, release)?;
+      self.bump_all(packages, &release)?;
     } else {
-      let should_continue = self.prompt(packages, release)?;
+      let should_continue = self.prompt(packages, &release)?;
       if !should_continue {
         return Ok(());
       }
@@ -87,7 +87,7 @@ impl Bump {
     Ok(())
   }
 
-  fn prompt(&self, mut packages: Vec<Package>, release: Release) -> Result<bool> {
+  fn prompt(&self, mut packages: Vec<Package>, release: &Release) -> Result<bool> {
     if packages.len() == 1 {
       let package = packages.swap_remove(0);
       self.prompt_single(package, release)
@@ -96,19 +96,19 @@ impl Bump {
     }
   }
 
-  fn prompt_single(&self, package: Package, release: Release) -> Result<bool> {
+  fn prompt_single(&self, package: Package, release: &Release) -> Result<bool> {
     let message = format!("Bump {}?", package.name);
     let should_bump = Confirm::new(&message).with_default(true).prompt()?;
 
     if should_bump {
-      self.bump(package, &release)?;
+      self.bump(package, release)?;
       Ok(true)
     } else {
       Ok(false)
     }
   }
 
-  fn prompt_many(&self, packages: Vec<Package>, release: Release) -> Result<bool> {
+  fn prompt_many(&self, packages: Vec<Package>, release: &Release) -> Result<bool> {
     let options = vec![Prompt::All, Prompt::Some, Prompt::None];
     let response = Select::new("Select what to bump.", options).prompt()?;
 
@@ -143,10 +143,10 @@ impl Bump {
     Ok(())
   }
 
-  fn bump_all(&self, packages: Vec<Package>, release: Release) -> Result<()> {
+  fn bump_all(&self, packages: Vec<Package>, release: &Release) -> Result<()> {
     packages
       .into_iter()
-      .try_for_each(|package| self.bump(package, &release))
+      .try_for_each(|package| self.bump(package, release))
   }
 
   async fn commit(&mut self) -> Result<()> {
@@ -194,7 +194,7 @@ impl Bump {
     let pre = self.pre.as_deref();
 
     let mut new_version = match pre {
-      Some(pre) => release.increment_pre(&package.version, Prerelease::new(pre)?),
+      Some(pre) => release.increment_with_pre(&package.version, Prerelease::new(pre)?),
       None => release.increment(&package.version),
     };
 

@@ -23,7 +23,7 @@ pub enum Kind {
 }
 
 impl Kind {
-  pub(crate) fn read_source<P>(&self, path: P) -> Result<ManifestBox>
+  pub(crate) fn read<P>(&self, path: P) -> Result<ManifestBox>
   where
     P: AsRef<Path>,
   {

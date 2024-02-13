@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
   let cli = Cli::parse();
 
   match cli {
-    Cli::Bump(mut cmd) => cmd.execute().await,
+    Cli::Bump(cmd) => cmd.execute().await,
     Cli::Update(cmd) => cmd.execute().await,
   }
 }

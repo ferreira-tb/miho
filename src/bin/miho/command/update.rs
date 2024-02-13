@@ -2,13 +2,12 @@ use crate::util::search_packages;
 use anyhow::Result;
 use clap::Args;
 use colored::Colorize;
-use miho::package::dependency;
+use miho::package::dependency::Tree;
 use miho::package::Package;
 use miho::Release;
+use std::convert::TryInto;
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinSet;
-
-type DependencyTree = (Package, dependency::Tree);
 
 #[derive(Debug, Args)]
 pub struct Update {
@@ -29,7 +28,7 @@ pub struct Update {
 }
 
 impl Update {
-  pub async fn execute(&self) -> Result<()> {
+  pub async fn execute(self) -> Result<()> {
     let path = self.path.as_deref().unwrap_or_default();
     let packages = search_packages(path)?;
 
@@ -38,17 +37,17 @@ impl Update {
       return Ok(());
     }
 
-    let release = self.release();
+    let _release = self.release();
     let trees = self.fetch_trees(packages).await?;
 
-    for (package, tree) in trees {
-      println!("Updating package: {}", package.name);
+    for (package, tree) in &trees {
+      Self::preview(package, tree);
     }
 
     Ok(())
   }
 
-  async fn fetch_trees(&self, packages: Vec<Package>) -> Result<Vec<DependencyTree>> {
+  async fn fetch_trees(&self, packages: Vec<Package>) -> Result<Vec<(Package, Tree)>> {
     let mut set: JoinSet<Result<()>> = JoinSet::new();
     let trees = Vec::with_capacity(packages.len());
     let trees = Arc::new(Mutex::new(trees));
@@ -76,16 +75,36 @@ impl Update {
     Ok(trees)
   }
 
-  fn parse_trees(trees: Vec<DependencyTree>, release: Release) {
-
-  }
+  // fn parse_trees(trees: Vec<(Package, Tree)>, release: Release) {}
 
   fn release(&self) -> Option<Release> {
     self
       .release
       .as_deref()
-      .map(|r| r.try_into())
+      .map(TryInto::try_into)
       .transpose()
       .unwrap_or(None)
+  }
+
+  fn preview(package: &Package, tree: &Tree) {
+    println!(
+      "[ {} ] {}",
+      package
+        .agent()
+        .to_string()
+        .to_uppercase()
+        .bright_magenta()
+        .bold(),
+      package.name.bright_yellow().bold()
+    );
+
+    for dependency in &tree.dependencies {
+      if let Some(max_version) = dependency.max_version() {
+        println!(
+          "{}   {}  =>  {},",
+          dependency.name, dependency.requirement, max_version
+        );
+      }
+    }
   }
 }
