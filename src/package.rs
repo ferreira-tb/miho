@@ -4,7 +4,6 @@ pub mod dependency;
 pub mod manifest;
 
 pub use agent::Agent;
-use manifest::ManifestType;
 use semver::Version;
 use std::fmt;
 use std::path::{Path, PathBuf};
@@ -20,7 +19,7 @@ impl Package {
   /// Creates a representation of the package based on the manifest at `path`.
   pub fn new<P: AsRef<Path>>(manifest_path: P) -> crate::Result<Self> {
     let path = manifest_path.as_ref();
-    let manifest_type = ManifestType::try_from(path)?;
+    let manifest_type = manifest::Kind::try_from(path)?;
     let manifest = manifest_type.read_source(path)?;
 
     let package = Self {

@@ -14,42 +14,38 @@ const GLOB_PACKAGE_JSON: &str = "**/package.json";
 const GLOB_TAURI_CONF_JSON: &str = "**/tauri.conf.json";
 
 #[derive(Debug)]
-pub enum ManifestType {
+pub enum Kind {
   CargoToml,
   PackageJson,
   TauriConfJson,
 }
 
-impl ManifestType {
+impl Kind {
   pub(crate) fn read_source<P>(&self, path: P) -> crate::Result<ManifestBox>
   where
     P: AsRef<Path>,
   {
     match self {
-      ManifestType::CargoToml => CargoToml::read(path),
-      ManifestType::PackageJson => PackageJson::read(path),
-      ManifestType::TauriConfJson => TauriConfJson::read(path),
+      Kind::CargoToml => CargoToml::read(path),
+      Kind::PackageJson => PackageJson::read(path),
+      Kind::TauriConfJson => TauriConfJson::read(path),
     }
   }
 
   pub(crate) fn glob(&self) -> &str {
     match self {
-      ManifestType::CargoToml => GLOB_CARGO_TOML,
-      ManifestType::PackageJson => GLOB_PACKAGE_JSON,
-      ManifestType::TauriConfJson => GLOB_TAURI_CONF_JSON,
+      Kind::CargoToml => GLOB_CARGO_TOML,
+      Kind::PackageJson => GLOB_PACKAGE_JSON,
+      Kind::TauriConfJson => GLOB_TAURI_CONF_JSON,
     }
   }
 }
 
-impl TryFrom<&Path> for ManifestType {
+impl TryFrom<&Path> for Kind {
   type Error = crate::error::Error;
 
   fn try_from(path: &Path) -> crate::Result<Self> {
-    let variants = [
-      ManifestType::CargoToml,
-      ManifestType::PackageJson,
-      ManifestType::TauriConfJson,
-    ];
+    let variants = [Kind::CargoToml, Kind::PackageJson, Kind::TauriConfJson];
 
     for variant in variants {
       let glob = Glob::new(variant.glob())

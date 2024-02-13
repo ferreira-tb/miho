@@ -58,10 +58,10 @@ impl Update {
       set.spawn(async move {
         let mut tree = package.dependency_tree();
         tree.fetch_metadata().await?;
-        
+
         let mut tree_vec = tree_vec.lock().unwrap();
         tree_vec.push((package, tree));
-        
+
         Ok(())
       });
     }

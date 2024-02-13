@@ -1,8 +1,8 @@
-mod manifest_type;
+mod kind;
 
 use super::dependency;
 use super::{Agent, Package};
-pub use manifest_type::ManifestType;
+pub use kind::Kind;
 use semver::Version;
 use std::path::Path;
 

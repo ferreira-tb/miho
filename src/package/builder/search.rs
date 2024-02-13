@@ -1,7 +1,7 @@
 use super::Builder;
 use crate::bail;
 use crate::error::Error;
-use crate::package::manifest::ManifestType;
+use crate::package::manifest;
 use crate::package::Package;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
@@ -68,14 +68,15 @@ impl Search {
     let mut builder = GlobSetBuilder::new();
 
     macro_rules! add {
-      ($glob:expr) => {
-        builder.add(Glob::new($glob).expect("hardcoded glob should always be valid"));
+      ($kind:ident) => {
+        let glob = manifest::Kind::$kind.glob();
+        builder.add(Glob::new(glob).expect("hardcoded glob should always be valid"));
       };
     }
 
-    add!(ManifestType::CargoToml.glob());
-    add!(ManifestType::PackageJson.glob());
-    add!(ManifestType::TauriConfJson.glob());
+    add!(CargoToml);
+    add!(PackageJson);
+    add!(TauriConfJson);
 
     builder.build().unwrap()
   }
