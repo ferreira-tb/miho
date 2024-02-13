@@ -1,5 +1,7 @@
-use super::GitCommand;
-use std::process::{Child, Command, Output, Stdio};
+use super::Git;
+use crate::{git_output, git_spawn};
+use std::process::{ExitStatus, Output, Stdio};
+use tokio::process::Command;
 
 /// <https://git-scm.com/docs/git-push>
 pub struct Push {
@@ -16,7 +18,7 @@ impl Push {
   }
 }
 
-impl GitCommand for Push {
+impl Git for Push {
   fn stderr(&mut self, cfg: Stdio) -> &mut Self {
     self.command.stderr(cfg);
     self
@@ -27,12 +29,12 @@ impl GitCommand for Push {
     self
   }
 
-  fn output(&mut self) -> crate::Result<Output> {
-    self.command.args(&self.args).output().map_err(Into::into)
+  async fn spawn(&mut self) -> crate::Result<ExitStatus> {
+    git_spawn!(self.command, &self.args)
   }
 
-  fn spawn(&mut self) -> crate::Result<Child> {
-    self.command.args(&self.args).spawn().map_err(Into::into)
+  async fn output(&mut self) -> crate::Result<Output> {
+    git_output!(self.command, &self.args)
   }
 }
 

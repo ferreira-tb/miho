@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "4.0.0"
+version = "4.1.0"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -8,8 +8,12 @@ authors = ["Andrew Ferreira <andrew.shien2@gmail.com>"]
 license = "MIT"
 edition = "2021"
 readme = "README.md"
-keywords = ["miho", "repository"]
+keywords = [
+    "miho",
+    "repository",
+]
 categories = ["development-tools"]
+rust-version = "1.76"
 
 [dependencies]
 anyhow = "1.0"
@@ -17,10 +21,24 @@ colored = "2.1"
 globset = "0.4"
 ignore = "0.4"
 inquire = "0.6"
-reqwest = { version = "0.11", features = ["brotli", "gzip", "json"] }
 semver = "1.0"
 thiserror = "1.0"
-tokio = { version = "1.36", features = ["macros", "rt-multi-thread"] }
+
+[dependencies.reqwest]
+version = "0.11"
+features = [
+    "brotli",
+    "gzip",
+    "json",
+]
+
+[dependencies.tokio]
+version = "1.36"
+features = [
+    "process",
+    "macros",
+    "rt-multi-thread",
+]
 
 [dependencies.clap]
 version = "4.5"

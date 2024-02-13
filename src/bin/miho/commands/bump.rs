@@ -3,12 +3,11 @@ use anyhow::Context;
 use clap::Args;
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select, Text};
-use miho::git::{Add, Commit, GitCommand, Push};
+use miho::git::{Add, Commit, Git, Push};
 use miho::package::builder::{self, Builder};
 use miho::package::Package;
 use miho::Release;
 use semver::{BuildMetadata, Prerelease};
-use std::process::Stdio;
 
 #[derive(Debug, Args)]
 pub struct Bump {
@@ -53,7 +52,7 @@ pub struct Bump {
 }
 
 impl Bump {
-  pub fn execute(&mut self) -> anyhow::Result<()> {
+  pub async fn execute(&mut self) -> anyhow::Result<()> {
     let path = self.path.as_deref().unwrap_or_default();
     let packages = search_packages(path)?;
 
@@ -81,7 +80,7 @@ impl Bump {
     }
 
     if !self.no_commit {
-      self.commit()?;
+      self.commit().await?;
     }
 
     Ok(())
@@ -151,12 +150,11 @@ impl Bump {
     Ok(())
   }
 
-  fn commit(&mut self) -> anyhow::Result<()> {
+  async fn commit(&mut self) -> anyhow::Result<()> {
     if let Some(pathspec) = &self.add {
       Add::new(pathspec)
-        .stderr(Stdio::inherit())
-        .stdout(Stdio::inherit())
-        .output()
+        .spawn()
+        .await
         .with_context(|| "failed to update git index")?;
     }
 
@@ -172,7 +170,6 @@ impl Bump {
     };
 
     let mut commit = Commit::new(message);
-    commit.stderr(Stdio::inherit()).stdout(Stdio::inherit());
 
     if self.no_verify {
       commit.no_verify();
@@ -180,14 +177,14 @@ impl Bump {
 
     commit
       .all()
-      .output()
+      .spawn()
+      .await
       .with_context(|| "failed to commit packages")?;
 
     if !self.no_push {
       Push::new()
-        .stderr(Stdio::inherit())
-        .stdout(Stdio::inherit())
-        .output()
+        .spawn()
+        .await
         .with_context(|| "failed to push commit")?;
     }
 
