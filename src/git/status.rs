@@ -11,6 +11,7 @@ pub struct Status {
 }
 
 impl Status {
+  #[must_use]
   pub fn new() -> Self {
     Self {
       command: Command::new("git"),

@@ -27,6 +27,6 @@ impl From<Agent> for &str {
 impl fmt::Display for Agent {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let agent: &str = self.clone().into();
-    write!(f, "{}", agent)
+    write!(f, "{agent}")
   }
 }

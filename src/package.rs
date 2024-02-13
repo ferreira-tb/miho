@@ -4,7 +4,6 @@ pub mod dependency;
 pub mod manifest;
 
 pub use agent::Agent;
-use dependency::DependencyTree;
 use manifest::ManifestType;
 use semver::Version;
 use std::fmt;
@@ -39,7 +38,7 @@ impl Package {
   }
 
   /// Fetches metadata for all dependencies of the package.
-  pub async fn dependency_tree(&self) -> crate::Result<DependencyTree> {
+  pub async fn dependency_tree(&self) -> crate::Result<dependency::Tree> {
     self.manifest.dependency_tree_builder().build().await
   }
 

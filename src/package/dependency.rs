@@ -12,8 +12,8 @@ use tokio::task::JoinSet;
 const CARGO_REGISTRY: &str = "https://crates.io/api/v1/crates";
 const NPM_REGISTRY: &str = "https://registry.npmjs.org";
 
-#[derive(Clone, Debug)]
-pub enum DependencyKind {
+#[derive(Clone, Copy, Debug)]
+pub enum Kind {
   Build,
   Development,
   Normal,
@@ -24,28 +24,30 @@ pub enum DependencyKind {
 pub struct Dependency {
   pub name: String,
   pub requirement: VersionReq,
-  pub kind: DependencyKind,
+  pub kind: Kind,
   pub versions: Vec<String>,
 }
 
 #[derive(Debug)]
-pub struct DependencyTree {
+pub struct Tree {
   pub agent: Agent,
   pub dependencies: Vec<Dependency>,
 }
 
-impl DependencyTree {
-  pub fn builder(agent: Agent) -> DependencyTreeBuilder {
-    DependencyTreeBuilder::new(agent)
+impl Tree {
+  #[must_use]
+  pub fn builder(agent: Agent) -> TreeBuilder {
+    TreeBuilder::new(agent)
   }
 }
 
-pub struct DependencyTreeBuilder {
+pub struct TreeBuilder {
   agent: Agent,
   dependencies: Vec<Dependency>,
 }
 
-impl DependencyTreeBuilder {
+impl TreeBuilder {
+  #[must_use]
   pub fn new(agent: Agent) -> Self {
     Self {
       agent,
@@ -54,7 +56,7 @@ impl DependencyTreeBuilder {
   }
 
   /// Adds a list of dependencies to the tree.
-  pub fn add<K, V>(&mut self, dependencies: &HashMap<K, V>, kind: DependencyKind) -> &mut Self
+  pub fn add<K, V>(&mut self, dependencies: &HashMap<K, V>, kind: Kind) -> &mut Self
   where
     K: AsRef<str>,
     V: AsRef<str>,
@@ -67,7 +69,7 @@ impl DependencyTreeBuilder {
       let dependency = Dependency {
         name: name.as_ref().to_owned(),
         requirement,
-        kind: kind.clone(),
+        kind,
         versions: Vec::default(),
       };
 
@@ -78,7 +80,7 @@ impl DependencyTreeBuilder {
   }
 
   /// Builds the dependency tree, fetching metadata from their respective registries.
-  pub async fn build(mut self) -> crate::Result<DependencyTree> {
+  pub async fn build(mut self) -> crate::Result<Tree> {
     let client = Client::builder()
       .user_agent("Miho/4.0")
       .brotli(true)
@@ -132,7 +134,7 @@ impl DependencyTreeBuilder {
 
     self.dependencies.shrink_to_fit();
 
-    let tree = DependencyTree {
+    let tree = Tree {
       agent: self.agent,
       dependencies: self.dependencies,
     };

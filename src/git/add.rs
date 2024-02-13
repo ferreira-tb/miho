@@ -10,6 +10,7 @@ pub struct Add {
 }
 
 impl Add {
+  #[must_use]
   pub fn new<T: AsRef<str>>(pathspec: T) -> Self {
     let pathspec = pathspec.as_ref();
     Self {

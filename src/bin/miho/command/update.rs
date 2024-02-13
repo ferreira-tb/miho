@@ -1,12 +1,12 @@
 use crate::util::search_packages;
 use clap::Args;
 use colored::*;
-use miho::package::dependency::DependencyTree;
+use miho::package::dependency;
 use miho::package::Package;
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinSet;
 
-type Tree = (Package, DependencyTree);
+type DependencyTree = (Package, dependency::Tree);
 
 #[derive(Debug, Args)]
 pub struct Update {
@@ -48,7 +48,7 @@ impl Update {
     Ok(())
   }
 
-  async fn fetch_trees(&self, packages: Vec<Package>) -> anyhow::Result<Vec<Tree>> {
+  async fn fetch_trees(&self, packages: Vec<Package>) -> anyhow::Result<Vec<DependencyTree>> {
     let mut set: JoinSet<anyhow::Result<()>> = JoinSet::new();
     let trees = Vec::with_capacity(packages.len());
     let trees = Arc::new(Mutex::new(trees));

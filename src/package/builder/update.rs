@@ -9,3 +9,10 @@ impl Builder for Update {
     unimplemented!()
   }
 }
+
+impl Update {
+  #[must_use]
+  pub fn new() -> Self {
+    Self
+  }
+}

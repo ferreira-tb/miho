@@ -29,6 +29,7 @@ impl Builder for Bump<'_> {
 }
 
 impl<'a> Bump<'a> {
+  #[must_use]
   pub fn new(package: &'a Package, release: &'a Release) -> Self {
     Self {
       package,

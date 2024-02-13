@@ -1,4 +1,4 @@
-use crate::package::dependency::{DependencyKind, DependencyTreeBuilder};
+use crate::package::dependency::{self, TreeBuilder};
 use crate::package::manifest::{Manifest, ManifestBox, ManifestHandler};
 use crate::package::{Agent, Package};
 use semver::Version;
@@ -56,20 +56,20 @@ impl ManifestHandler for PackageJson {
     Ok(())
   }
 
-  fn dependency_tree_builder(&self) -> DependencyTreeBuilder {
-    let mut builder = DependencyTreeBuilder::new(self.agent());
+  fn dependency_tree_builder(&self) -> TreeBuilder {
+    let mut builder = TreeBuilder::new(self.agent());
 
     macro_rules! add {
-      ($deps:expr, $kind:expr) => {
+      ($deps:expr, $kind:ident) => {
         if let Some(deps) = $deps {
-          builder.add(deps, $kind);
+          builder.add(deps, dependency::Kind::$kind);
         }
       };
     }
 
-    add!(&self.dependencies, DependencyKind::Normal);
-    add!(&self.dev_dependencies, DependencyKind::Development);
-    add!(&self.peer_dependencies, DependencyKind::Peer);
+    add!(&self.dependencies, Normal);
+    add!(&self.dev_dependencies, Development);
+    add!(&self.peer_dependencies, Peer);
 
     builder
   }

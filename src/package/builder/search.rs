@@ -19,7 +19,7 @@ impl Builder for Search {
   /// This will respect `.gitignore` and `.mihoignore` files.
   fn execute(self) -> crate::Result<Self::Output> {
     let mut packages: Vec<Package> = vec![];
-    let glob = self.build_globset();
+    let glob = Self::build_globset();
 
     for result in self.walker.build() {
       let entry = match result {
@@ -31,7 +31,7 @@ impl Builder for Search {
         _ => continue,
       };
 
-      if self.is_match(&glob, &entry) {
+      if Self::is_match(&glob, &entry) {
         let Ok(manifest_path) = entry.path().canonicalize() else {
           bail!(Error::InvalidManifestPath {
             path: entry.path().to_string_lossy().into_owned(),
@@ -50,6 +50,7 @@ impl Builder for Search {
 
 impl Search {
   /// Creates a builder for a recursive directory search.
+  #[must_use]
   pub fn new<P: AsRef<Path>>(path: P) -> Self {
     let mut walker = WalkBuilder::new(path);
     walker.add_ignore(".mihoignore");
@@ -63,7 +64,7 @@ impl Search {
     self
   }
 
-  fn build_globset(&self) -> GlobSet {
+  fn build_globset() -> GlobSet {
     let mut builder = GlobSetBuilder::new();
 
     macro_rules! add {
@@ -79,7 +80,7 @@ impl Search {
     builder.build().unwrap()
   }
 
-  fn is_match(&self, glob: &GlobSet, entry: &DirEntry) -> bool {
+  fn is_match(glob: &GlobSet, entry: &DirEntry) -> bool {
     if !glob.is_match(entry.path()) {
       return false;
     }
