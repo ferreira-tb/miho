@@ -13,21 +13,23 @@ pub enum Release {
 }
 
 impl Release {
+  #[must_use]
   pub fn increment(&self, version: &Version) -> Version {
     match self {
-      Release::Major => self.major(version),
-      Release::Minor => self.minor(version),
-      Release::Patch => self.patch(version),
+      Release::Major => Self::major(version),
+      Release::Minor => Self::minor(version),
+      Release::Patch => Self::patch(version),
       Release::Literal(v) => v.clone(),
       _ => self.increment_pre(version, Prerelease::EMPTY),
     }
   }
 
+  #[must_use]
   pub fn increment_pre(&self, version: &Version, pre: Prerelease) -> Version {
     let mut new_version = match self {
-      Release::PreMajor => self.major(version),
-      Release::PreMinor => self.minor(version),
-      Release::PrePatch => self.patch(version),
+      Release::PreMajor => Self::major(version),
+      Release::PreMinor => Self::minor(version),
+      Release::PrePatch => Self::patch(version),
       Release::PreRelease => version.clone(),
       _ => self.increment(version),
     };
@@ -37,7 +39,7 @@ impl Release {
     new_version
   }
 
-  fn major(&self, version: &Version) -> Version {
+  fn major(version: &Version) -> Version {
     Version {
       major: version.major + 1,
       minor: 0,
@@ -47,7 +49,7 @@ impl Release {
     }
   }
 
-  fn minor(&self, version: &Version) -> Version {
+  fn minor(version: &Version) -> Version {
     Version {
       major: version.major,
       minor: version.minor + 1,
@@ -57,7 +59,7 @@ impl Release {
     }
   }
 
-  fn patch(&self, version: &Version) -> Version {
+  fn patch(version: &Version) -> Version {
     Version {
       major: version.major,
       minor: version.minor,

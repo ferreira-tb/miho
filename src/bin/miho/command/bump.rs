@@ -1,7 +1,7 @@
 use crate::util::search_packages;
 use anyhow::Context;
 use clap::Args;
-use colored::*;
+use colored::Colorize;
 use inquire::{Confirm, MultiSelect, Select, Text};
 use miho::git::{Add, Commit, Git, Push};
 use miho::package::builder::{self, Builder};
@@ -70,13 +70,13 @@ impl Bump {
       self.preview(package, &release)?;
     }
 
-    if !self.no_ask {
+    if self.no_ask {
+      self.bump_all(packages, release)?;
+    } else {
       let should_continue = self.prompt(packages, release)?;
       if !should_continue {
         return Ok(());
       }
-    } else {
-      self.bump_all(packages, release)?;
     }
 
     if !self.no_commit {
@@ -164,7 +164,7 @@ impl Bump {
       self.commit_message.take()
     };
 
-    let message = match message.as_deref().map(|m| m.trim()) {
+    let message = match message.as_deref().map(str::trim) {
       Some(m) if !m.is_empty() => m,
       _ => "chore: bump version",
     };

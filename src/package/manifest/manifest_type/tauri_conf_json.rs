@@ -1,4 +1,4 @@
-use crate::package::manifest::{Manifest, ManifestBox, ManifestHandler};
+use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::{Agent, Package};
 use semver::Version;
 use serde::Deserialize;
@@ -30,7 +30,7 @@ impl Manifest for TauriConfJson {
   }
 }
 
-impl ManifestHandler for TauriConfJson {
+impl Handler for TauriConfJson {
   fn agent(&self) -> Agent {
     Agent::Tauri
   }

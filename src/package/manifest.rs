@@ -6,7 +6,7 @@ pub use manifest_type::ManifestType;
 use semver::Version;
 use std::path::Path;
 
-pub(super) type ManifestBox = Box<dyn ManifestHandler + Send + Sync>;
+pub(super) type ManifestBox = Box<dyn Handler + Send + Sync>;
 
 trait Manifest {
   type Value;
@@ -15,7 +15,7 @@ trait Manifest {
   fn read_as_value<P: AsRef<Path>>(manifest_path: P) -> crate::Result<Self::Value>;
 }
 
-pub trait ManifestHandler {
+pub trait Handler {
   fn agent(&self) -> Agent;
   fn bump(&self, package: &Package, new_version: Version) -> crate::Result<()>;
   fn filename(&self) -> &str;

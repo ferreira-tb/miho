@@ -1,5 +1,5 @@
 use crate::package::dependency::{self, TreeBuilder};
-use crate::package::manifest::{Manifest, ManifestBox, ManifestHandler};
+use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::{Agent, Package};
 use semver::Version;
 use serde::Deserialize;
@@ -43,7 +43,7 @@ impl Manifest for CargoToml {
   }
 }
 
-impl ManifestHandler for CargoToml {
+impl Handler for CargoToml {
   fn agent(&self) -> Agent {
     Agent::Cargo
   }

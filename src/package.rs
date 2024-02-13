@@ -33,6 +33,7 @@ impl Package {
     Ok(package)
   }
 
+  #[must_use]
   pub fn agent(&self) -> Agent {
     self.manifest.agent()
   }
@@ -42,6 +43,7 @@ impl Package {
     self.manifest.dependency_tree_builder().build().await
   }
 
+  #[must_use]
   pub fn filename(&self) -> &str {
     self.manifest.filename()
   }

@@ -1,5 +1,5 @@
 use crate::package::dependency::{self, TreeBuilder};
-use crate::package::manifest::{Manifest, ManifestBox, ManifestHandler};
+use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::{Agent, Package};
 use semver::Version;
 use serde::Deserialize;
@@ -37,7 +37,7 @@ impl Manifest for PackageJson {
   }
 }
 
-impl ManifestHandler for PackageJson {
+impl Handler for PackageJson {
   fn agent(&self) -> Agent {
     match &self.package_manager {
       Some(pm) if pm.starts_with("pnpm") => Agent::Pnpm,

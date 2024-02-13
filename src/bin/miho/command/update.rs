@@ -1,6 +1,6 @@
 use crate::util::search_packages;
 use clap::Args;
-use colored::*;
+use colored::Colorize;
 use miho::package::dependency;
 use miho::package::Package;
 use std::sync::{Arc, Mutex};
