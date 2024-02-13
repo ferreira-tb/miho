@@ -8,10 +8,7 @@ authors = ["Andrew Ferreira <andrew.shien2@gmail.com>"]
 license = "MIT"
 edition = "2021"
 readme = "README.md"
-keywords = [
-    "miho",
-    "repository",
-]
+keywords = ["miho", "repository"]
 categories = ["development-tools"]
 rust-version = "1.76"
 
@@ -26,19 +23,11 @@ thiserror = "1.0"
 
 [dependencies.reqwest]
 version = "0.11"
-features = [
-    "brotli",
-    "gzip",
-    "json",
-]
+features = ["brotli", "gzip", "json"]
 
 [dependencies.tokio]
 version = "1.36"
-features = [
-    "process",
-    "macros",
-    "rt-multi-thread",
-]
+features = ["process", "macros", "rt-multi-thread"]
 
 [dependencies.clap]
 version = "4.5"
