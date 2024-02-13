@@ -38,9 +38,9 @@ impl Package {
     self.manifest.agent()
   }
 
-  /// Fetches metadata for all dependencies of the package.
-  pub async fn dependency_tree(&self) -> crate::Result<dependency::Tree> {
-    self.manifest.dependency_tree_builder().build().await
+  #[must_use]
+  pub fn dependency_tree(&self) -> dependency::Tree {
+    self.manifest.dependency_tree()
   }
 
   #[must_use]

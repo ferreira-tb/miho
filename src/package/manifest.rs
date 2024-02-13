@@ -1,6 +1,6 @@
 mod manifest_type;
 
-use super::dependency::TreeBuilder;
+use super::dependency;
 use super::{Agent, Package};
 pub use manifest_type::ManifestType;
 use semver::Version;
@@ -23,7 +23,7 @@ pub trait Handler {
   fn update_dependencies(&self) -> crate::Result<()>;
   fn version(&self) -> crate::Result<Version>;
 
-  fn dependency_tree_builder(&self) -> TreeBuilder {
-    TreeBuilder::new(self.agent())
+  fn dependency_tree(&self) -> dependency::Tree {
+    dependency::Tree::new(self.agent())
   }
 }

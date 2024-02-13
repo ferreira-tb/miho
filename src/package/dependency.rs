@@ -36,18 +36,6 @@ pub struct Tree {
 
 impl Tree {
   #[must_use]
-  pub fn builder(agent: Agent) -> TreeBuilder {
-    TreeBuilder::new(agent)
-  }
-}
-
-pub struct TreeBuilder {
-  agent: Agent,
-  dependencies: Vec<Dependency>,
-}
-
-impl TreeBuilder {
-  #[must_use]
   pub fn new(agent: Agent) -> Self {
     Self {
       agent,
@@ -55,7 +43,7 @@ impl TreeBuilder {
     }
   }
 
-  /// Adds a list of dependencies to the tree.
+  /// Adds dependencies to the tree.
   pub fn add<K, V>(&mut self, dependencies: &HashMap<K, V>, kind: Kind) -> &mut Self
   where
     K: AsRef<str>,
@@ -79,8 +67,8 @@ impl TreeBuilder {
     self
   }
 
-  /// Builds the dependency tree, fetching metadata from their respective registries.
-  pub async fn build(mut self) -> crate::Result<Tree> {
+  /// Updates the dependency tree, fetching metadata from the registry.
+  pub async fn fetch_metadata(&mut self) -> crate::Result<()> {
     let client = Client::builder()
       .user_agent("Miho/4.0")
       .brotli(true)
@@ -134,12 +122,7 @@ impl TreeBuilder {
 
     self.dependencies.shrink_to_fit();
 
-    let tree = Tree {
-      agent: self.agent,
-      dependencies: self.dependencies,
-    };
-
-    Ok(tree)
+    Ok(())
   }
 }
 

@@ -1,4 +1,4 @@
-use crate::package::dependency::{self, TreeBuilder};
+use crate::package::dependency;
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::{Agent, Package};
 use semver::Version;
@@ -58,14 +58,14 @@ impl Handler for CargoToml {
     Ok(())
   }
 
-  fn dependency_tree_builder(&self) -> TreeBuilder {
-    let mut builder = TreeBuilder::new(self.agent());
+  fn dependency_tree(&self) -> dependency::Tree {
+    let mut tree = dependency::Tree::new(self.agent());
 
     macro_rules! add {
       ($dependencies:expr, $kind:ident) => {
         if let Some(deps) = $dependencies {
           let dependencies = parse_dependencies(deps);
-          builder.add(&dependencies, dependency::Kind::$kind);
+          tree.add(&dependencies, dependency::Kind::$kind);
         }
       };
     }
@@ -74,7 +74,7 @@ impl Handler for CargoToml {
     add!(&self.dev_dependencies, Development);
     add!(&self.build_dependencies, Build);
 
-    builder
+    tree
   }
 
   fn filename(&self) -> &str {

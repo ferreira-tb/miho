@@ -56,9 +56,12 @@ impl Update {
     for package in packages {
       let tree_vec = Arc::clone(&trees);
       set.spawn(async move {
-        let tree = package.dependency_tree().await?;
+        let mut tree = package.dependency_tree();
+        tree.fetch_metadata().await?;
+        
         let mut tree_vec = tree_vec.lock().unwrap();
         tree_vec.push((package, tree));
+        
         Ok(())
       });
     }
