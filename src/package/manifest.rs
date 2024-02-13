@@ -11,8 +11,8 @@ pub(super) type ManifestBox = Box<dyn Handler + Send + Sync>;
 trait Manifest {
   type Value;
 
-  fn read<P: AsRef<Path>>(manifest_path: P) -> crate::Result<ManifestBox>;
-  fn read_as_value<P: AsRef<Path>>(manifest_path: P) -> crate::Result<Self::Value>;
+  fn read<P: AsRef<Path>>(path: P) -> crate::Result<ManifestBox>;
+  fn read_as_value<P: AsRef<Path>>(path: P) -> crate::Result<Self::Value>;
 }
 
 pub trait Handler {

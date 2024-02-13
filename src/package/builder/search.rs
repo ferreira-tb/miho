@@ -32,13 +32,13 @@ impl Builder for Search {
       };
 
       if Self::is_match(&glob, &entry) {
-        let Ok(manifest_path) = entry.path().canonicalize() else {
+        let Ok(path) = entry.path().canonicalize() else {
           bail!(Error::InvalidManifestPath {
             path: entry.path().to_string_lossy().into_owned(),
           });
         };
 
-        if let Ok(package) = Package::new(manifest_path) {
+        if let Ok(package) = Package::new(path) {
           packages.push(package);
         }
       }

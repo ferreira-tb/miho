@@ -17,10 +17,10 @@ pub struct Package {
 
 impl Package {
   /// Creates a representation of the package based on the manifest at `path`.
-  pub fn new<P: AsRef<Path>>(manifest_path: P) -> crate::Result<Self> {
-    let path = manifest_path.as_ref();
-    let manifest_type = manifest::Kind::try_from(path)?;
-    let manifest = manifest_type.read_source(path)?;
+  pub fn new<P: AsRef<Path>>(path: P) -> crate::Result<Self> {
+    let path = path.as_ref();
+    let kind = manifest::Kind::try_from(path)?;
+    let manifest = kind.read_source(path)?;
 
     let package = Self {
       name: manifest.name().to_owned(),
