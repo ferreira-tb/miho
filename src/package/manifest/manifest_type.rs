@@ -44,7 +44,7 @@ impl ManifestType {
 impl TryFrom<&Path> for ManifestType {
   type Error = crate::error::Error;
 
-  fn try_from(manifest_path: &Path) -> crate::Result<Self> {
+  fn try_from(path: &Path) -> crate::Result<Self> {
     let variants = [
       ManifestType::CargoToml,
       ManifestType::PackageJson,
@@ -56,13 +56,13 @@ impl TryFrom<&Path> for ManifestType {
         .expect("hardcoded glob should always be valid")
         .compile_matcher();
 
-      if glob.is_match(manifest_path) {
+      if glob.is_match(path) {
         return Ok(variant);
       }
     }
 
     Err(Self::Error::InvalidManifestPath {
-      path: manifest_path.to_string_lossy().into_owned(),
+      path: path.to_string_lossy().into_owned(),
     })
   }
 }
