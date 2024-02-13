@@ -7,8 +7,6 @@ macro_rules! bail {
   }};
 }
 
-pub type Result<T> = std::result::Result<T, Error>;
-
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
   #[error("git command failed:\n{reason}")]

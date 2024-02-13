@@ -1,5 +1,5 @@
 use super::Git;
-use crate::{git_output, git_spawn};
+use crate::{git_output, git_spawn, Result};
 use std::process::{ExitStatus, Output, Stdio};
 use tokio::process::Command;
 
@@ -30,11 +30,11 @@ impl Git for Push {
     self
   }
 
-  async fn spawn(&mut self) -> crate::Result<ExitStatus> {
+  async fn spawn(&mut self) -> Result<ExitStatus> {
     git_spawn!(self.command, &self.args)
   }
 
-  async fn output(&mut self) -> crate::Result<Output> {
+  async fn output(&mut self) -> Result<Output> {
     git_output!(self.command, &self.args)
   }
 }

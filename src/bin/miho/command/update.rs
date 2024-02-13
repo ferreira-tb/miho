@@ -1,8 +1,10 @@
 use crate::util::search_packages;
+use anyhow::Result;
 use clap::Args;
 use colored::Colorize;
 use miho::package::dependency;
 use miho::package::Package;
+use miho::Release;
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinSet;
 
@@ -27,7 +29,7 @@ pub struct Update {
 }
 
 impl Update {
-  pub async fn execute(&self) -> anyhow::Result<()> {
+  pub async fn execute(&self) -> Result<()> {
     let path = self.path.as_deref().unwrap_or_default();
     let packages = search_packages(path)?;
 
@@ -36,20 +38,24 @@ impl Update {
       return Ok(());
     }
 
+    let release = self.release();
     let trees = self.fetch_trees(packages).await?;
 
     for (package, tree) in trees {
       println!("Updating package: {}", package.name);
-      for dep in tree.dependencies {
-        println!("  - {} ({:?})", dep.name, dep.requirement);
-      }
+
+      /*if let Some(release) = release {
+        unimplemented!()
+      } else {
+        unimplemented!()
+      }*/
     }
 
     Ok(())
   }
 
-  async fn fetch_trees(&self, packages: Vec<Package>) -> anyhow::Result<Vec<DependencyTree>> {
-    let mut set: JoinSet<anyhow::Result<()>> = JoinSet::new();
+  async fn fetch_trees(&self, packages: Vec<Package>) -> Result<Vec<DependencyTree>> {
+    let mut set: JoinSet<Result<()>> = JoinSet::new();
     let trees = Vec::with_capacity(packages.len());
     let trees = Arc::new(Mutex::new(trees));
 
@@ -74,5 +80,14 @@ impl Update {
     let trees = mutex.into_inner()?;
 
     Ok(trees)
+  }
+
+  fn release(&self) -> Option<Release> {
+    self
+      .release
+      .as_deref()
+      .map(|r| r.try_into())
+      .transpose()
+      .unwrap_or(None)
   }
 }

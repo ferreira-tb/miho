@@ -1,6 +1,6 @@
 use super::agent::Agent;
-use crate::bail;
 use crate::error::Error;
+use crate::{bail, Result};
 use reqwest::header::ACCEPT;
 use reqwest::Client;
 use semver::VersionReq;
@@ -68,7 +68,7 @@ impl Tree {
   }
 
   /// Updates the dependency tree, fetching metadata from the registry.
-  pub async fn fetch_metadata(&mut self) -> crate::Result<()> {
+  pub async fn fetch_metadata(&mut self) -> Result<()> {
     let client = Client::builder()
       .user_agent("Miho/4.0")
       .brotli(true)

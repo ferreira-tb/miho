@@ -1,5 +1,5 @@
 use crate::util::search_packages;
-use anyhow::Context;
+use anyhow::{Context, Result};
 use clap::Args;
 use colored::Colorize;
 use inquire::{Confirm, MultiSelect, Select, Text};
@@ -53,7 +53,7 @@ pub struct Bump {
 }
 
 impl Bump {
-  pub async fn execute(&mut self) -> anyhow::Result<()> {
+  pub async fn execute(&mut self) -> Result<()> {
     let path = self.path.as_deref().unwrap_or_default();
     let packages = search_packages(path)?;
 
@@ -87,7 +87,7 @@ impl Bump {
     Ok(())
   }
 
-  fn prompt(&self, mut packages: Vec<Package>, release: Release) -> anyhow::Result<bool> {
+  fn prompt(&self, mut packages: Vec<Package>, release: Release) -> Result<bool> {
     if packages.len() == 1 {
       let package = packages.swap_remove(0);
       self.prompt_single(package, release)
@@ -96,7 +96,7 @@ impl Bump {
     }
   }
 
-  fn prompt_single(&self, package: Package, release: Release) -> anyhow::Result<bool> {
+  fn prompt_single(&self, package: Package, release: Release) -> Result<bool> {
     let message = format!("Bump {}?", package.name);
     let should_bump = Confirm::new(&message).with_default(true).prompt()?;
 
@@ -108,7 +108,7 @@ impl Bump {
     }
   }
 
-  fn prompt_many(&self, packages: Vec<Package>, release: Release) -> anyhow::Result<bool> {
+  fn prompt_many(&self, packages: Vec<Package>, release: Release) -> Result<bool> {
     let options = vec![Prompt::All, Prompt::Some, Prompt::None];
     let response = Select::new("Select what to bump.", options).prompt()?;
 
@@ -127,7 +127,7 @@ impl Bump {
     }
   }
 
-  fn bump(&self, package: Package, release: &Release) -> anyhow::Result<()> {
+  fn bump(&self, package: Package, release: &Release) -> Result<()> {
     let mut bump = builder::Bump::new(package, release);
 
     if let Some(pre) = self.pre.as_deref() {
@@ -143,13 +143,13 @@ impl Bump {
     Ok(())
   }
 
-  fn bump_all(&self, packages: Vec<Package>, release: Release) -> anyhow::Result<()> {
+  fn bump_all(&self, packages: Vec<Package>, release: Release) -> Result<()> {
     packages
       .into_iter()
       .try_for_each(|package| self.bump(package, &release))
   }
 
-  async fn commit(&mut self) -> anyhow::Result<()> {
+  async fn commit(&mut self) -> Result<()> {
     if let Some(pathspec) = &self.add {
       Add::new(pathspec)
         .spawn()
@@ -190,7 +190,7 @@ impl Bump {
     Ok(())
   }
 
-  fn preview(&self, package: &Package, release: &Release) -> anyhow::Result<()> {
+  fn preview(&self, package: &Package, release: &Release) -> Result<()> {
     let pre = self.pre.as_deref();
 
     let mut new_version = match pre {

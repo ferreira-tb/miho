@@ -3,6 +3,8 @@ mod package_json;
 mod tauri_conf_json;
 
 use super::{Manifest, ManifestBox};
+
+use crate::Result;
 use cargo_toml::CargoToml;
 use globset::Glob;
 use package_json::PackageJson;
@@ -21,7 +23,7 @@ pub enum Kind {
 }
 
 impl Kind {
-  pub(crate) fn read_source<P>(&self, path: P) -> crate::Result<ManifestBox>
+  pub(crate) fn read_source<P>(&self, path: P) -> Result<ManifestBox>
   where
     P: AsRef<Path>,
   {
@@ -44,7 +46,7 @@ impl Kind {
 impl TryFrom<&Path> for Kind {
   type Error = crate::error::Error;
 
-  fn try_from(path: &Path) -> crate::Result<Self> {
+  fn try_from(path: &Path) -> Result<Self> {
     let variants = [Kind::CargoToml, Kind::PackageJson, Kind::TauriConfJson];
 
     for variant in variants {

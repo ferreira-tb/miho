@@ -70,7 +70,7 @@ macro_rules! bump {
     let package = Package::new(&path).unwrap();
     let current_patch = package.version.patch;
 
-    let bump = Bump::new(&package, &Release::Patch);
+    let bump = Bump::new(package, &Release::Patch);
     bump.execute().unwrap();
 
     let package = Package::new(path).unwrap();

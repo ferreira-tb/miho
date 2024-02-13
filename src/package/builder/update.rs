@@ -1,11 +1,12 @@
 use super::Builder;
+use crate::Result;
 
 pub struct Update;
 
 impl Builder for Update {
   type Output = ();
 
-  fn execute(self) -> crate::Result<Self::Output> {
+  fn execute(self) -> Result<Self::Output> {
     unimplemented!()
   }
 }

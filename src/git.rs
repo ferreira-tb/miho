@@ -4,8 +4,8 @@ mod flag;
 mod push;
 mod status;
 
-use crate::bail;
 use crate::error::Error;
+use crate::{bail, Result};
 pub use add::Add;
 pub use commit::Commit;
 pub use flag::Flag;
@@ -22,14 +22,14 @@ pub trait Git {
   /// returning a future that resolves to [`std::process::ExitStatus`] when the child process completes.
   ///
   /// By default, the stdout/stderr handles are inherited from the parent.
-  fn spawn(&mut self) -> impl Future<Output = crate::Result<ExitStatus>> + Send;
+  fn spawn(&mut self) -> impl Future<Output = Result<ExitStatus>> + Send;
 
   /// Executes the command as a child process,
   /// waiting for it to finish and collecting all of its output.
   ///
   /// This will unconditionally configure the stdout/stderr handles to be pipes,
   /// even if they have been previously configured.
-  fn output(&mut self) -> impl Future<Output = crate::Result<Output>> + Send;
+  fn output(&mut self) -> impl Future<Output = Result<Output>> + Send;
 }
 
 #[doc(hidden)]
@@ -51,7 +51,7 @@ macro_rules! git_output {
 }
 
 /// Determines whether there are uncommitted changes.
-pub async fn is_dirty() -> crate::Result<bool> {
+pub async fn is_dirty() -> Result<bool> {
   let output = Status::new().output().await?;
 
   if !output.status.success() {

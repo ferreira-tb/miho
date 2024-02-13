@@ -1,6 +1,7 @@
 use crate::package::dependency;
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::{Agent, Package};
+use crate::Result;
 use semver::Version;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -24,13 +25,13 @@ pub(super) struct PackageJson {
 impl Manifest for PackageJson {
   type Value = serde_json::Value;
 
-  fn read<P: AsRef<Path>>(path: P) -> crate::Result<ManifestBox> {
+  fn read<P: AsRef<Path>>(path: P) -> Result<ManifestBox> {
     let contents = fs::read_to_string(path)?;
     let manifest: PackageJson = serde_json::from_str(&contents)?;
     Ok(Box::new(manifest))
   }
 
-  fn read_as_value<P: AsRef<Path>>(path: P) -> crate::Result<Self::Value> {
+  fn read_as_value<P: AsRef<Path>>(path: P) -> Result<Self::Value> {
     let contents = fs::read_to_string(path)?;
     let manifest: Self::Value = serde_json::from_str(&contents)?;
     Ok(manifest)
@@ -46,7 +47,7 @@ impl Handler for PackageJson {
     }
   }
 
-  fn bump(&self, package: &Package, version: Version) -> crate::Result<()> {
+  fn bump(&self, package: &Package, version: Version) -> Result<()> {
     let mut manifest = PackageJson::read_as_value(&package.path)?;
     manifest["version"] = serde_json::Value::String(version.to_string());
 
@@ -82,11 +83,11 @@ impl Handler for PackageJson {
     self.name.as_str()
   }
 
-  fn update_dependencies(&self) -> crate::Result<()> {
+  fn update_dependencies(&self) -> Result<()> {
     Ok(())
   }
 
-  fn version(&self) -> crate::Result<Version> {
+  fn version(&self) -> Result<Version> {
     let version = Version::parse(&self.version)?;
     Ok(version)
   }

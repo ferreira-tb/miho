@@ -1,6 +1,6 @@
 use semver::{BuildMetadata, Prerelease, Version};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Release {
   Major,
   Minor,

@@ -1,8 +1,8 @@
 use super::Builder;
-use crate::bail;
 use crate::error::Error;
 use crate::package::manifest;
 use crate::package::Package;
+use crate::{bail, Result};
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
 use std::path::Path;
@@ -17,7 +17,7 @@ impl Builder for Search {
   /// Searchs recursively for all packages in the given directory.
   ///
   /// This will respect `.gitignore` and `.mihoignore` files.
-  fn execute(self) -> crate::Result<Self::Output> {
+  fn execute(self) -> Result<Self::Output> {
     let mut packages: Vec<Package> = vec![];
     let glob = Self::build_globset();
 
