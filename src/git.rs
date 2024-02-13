@@ -19,7 +19,7 @@ pub trait Git {
   fn stdout(&mut self, cfg: Stdio) -> &mut Self;
 
   /// Executes the command as a child process,
-  /// returning a future that resolves to an `ExitStatus` when the child process completes.
+  /// returning a future that resolves to [`std::process::ExitStatus`] when the child process completes.
   ///
   /// By default, the stdout/stderr handles are inherited from the parent.
   fn spawn(&mut self) -> impl Future<Output = crate::Result<ExitStatus>> + Send;
