@@ -1,9 +1,9 @@
-mod commands;
+mod command;
 mod util;
 
 use anyhow::Result;
 use clap::Parser;
-use commands::*;
+use command::*;
 
 #[derive(Debug, Parser)]
 #[command(name = "miho")]

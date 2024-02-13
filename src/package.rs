@@ -39,8 +39,6 @@ impl Package {
   }
 
   /// Fetches metadata for all dependencies of the package.
-  ///
-  /// This is potentially a long-running operation.
   pub async fn dependency_tree(&self) -> crate::Result<DependencyTree> {
     self.manifest.dependency_tree_builder().build().await
   }
