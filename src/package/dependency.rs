@@ -3,9 +3,10 @@ use crate::error::Error;
 use crate::{bail, Result};
 use reqwest::header::ACCEPT;
 use reqwest::Client;
-use semver::VersionReq;
+use semver::{Version, VersionReq};
 use serde::Deserialize;
 use std::collections::HashMap;
+use std::fmt;
 use std::sync::Arc;
 use tokio::task::JoinSet;
 
@@ -20,12 +21,23 @@ pub enum Kind {
   Peer,
 }
 
+impl fmt::Display for Kind {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      Self::Build => write!(f, "build"),
+      Self::Development => write!(f, "dev"),
+      Self::Normal => write!(f, ""),
+      Self::Peer => write!(f, "peer"),
+    }
+  }
+}
+
 #[derive(Debug)]
 pub struct Dependency {
   pub name: String,
   pub requirement: VersionReq,
   pub kind: Kind,
-  pub versions: Vec<String>,
+  pub versions: Vec<Version>,
 }
 
 #[derive(Debug)]
@@ -78,7 +90,7 @@ impl Tree {
     let client = Arc::new(client);
     let mut set = JoinSet::new();
 
-    for mut dep in &mut self.dependencies.drain(..) {
+    for mut dependency in &mut self.dependencies.drain(..) {
       let agent = self.agent.clone();
       let client = Arc::clone(&client);
 
@@ -86,7 +98,7 @@ impl Tree {
         let versions: Vec<String> = match agent {
           // https://doc.rust-lang.org/cargo/reference/registry-web-api.html
           Agent::Cargo => {
-            let url = format!("{CARGO_REGISTRY}/{}/versions", dep.name);
+            let url = format!("{CARGO_REGISTRY}/{}/versions", dependency.name);
             let response = client.get(&url).send().await?;
 
             let json: CargoResponse = response.json().await?;
@@ -95,7 +107,7 @@ impl Tree {
 
           // https://github.com/npm/registry/blob/master/docs/responses/package-metadata.md
           Agent::Npm | Agent::Pnpm | Agent::Yarn => {
-            let url = format!("{NPM_REGISTRY}/{}", dep.name);
+            let url = format!("{NPM_REGISTRY}/{}", dependency.name);
             let response = client
               .get(&url)
               .header(ACCEPT, "application/vnd.npm.install-v1+json")
@@ -109,15 +121,22 @@ impl Tree {
           Agent::Tauri => bail!(Error::NotPackageManager),
         };
 
-        dep.versions = versions;
+        dependency.versions = versions
+          .into_iter()
+          .filter_map(|v| Version::parse(&v).ok())
+          .collect();
 
-        Ok(dep)
+        dependency.versions.shrink_to_fit();
+
+        Ok(dependency)
       });
     }
 
     while let Some(result) = set.join_next().await {
-      let dep = result??;
-      self.dependencies.push(dep);
+      let dependency = result??;
+      if !dependency.versions.is_empty() {
+        self.dependencies.push(dependency);
+      }
     }
 
     self.dependencies.shrink_to_fit();

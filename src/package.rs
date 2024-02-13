@@ -51,8 +51,8 @@ impl Package {
 
 impl fmt::Display for Package {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    let filename = self.filename();
-    write!(f, "{} ({})", self.name, filename.to_lowercase())
+    let agent = self.agent();
+    write!(f, "{} ({})", self.name, agent.to_string())
   }
 }
 

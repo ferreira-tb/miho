@@ -43,12 +43,6 @@ impl Update {
 
     for (package, tree) in trees {
       println!("Updating package: {}", package.name);
-
-      /*if let Some(release) = release {
-        unimplemented!()
-      } else {
-        unimplemented!()
-      }*/
     }
 
     Ok(())
@@ -80,6 +74,10 @@ impl Update {
     let trees = mutex.into_inner()?;
 
     Ok(trees)
+  }
+
+  fn parse_trees(trees: Vec<DependencyTree>, release: Release) {
+
   }
 
   fn release(&self) -> Option<Release> {
