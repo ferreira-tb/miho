@@ -4,7 +4,7 @@
   "version": "4.0.0",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@8.15.1",
+  "packageManager": "pnpm@8.15.2",
   "scripts": {
     "format": "prettier . --write && cargo fmt",
     "mock": "cargo run -- bump -p mocks --no-commit",
@@ -13,7 +13,6 @@
   },
   "devDependencies": {
     "husky": "^9.0.10",
-    "prettier": "^3.2.5",
-    "taze": "^0.13.3"
+    "prettier": "^3.2.5"
   }
 }

@@ -82,7 +82,7 @@ impl ManifestHandler for PackageJson {
     self.name.as_str()
   }
 
-  fn update(&self) -> crate::Result<()> {
+  fn update_dependencies(&self) -> crate::Result<()> {
     Ok(())
   }
 

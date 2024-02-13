@@ -20,7 +20,7 @@ pub trait ManifestHandler {
   fn bump(&self, package: &Package, new_version: Version) -> crate::Result<()>;
   fn filename(&self) -> &str;
   fn name(&self) -> &str;
-  fn update(&self) -> crate::Result<()>;
+  fn update_dependencies(&self) -> crate::Result<()>;
   fn version(&self) -> crate::Result<Version>;
 
   fn dependency_tree_builder(&self) -> DependencyTreeBuilder {

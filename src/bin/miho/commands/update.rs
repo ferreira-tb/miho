@@ -1,7 +1,12 @@
 use crate::util::search_packages;
 use clap::Args;
+use colored::*;
+use miho::package::dependency::DependencyTree;
+use miho::package::Package;
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinSet;
+
+type Tree = (Package, DependencyTree);
 
 #[derive(Debug, Args)]
 pub struct Update {
@@ -26,31 +31,45 @@ impl Update {
     let path = self.path.as_deref().unwrap_or_default();
     let packages = search_packages(path)?;
 
-    let mut set = JoinSet::new();
+    if packages.is_empty() {
+      println!("{}", "No valid package found.".bold().red());
+      return Ok(());
+    }
+
+    let trees = self.fetch_trees(packages).await?;
+
+    for (package, tree) in trees {
+      println!("Updating package: {}", package.name);
+      for dep in tree.dependencies {
+        println!("  - {} ({:?})", dep.name, dep.requirement);
+      }
+    }
+
+    Ok(())
+  }
+
+  async fn fetch_trees(&self, packages: Vec<Package>) -> anyhow::Result<Vec<Tree>> {
+    let mut set: JoinSet<anyhow::Result<()>> = JoinSet::new();
     let trees = Vec::with_capacity(packages.len());
     let trees = Arc::new(Mutex::new(trees));
 
     for package in packages {
       let tree_vec = Arc::clone(&trees);
       set.spawn(async move {
-        let tree = package.dependency_tree().await;
+        let tree = package.dependency_tree().await?;
         let mut tree_vec = tree_vec.lock().unwrap();
         tree_vec.push((package, tree));
+        Ok(())
       });
     }
 
     while let Some(result) = set.join_next().await {
-      result?;
+      result??;
     }
 
-    let trees = Arc::into_inner(trees).unwrap().into_inner().unwrap();
-    for (package, tree) in trees {
-      println!("Updating package: {}", package.name);
-      for dep in tree?.dependencies {
-        println!("  - {} ({:?})", dep.name, dep.requirement);
-      }
-    }
+    let mutex = Arc::into_inner(trees).unwrap();
+    let trees = mutex.into_inner()?;
 
-    Ok(())
+    Ok(trees)
   }
 }

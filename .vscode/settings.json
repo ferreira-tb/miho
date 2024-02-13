@@ -10,5 +10,11 @@
   },
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "Cargo.toml": "",
+    "package.json": "*.js, pnpm-lock.yaml, .prettierignore"
   }
 }

@@ -85,7 +85,7 @@ impl ManifestHandler for CargoToml {
     self.package.name.as_str()
   }
 
-  fn update(&self) -> crate::Result<()> {
+  fn update_dependencies(&self) -> crate::Result<()> {
     Ok(())
   }
 
@@ -99,7 +99,7 @@ fn parse_dependencies(deps: &HashMap<String, toml::Value>) -> HashMap<String, St
   let mut dependencies = HashMap::with_capacity(deps.len());
   for (name, version) in deps {
     if let Some(version) = parse_version(version) {
-      dependencies.insert(name.clone(), version);
+      dependencies.insert(name.clone(), version.clone());
     }
   }
 
@@ -107,13 +107,13 @@ fn parse_dependencies(deps: &HashMap<String, toml::Value>) -> HashMap<String, St
 }
 
 // Could we refactor this so less cloning is needed?
-fn parse_version(value: &toml::Value) -> Option<String> {
+fn parse_version(value: &toml::Value) -> Option<&String> {
   if let toml::Value::String(version) = value {
-    return Some(version.clone());
+    return Some(version);
   }
 
   if let toml::Value::String(version) = &value["version"] {
-    return Some(version.clone());
+    return Some(version);
   }
 
   None

@@ -1,6 +1,6 @@
 mod agent;
 pub mod builder;
-mod dependency;
+pub mod dependency;
 pub mod manifest;
 
 pub use agent::Agent;
