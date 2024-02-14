@@ -31,14 +31,14 @@ impl fmt::Display for Kind {
   }
 }
 
-impl Ord for Kind {
-  fn cmp(&self, other: &Self) -> Ordering {
-    self.precedence().cmp(&other.precedence())
-  }
-}
-
 impl PartialOrd for Kind {
   fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
     Some(self.cmp(other))
+  }
+}
+
+impl Ord for Kind {
+  fn cmp(&self, other: &Self) -> Ordering {
+    self.precedence().cmp(&other.precedence())
   }
 }

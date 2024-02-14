@@ -32,17 +32,17 @@ impl fmt::Display for Agent {
   }
 }
 
+impl PartialOrd for Agent {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    Some(self.cmp(other))
+  }
+}
+
 impl Ord for Agent {
   fn cmp(&self, other: &Self) -> Ordering {
     let first: &str = self.clone().into();
     let second: &str = other.clone().into();
 
     first.cmp(second)
-  }
-}
-
-impl PartialOrd for Agent {
-  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-    Some(self.cmp(other))
   }
 }

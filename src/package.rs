@@ -64,17 +64,17 @@ impl PartialEq for Package {
 
 impl Eq for Package {}
 
+impl PartialOrd for Package {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    Some(self.cmp(other))
+  }
+}
+
 impl Ord for Package {
   fn cmp(&self, other: &Self) -> Ordering {
     return_if_ne!(self.name.cmp(&other.name));
     return_if_ne!(self.version.cmp(&other.version));
 
     self.path.cmp(&other.path)
-  }
-}
-
-impl PartialOrd for Package {
-  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-    Some(self.cmp(other))
   }
 }

@@ -41,17 +41,17 @@ impl PartialEq for Dependency {
 
 impl Eq for Dependency {}
 
+impl PartialOrd for Dependency {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    Some(self.cmp(other))
+  }
+}
+
 impl Ord for Dependency {
   fn cmp(&self, other: &Self) -> Ordering {
     return_if_ne!(self.kind.cmp(&other.kind));
     return_if_ne!(self.name.cmp(&other.name));
 
     self.kind.cmp(&other.kind)
-  }
-}
-
-impl PartialOrd for Dependency {
-  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-    Some(self.cmp(other))
   }
 }
