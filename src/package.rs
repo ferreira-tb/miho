@@ -4,8 +4,9 @@ pub mod dependency;
 pub mod manifest;
 
 use crate::version::Version;
-use crate::Result;
+use crate::{return_if_ne, Result};
 pub use agent::Agent;
+use std::cmp::Ordering;
 use std::fmt;
 use std::path::{Path, PathBuf};
 
@@ -58,5 +59,22 @@ impl fmt::Display for Package {
 impl PartialEq for Package {
   fn eq(&self, other: &Self) -> bool {
     self.path == other.path
+  }
+}
+
+impl Eq for Package {}
+
+impl Ord for Package {
+  fn cmp(&self, other: &Self) -> Ordering {
+    return_if_ne!(self.name.cmp(&other.name));
+    return_if_ne!(self.version.cmp(&other.version));
+
+    self.path.cmp(&other.path)
+  }
+}
+
+impl PartialOrd for Package {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    Some(self.cmp(other))
   }
 }

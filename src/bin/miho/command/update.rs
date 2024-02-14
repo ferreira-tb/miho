@@ -4,6 +4,7 @@ use clap::Args;
 use colored::Colorize;
 use miho::package::dependency::Tree;
 use miho::package::{Agent, Package};
+use miho::version::{Comparator, ComparatorExt};
 use miho::Release;
 use std::convert::TryInto;
 use std::sync::{Arc, Mutex};
@@ -38,7 +39,7 @@ impl super::Command for Update {
     }
 
     let _release = self.release();
-    let trees: Vec<(Package, Tree)> = self
+    let mut trees: Vec<(Package, Tree)> = self
       .fetch_trees(packages)
       .await?
       .into_iter()
@@ -49,7 +50,7 @@ impl super::Command for Update {
       todo!("add message when no dependencies are found");
     }
 
-    Self::preview(&trees);
+    Self::preview(&mut trees);
 
     Ok(())
   }
@@ -93,7 +94,7 @@ impl Update {
       .unwrap_or(None)
   }
 
-  fn preview(trees: &[(Package, Tree)]) {
+  fn preview(trees: &mut [(Package, Tree)]) {
     use tabled::builder::Builder;
     use tabled::settings::object::Segment;
     use tabled::settings::{Alignment, Modify, Panel, Style};
@@ -104,8 +105,17 @@ impl Update {
       let dep_amount = tree.dependencies.len();
       let mut builder = Builder::with_capacity(dep_amount, 2);
 
+      tree.dependencies.sort_unstable_by(|a, b| a.cmp(&b));
+
       for dependency in &tree.dependencies {
         if let Some(max) = dependency.max() {
+          let op = dependency.version.op.clone();
+          let max = Comparator::from_version(max, op);
+
+          if max == dependency.version {
+            continue;
+          }
+
           builder.push_record([
             dependency.name.clone(),
             dependency.kind.to_string().bright_cyan().to_string(),
@@ -146,7 +156,7 @@ impl Update {
     let mut tables = tables.into_iter().peekable();
     while let Some(table) = tables.next() {
       let mut table = format!("{table}");
-      
+
       if tables.peek().is_some() {
         table.push('\n');
       }

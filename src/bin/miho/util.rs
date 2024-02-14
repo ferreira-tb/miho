@@ -13,5 +13,8 @@ pub fn search_packages<P: AsRef<str>>(path: &[P]) -> Result<Vec<Package>> {
     search.add(path);
   }
 
-  Ok(search.execute()?)
+  let mut packages = search.execute()?;
+  packages.sort_unstable_by(|a, b| a.cmp(&b));
+
+  Ok(packages)
 }

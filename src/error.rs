@@ -1,12 +1,3 @@
-/// Returns early with an error.
-#[doc(hidden)]
-#[macro_export]
-macro_rules! bail {
-  ($err:expr) => {{
-    return Err($err);
-  }};
-}
-
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
   #[error("git command failed:\n{reason}")]

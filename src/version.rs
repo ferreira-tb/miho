@@ -1,4 +1,7 @@
+mod comparator;
+
 use crate::Release;
+pub use comparator::ComparatorExt;
 pub use semver::{BuildMetadata, Comparator, Op, Prerelease, Version, VersionReq};
 
 pub trait VersionExt {

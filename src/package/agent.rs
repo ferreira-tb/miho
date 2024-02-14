@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::fmt;
 
 /// Agent responsible for the manifest.
@@ -28,5 +29,20 @@ impl fmt::Display for Agent {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let agent: &str = self.clone().into();
     write!(f, "{agent}")
+  }
+}
+
+impl Ord for Agent {
+  fn cmp(&self, other: &Self) -> Ordering {
+    let first: &str = self.clone().into();
+    let second: &str = other.clone().into();
+
+    first.cmp(second)
+  }
+}
+
+impl PartialOrd for Agent {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    Some(self.cmp(other))
   }
 }

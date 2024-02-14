@@ -2,12 +2,12 @@
   "name": "package-json",
   "version": "3.1.196",
   "dependencies": {
-    "manatsu": "^0.3.0"
+    "vue": "^3.4.17"
   },
   "devDependencies": {
     "vite": "^5.0.0"
   },
   "peerDependencies": {
-    "vue": "^3.4.17"
+    "manatsu": "^0.3.0"
   }
 }
