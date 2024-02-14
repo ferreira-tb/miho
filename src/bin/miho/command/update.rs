@@ -105,7 +105,7 @@ impl Update {
       let dep_amount = tree.dependencies.len();
       let mut builder = Builder::with_capacity(dep_amount, 2);
 
-      tree.dependencies.sort_unstable_by(|a, b| a.cmp(&b));
+      tree.dependencies.sort_unstable();
 
       for dependency in &tree.dependencies {
         if let Some(max) = dependency.max() {

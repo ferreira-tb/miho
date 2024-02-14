@@ -14,7 +14,7 @@ pub fn search_packages<P: AsRef<str>>(path: &[P]) -> Result<Vec<Package>> {
   }
 
   let mut packages = search.execute()?;
-  packages.sort_unstable_by(|a, b| a.cmp(&b));
+  packages.sort_unstable();
 
   Ok(packages)
 }
