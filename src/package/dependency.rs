@@ -1,11 +1,11 @@
 mod kind;
 mod tree;
 
+use crate::return_if_ne;
 use crate::version::{Comparator, Version};
 pub use kind::Kind;
 use std::cmp::Ordering;
 pub use tree::Tree;
-use crate::return_if_ne;
 
 #[derive(Debug)]
 pub struct Dependency {

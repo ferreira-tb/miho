@@ -1,9 +1,9 @@
 mod error;
 pub mod git;
+mod macros;
 pub mod package;
 mod release;
 pub mod version;
-mod macros;
 
 pub use error::Error;
 pub use release::Release;
