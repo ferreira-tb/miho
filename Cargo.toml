@@ -19,6 +19,7 @@ globset = "0.4"
 ignore = "0.4"
 inquire = "0.6"
 semver = "1.0"
+tabled = { version = "0.15", features = ["ansi"] }
 thiserror = "1.0"
 
 [dependencies.reqwest]

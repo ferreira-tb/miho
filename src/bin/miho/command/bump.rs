@@ -68,9 +68,7 @@ impl super::Command for Bump {
       None => Release::Patch,
     };
 
-    for package in &packages {
-      self.preview(package, &release)?;
-    }
+    self.preview(&packages, &release)?;
 
     if self.no_ask {
       self.bump_all(packages, &release)?;
@@ -193,28 +191,47 @@ impl Bump {
     Ok(())
   }
 
-  fn preview(&self, package: &Package, release: &Release) -> Result<()> {
-    let mut new_version = match self.pre.as_deref() {
-      Some(pre) => package.version.inc_with_pre(release, Prerelease::new(pre)?),
-      None => package.version.inc(release),
-    };
+  fn preview(&self, packages: &[Package], release: &Release) -> Result<()> {
+    use tabled::builder::Builder;
+    use tabled::settings::Style;
 
-    if let Some(build) = self.build.as_deref() {
-      new_version.build = BuildMetadata::new(build)?;
-    }
+    let pre = self.pre.as_deref();
+    let build = self.build.as_deref();
 
-    println!(
-      "[ {}: {} ]  {}  =>  {}",
-      package
+    let mut builder = Builder::with_capacity(packages.len(), 3);
+
+    for package in packages {
+      let mut new_version = match pre {
+        Some(p) => package.version.inc_with_pre(release, Prerelease::new(p)?),
+        None => package.version.inc(release),
+      };
+
+      if let Some(b) = build {
+        new_version.build = BuildMetadata::new(b)?;
+      }
+
+      let agent = package
         .agent()
         .to_string()
         .to_uppercase()
         .bright_magenta()
-        .bold(),
-      package.name.bold(),
-      package.version.to_string().bright_blue(),
-      new_version.to_string().bright_green()
-    );
+        .bold();
+
+      let name = package.name.bold();
+
+      let version_change = format!(
+        "{}  =>  {}",
+        package.version.to_string().bright_blue(),
+        new_version.to_string().bright_green()
+      );
+
+      builder.push_record([agent.to_string(), name.to_string(), version_change]);
+    }
+
+    let mut table = builder.build();
+    table.with(Style::blank());
+
+    println!("{table}");
 
     Ok(())
   }

@@ -42,11 +42,13 @@ pub struct Dependency {
 
 impl Dependency {
   /// Returns the maximum version that satisfies the version constraint.
+  #[must_use]
   pub fn max(&self) -> Option<&Version> {
     self.max_with_comparator(&self.version)
   }
 
   /// Returns the maximum version that satisfies a given version constraint.
+  #[must_use]
   pub fn max_with_comparator(&self, comparator: &Comparator) -> Option<&Version> {
     self
       .versions

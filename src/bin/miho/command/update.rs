@@ -119,7 +119,7 @@ impl Update {
     );
 
     for line in lines {
-      println!("  {}", line);
+      println!("  {line}");
     }
   }
 }

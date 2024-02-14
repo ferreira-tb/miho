@@ -5,6 +5,7 @@ pub trait VersionExt {
   fn inc(&self, release: &Release) -> Version;
   fn inc_with_pre(&self, release: &Release, pre: Prerelease) -> Version;
 
+  #[must_use]
   fn major(version: &Version) -> Version {
     Version {
       major: version.major + 1,
@@ -15,6 +16,7 @@ pub trait VersionExt {
     }
   }
 
+  #[must_use]
   fn minor(version: &Version) -> Version {
     Version {
       major: version.major,
@@ -25,6 +27,7 @@ pub trait VersionExt {
     }
   }
 
+  #[must_use]
   fn patch(version: &Version) -> Version {
     Version {
       major: version.major,
