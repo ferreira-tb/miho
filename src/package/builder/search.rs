@@ -12,13 +12,13 @@ pub struct Search {
 }
 
 impl Builder for Search {
-  type Output = Vec<Package>;
+  type Output = Result<Vec<Package>>;
 
   /// Searchs recursively for all packages in the given directory.
   ///
   /// This will respect `.gitignore` and `.mihoignore` files.
-  fn execute(self) -> Result<Self::Output> {
-    let mut packages: Vec<Package> = vec![];
+  fn execute(self) -> Self::Output {
+    let mut packages = Vec::new();
     let glob = Self::build_globset();
 
     for result in self.walker.build() {

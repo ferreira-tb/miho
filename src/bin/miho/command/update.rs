@@ -27,8 +27,8 @@ pub struct Update {
   path: Option<Vec<String>>,
 }
 
-impl Update {
-  pub async fn execute(self) -> Result<()> {
+impl super::Command for Update {
+  async fn execute(self) -> Result<()> {
     let path = self.path.as_deref().unwrap_or_default();
     let packages = search_packages(path)?;
 
@@ -52,7 +52,9 @@ impl Update {
 
     Ok(())
   }
+}
 
+impl Update {
   async fn fetch_trees(&self, packages: Vec<Package>) -> Result<Vec<(Package, Tree)>> {
     let mut set: JoinSet<Result<()>> = JoinSet::new();
     let trees = Vec::with_capacity(packages.len());
@@ -81,8 +83,6 @@ impl Update {
     Ok(trees)
   }
 
-  // fn parse_trees(trees: Vec<(Package, Tree)>, release: Release) {}
-
   fn release(&self) -> Option<Release> {
     self
       .release
@@ -93,7 +93,17 @@ impl Update {
   }
 
   fn preview(package: &Package, tree: &Tree) {
-    if tree.dependencies.iter().all(|d| d.versions.is_empty()) {
+    let iter = tree.dependencies.iter().filter_map(|dep| {
+      if let Some(max) = dep.max() {
+        let line = format!("{}   {}  =>  {},", dep.name, dep.version, max);
+        Some(line)
+      } else {
+        None
+      }
+    });
+
+    let lines: Vec<String> = iter.collect();
+    if lines.is_empty() {
       return;
     }
 
@@ -108,13 +118,8 @@ impl Update {
       package.name.bright_yellow().bold()
     );
 
-    for dependency in &tree.dependencies {
-      if let Some(max) = dependency.max_version() {
-        println!(
-          "{}   {}  =>  {},",
-          dependency.name, dependency.requirement, max
-        );
-      }
+    for line in lines {
+      println!("  {}", line);
     }
   }
 }

@@ -1,6 +1,6 @@
 use super::agent::Agent;
 use crate::error::Error;
-use crate::version::{Version, VersionReq};
+use crate::version::{Comparator, Version};
 use crate::{bail, Result};
 use reqwest::header::ACCEPT;
 use reqwest::Client;
@@ -35,29 +35,24 @@ impl fmt::Display for Kind {
 #[derive(Debug)]
 pub struct Dependency {
   pub name: String,
-  pub requirement: VersionReq,
+  pub version: Comparator,
   pub kind: Kind,
-
-  /// Available versions that satisfy the requirement.
-  ///
-  /// This field is empty until `fetch_metadata` is called.
-  pub versions: Vec<Version>,
+  versions: Vec<Version>,
 }
 
 impl Dependency {
-  /// Returns the maximum version that satisfies the requirement.
-  #[must_use]
-  pub fn max_version(&self) -> Option<&Version> {
-    let max = self
+  /// Returns the maximum version that satisfies the version constraint.
+  pub fn max(&self) -> Option<&Version> {
+    self.max_with_comparator(&self.version)
+  }
+
+  /// Returns the maximum version that satisfies a given version constraint.
+  pub fn max_with_comparator(&self, comparator: &Comparator) -> Option<&Version> {
+    self
       .versions
       .iter()
-      .max_by(|a, b| Version::cmp_precedence(a, b));
-
-    if matches!(max, Some(m) if self.requirement.matches(m)) {
-      max
-    } else {
-      None
-    }
+      .filter(|v| comparator.matches(v))
+      .max_by(|a, b| Version::cmp_precedence(a, b))
   }
 }
 
@@ -83,13 +78,14 @@ impl Tree {
     V: AsRef<str>,
   {
     for (name, version) in dependencies {
-      let Ok(requirement) = VersionReq::parse(version.as_ref()) else {
+      let version = version.as_ref();
+      let Ok(comparator) = Comparator::parse(version) else {
         continue;
       };
 
       let dependency = Dependency {
         name: name.as_ref().to_owned(),
-        requirement,
+        version: comparator,
         kind,
         versions: Vec::default(),
       };
@@ -142,12 +138,11 @@ impl Tree {
           Agent::Tauri => bail!(Error::NotPackageManager),
         };
 
-        let version = versions.into_iter().filter_map(|v| {
-          let requirement = &dependency.requirement;
-          Version::parse(&v).ok().filter(|v| requirement.matches(v))
-        });
+        dependency.versions = versions
+          .into_iter()
+          .filter_map(|v| Version::parse(&v).ok())
+          .collect();
 
-        dependency.versions = version.collect();
         dependency.versions.shrink_to_fit();
 
         Ok(dependency)

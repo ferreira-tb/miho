@@ -53,8 +53,8 @@ pub struct Bump {
   pre: Option<String>,
 }
 
-impl Bump {
-  pub async fn execute(mut self) -> Result<()> {
+impl super::Command for Bump {
+  async fn execute(mut self) -> Result<()> {
     let path = self.path.as_deref().unwrap_or_default();
     let packages = search_packages(path)?;
 
@@ -87,7 +87,9 @@ impl Bump {
 
     Ok(())
   }
+}
 
+impl Bump {
   fn prompt(&self, mut packages: Vec<Package>, release: &Release) -> Result<bool> {
     if packages.len() == 1 {
       let package = packages.swap_remove(0);
@@ -192,9 +194,7 @@ impl Bump {
   }
 
   fn preview(&self, package: &Package, release: &Release) -> Result<()> {
-    let pre = self.pre.as_deref();
-
-    let mut new_version = match pre {
+    let mut new_version = match self.pre.as_deref() {
       Some(pre) => package.version.inc_with_pre(release, Prerelease::new(pre)?),
       None => package.version.inc(release),
     };

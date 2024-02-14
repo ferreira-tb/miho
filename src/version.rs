@@ -1,5 +1,5 @@
 use crate::Release;
-pub use semver::{BuildMetadata, Comparator, Prerelease, Version, VersionReq};
+pub use semver::{BuildMetadata, Comparator, Op, Prerelease, Version, VersionReq};
 
 pub trait VersionExt {
   fn inc(&self, release: &Release) -> Version;

@@ -12,9 +12,9 @@ pub struct Bump<'a> {
 }
 
 impl Builder for Bump<'_> {
-  type Output = ();
+  type Output = Result<()>;
 
-  fn execute(self) -> Result<Self::Output> {
+  fn execute(self) -> Self::Output {
     let mut new_version = if self.pre.is_empty() {
       self.package.version.inc(self.release)
     } else {

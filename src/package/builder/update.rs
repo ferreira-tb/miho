@@ -4,9 +4,9 @@ use crate::Result;
 pub struct Update;
 
 impl Builder for Update {
-  type Output = ();
+  type Output = Result<()>;
 
-  fn execute(self) -> Result<Self::Output> {
+  fn execute(self) -> Self::Output {
     unimplemented!()
   }
 }

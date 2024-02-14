@@ -3,7 +3,7 @@ mod util;
 
 use anyhow::Result;
 use clap::Parser;
-use command::{Bump, Update};
+use command::{Bump, Command, Update};
 
 #[derive(Debug, Parser)]
 #[command(name = "miho")]
