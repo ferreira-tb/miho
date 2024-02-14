@@ -38,17 +38,18 @@ impl super::Command for Update {
     }
 
     let _release = self.release();
-    let trees = self.fetch_trees(packages).await?;
-    let trees: Vec<(Package, Tree)> = trees
+    let trees: Vec<(Package, Tree)> = self
+      .fetch_trees(packages)
+      .await?
       .into_iter()
-      .filter(|(_, tree)| tree.agent != Agent::Cargo)
+      .filter(|(_, tree)| tree.agent != Agent::Cargo && !tree.dependencies.is_empty())
       .collect();
 
-    for (package, tree) in &trees {
-      if !tree.dependencies.is_empty() {
-        Self::preview(package, tree);
-      }
+    if trees.is_empty() {
+      todo!("add message when no dependencies are found");
     }
+
+    Self::preview(&trees);
 
     Ok(())
   }
@@ -92,34 +93,65 @@ impl Update {
       .unwrap_or(None)
   }
 
-  fn preview(package: &Package, tree: &Tree) {
-    let iter = tree.dependencies.iter().filter_map(|dep| {
-      if let Some(max) = dep.max() {
-        let line = format!("{}   {}  =>  {},", dep.name, dep.version, max);
-        Some(line)
-      } else {
-        None
-      }
-    });
+  fn preview(trees: &[(Package, Tree)]) {
+    use tabled::builder::Builder;
+    use tabled::settings::object::Segment;
+    use tabled::settings::{Alignment, Modify, Panel, Style};
 
-    let lines: Vec<String> = iter.collect();
-    if lines.is_empty() {
-      return;
+    let mut tables = Vec::with_capacity(trees.len());
+
+    for (package, tree) in trees {
+      let dep_amount = tree.dependencies.len();
+      let mut builder = Builder::with_capacity(dep_amount, 2);
+
+      for dependency in &tree.dependencies {
+        if let Some(max) = dependency.max() {
+          builder.push_record([
+            dependency.name.clone(),
+            dependency.kind.to_string().bright_cyan().to_string(),
+            dependency.version.to_string().bright_blue().to_string(),
+            "=>".to_string(),
+            max.to_string().bright_green().to_string(),
+          ]);
+        }
+      }
+
+      if builder.count_records() == 0 {
+        continue;
+      }
+
+      let header = format!(
+        "[ {} ] {}",
+        package
+          .agent()
+          .to_string()
+          .to_uppercase()
+          .bright_magenta()
+          .bold(),
+        package.name.bright_yellow().bold()
+      );
+
+      let mut table = builder.build();
+      table.with(Style::blank()).with(Panel::header(header));
+
+      let version_col = Segment::new(.., 2..3);
+      table.with(Modify::new(version_col).with(Alignment::right()));
+
+      let new_version_col = Segment::new(.., 4..5);
+      table.with(Modify::new(new_version_col).with(Alignment::right()));
+
+      tables.push(table);
     }
 
-    println!(
-      "[ {} ] {}",
-      package
-        .agent()
-        .to_string()
-        .to_uppercase()
-        .bright_magenta()
-        .bold(),
-      package.name.bright_yellow().bold()
-    );
+    let mut tables = tables.into_iter().peekable();
+    while let Some(table) = tables.next() {
+      let mut table = format!("{table}");
+      
+      if tables.peek().is_some() {
+        table.push('\n');
+      }
 
-    for line in lines {
-      println!("  {line}");
+      println!("{table}");
     }
   }
 }

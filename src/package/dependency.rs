@@ -13,7 +13,7 @@ use tokio::task::JoinSet;
 const CARGO_REGISTRY: &str = "https://crates.io/api/v1/crates";
 const NPM_REGISTRY: &str = "https://registry.npmjs.org";
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
   Build,
   Development,

@@ -193,12 +193,13 @@ impl Bump {
 
   fn preview(&self, packages: &[Package], release: &Release) -> Result<()> {
     use tabled::builder::Builder;
-    use tabled::settings::Style;
+    use tabled::settings::object::Segment;
+    use tabled::settings::{Alignment, Modify, Style};
 
     let pre = self.pre.as_deref();
     let build = self.build.as_deref();
 
-    let mut builder = Builder::with_capacity(packages.len(), 3);
+    let mut builder = Builder::with_capacity(packages.len(), 5);
 
     for package in packages {
       let mut new_version = match pre {
@@ -217,19 +218,25 @@ impl Bump {
         .bright_magenta()
         .bold();
 
-      let name = package.name.bold();
+      let record = [
+        agent.to_string(),
+        package.name.bold().to_string(),
+        package.version.to_string().bright_blue().to_string(),
+        "=>".to_string(),
+        new_version.to_string().bright_green().to_string(),
+      ];
 
-      let version_change = format!(
-        "{}  =>  {}",
-        package.version.to_string().bright_blue(),
-        new_version.to_string().bright_green()
-      );
-
-      builder.push_record([agent.to_string(), name.to_string(), version_change]);
+      builder.push_record(record);
     }
 
     let mut table = builder.build();
     table.with(Style::blank());
+
+    let version_col = Segment::new(.., 2..3);
+    table.with(Modify::new(version_col).with(Alignment::right()));
+
+    let new_version_col = Segment::new(.., 4..5);
+    table.with(Modify::new(new_version_col).with(Alignment::right()));
 
     println!("{table}");
 
