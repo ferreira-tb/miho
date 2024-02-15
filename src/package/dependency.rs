@@ -16,9 +16,16 @@ pub struct Dependency {
 }
 
 impl Dependency {
-  /// Returns the maximum version that satisfies the version constraint.
   #[must_use]
-  pub fn max(&self, requirement: &VersionReq) -> Option<&Version> {
+  pub fn latest(&self) -> Option<&Version> {
+    self
+      .versions
+      .iter()
+      .max_by(|a, b| Version::cmp_precedence(a, b))
+  }
+
+  #[must_use]
+  pub fn latest_with_req(&self, requirement: &VersionReq) -> Option<&Version> {
     self
       .versions
       .iter()

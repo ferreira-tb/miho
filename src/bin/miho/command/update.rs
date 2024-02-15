@@ -111,7 +111,7 @@ fn preview(trees: &[(Package, Tree)], release: Option<&Release>) {
 
   for (package, tree) in trees {
     let dep_amount = tree.dependencies.len();
-    let mut builder = Builder::with_capacity(dep_amount, 2);
+    let mut builder = Builder::with_capacity(dep_amount, 6);
 
     for dependency in &tree.dependencies {
       let comparator = &dependency.comparator;
@@ -123,21 +123,29 @@ fn preview(trees: &[(Package, Tree)], release: Option<&Release>) {
           .push(comparator.with_release(release));
       }
 
-      if let Some(max) = dependency.max(&requirement) {
-        let op = comparator.op;
-        let max = Comparator::from_version(max, op);
-
-        if max == *comparator {
+      if let Some(target) = dependency.latest_with_req(&requirement) {
+        let target_cmp = Comparator::from_version(target, comparator.op);
+        if target_cmp == *comparator {
           continue;
         }
 
-        builder.push_record([
+        let mut record = vec![
           dependency.name.clone(),
           dependency.kind.to_string().bright_cyan().to_string(),
           comparator.to_string().bright_blue().to_string(),
           "=>".to_string(),
-          max.to_string().bright_green().to_string(),
-        ]);
+          target_cmp.to_string().bright_green().to_string(),
+        ];
+
+        if let Some(latest) = dependency.latest() {
+          let latest_cmp = Comparator::from_version(latest, comparator.op);
+          if latest_cmp != target_cmp {
+            let latest = format!("({latest} available)");
+            record.push(latest.truecolor(105, 105, 105).to_string());
+          }
+        }
+
+        builder.push_record(record);
       }
     }
 
