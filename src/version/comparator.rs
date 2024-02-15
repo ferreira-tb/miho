@@ -22,16 +22,16 @@ impl ComparatorExt for Comparator {
     let mut comparator = self.clone();
 
     match release {
-      Release::Major => {
+      Release::Major(_) => {
         comparator.op = Op::Greater;
       }
-      Release::Minor => {
+      Release::Minor(_) => {
         comparator.op = Op::Caret;
       }
-      Release::Patch => {
+      Release::Patch(_) => {
         comparator.op = Op::Tilde;
       }
-      _ => {}
+      _ => unreachable!(),
     }
 
     comparator

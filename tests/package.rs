@@ -1,5 +1,6 @@
-use miho::package::action::{Action, Bump, Search};
+use miho::package::action::{Action, Search};
 use miho::package::Package;
+use miho::version::BuildMetadata;
 use miho::Release;
 use std::path::{Path, PathBuf};
 use std::{env, fs};
@@ -70,8 +71,8 @@ macro_rules! bump {
     let package = Package::new(&path).unwrap();
     let current_patch = package.version.patch;
 
-    let bump = Bump::new(package, &Release::Patch);
-    bump.execute().unwrap();
+    let release = Release::Patch(BuildMetadata::EMPTY);
+    package.bump(&release).unwrap();
 
     let package = Package::new(path).unwrap();
     assert_eq!(package.version.patch, current_patch + 1);

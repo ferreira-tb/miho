@@ -4,7 +4,6 @@ use clap::Args;
 use colored::Colorize;
 use inquire::{Confirm, MultiSelect, Select, Text};
 use miho::git::{Add, Commit, Git, Push};
-use miho::package::action::{self, Action};
 use miho::package::Package;
 use miho::version::VersionExt;
 use miho::version::{BuildMetadata, Prerelease};
@@ -64,14 +63,9 @@ impl super::Command for Bump {
       return Ok(());
     }
 
-    let release: Release = self
-      .release
-      .as_deref()
-      .unwrap()
-      .try_into()
-      .with_context(|| "invalid release type")?;
+    let release = self.release()?;
 
-    self.preview(&packages, &release)?;
+    Self::preview(&packages, &release);
 
     if self.no_ask {
       self.bump_all(packages, &release)?;
@@ -105,7 +99,7 @@ impl Bump {
     let should_bump = Confirm::new(&message).with_default(true).prompt()?;
 
     if should_bump {
-      self.bump(package, release)?;
+      package.bump(release)?;
       Ok(true)
     } else {
       Ok(false)
@@ -131,26 +125,12 @@ impl Bump {
     }
   }
 
-  fn bump(&self, package: Package, release: &Release) -> Result<()> {
-    let mut bump = action::Bump::new(package, release);
-
-    if let Some(pre) = self.pre.as_deref() {
-      bump.pre(pre)?;
-    }
-
-    if let Some(build) = self.build.as_deref() {
-      bump.build(build)?;
-    }
-
-    bump.execute()?;
-
-    Ok(())
-  }
-
   fn bump_all(&self, packages: Vec<Package>, release: &Release) -> Result<()> {
     packages
       .into_iter()
-      .try_for_each(|package| self.bump(package, release))
+      .try_for_each(|package| package.bump(release))?;
+
+    Ok(())
   }
 
   async fn commit(&mut self) -> Result<()> {
@@ -194,25 +174,32 @@ impl Bump {
     Ok(())
   }
 
-  fn preview(&self, packages: &[Package], release: &Release) -> Result<()> {
+  fn release(&self) -> Result<Release> {
+    let mut parser = Release::parser();
+
+    if let Some(pre) = self.pre.as_deref() {
+      parser.prerelease(Prerelease::new(pre)?);
+    }
+
+    if let Some(build) = self.build.as_deref() {
+      parser.metadata(BuildMetadata::new(build)?);
+    }
+
+    let release = self.release.as_deref().unwrap();
+    let release = parser.parse(release)?;
+
+    Ok(release)
+  }
+
+  fn preview(packages: &[Package], release: &Release) {
     use tabled::builder::Builder;
     use tabled::settings::object::Segment;
     use tabled::settings::{Alignment, Modify, Style};
 
-    let pre = self.pre.as_deref();
-    let build = self.build.as_deref();
-
     let mut builder = Builder::with_capacity(packages.len(), 5);
 
     for package in packages {
-      let mut new_version = match pre {
-        Some(p) => package.version.inc_with_pre(release, Prerelease::new(p)?),
-        None => package.version.inc(release),
-      };
-
-      if let Some(b) = build {
-        new_version.build = BuildMetadata::new(b)?;
-      }
+      let new_version = package.version.with_release(release);
 
       let agent = package
         .agent()
@@ -242,8 +229,6 @@ impl Bump {
     table.with(Modify::new(new_version_col).with(Alignment::right()));
 
     println!("{table}");
-
-    Ok(())
   }
 }
 

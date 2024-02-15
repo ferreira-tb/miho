@@ -3,7 +3,8 @@ mod agent;
 pub mod dependency;
 pub mod manifest;
 
-use crate::version::Version;
+use crate::release::Release;
+use crate::version::{Version, VersionExt};
 use crate::{return_if_ne, Result};
 pub use agent::Agent;
 use std::cmp::Ordering;
@@ -37,6 +38,11 @@ impl Package {
   #[must_use]
   pub fn agent(&self) -> Agent {
     self.manifest.agent()
+  }
+
+  pub fn bump(self, release: &Release) -> Result<()> {
+    let version = self.version.with_release(release);
+    self.manifest.bump(&self, version)
   }
 
   #[must_use]

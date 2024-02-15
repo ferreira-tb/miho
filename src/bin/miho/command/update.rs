@@ -6,7 +6,6 @@ use miho::package::dependency::Tree;
 use miho::package::Package;
 use miho::version::{Comparator, ComparatorExt, VersionReq, VersionReqExt};
 use miho::Release;
-use std::convert::TryInto;
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinSet;
 
@@ -86,14 +85,12 @@ impl Update {
   }
 
   fn release(&self) -> Option<Release> {
-    let release: Option<Release> = self
-      .release
-      .as_deref()
-      .map(TryInto::try_into)
-      .transpose()
-      .unwrap_or(None);
-
-    release.filter(Release::is_stable)
+    if let Some(release) = self.release.as_deref() {
+      let release = Release::parser().parse(release).ok();
+      release.filter(Release::is_stable)
+    } else {
+      None
+    }
   }
 
   async fn trees(&self, packages: Vec<Package>) -> Result<Vec<(Package, Tree)>> {

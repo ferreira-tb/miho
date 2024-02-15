@@ -7,8 +7,7 @@ pub use requirement::VersionReqExt;
 pub use semver::{BuildMetadata, Comparator, Op, Prerelease, Version, VersionReq};
 
 pub trait VersionExt {
-  fn inc(&self, release: &Release) -> Version;
-  fn inc_with_pre(&self, release: &Release, pre: Prerelease) -> Version;
+  fn with_release(&self, release: &Release) -> Version;
 
   #[must_use]
   fn major(version: &Version) -> Version {
@@ -46,29 +45,33 @@ pub trait VersionExt {
 
 impl VersionExt for Version {
   #[must_use]
-  fn inc(&self, release: &Release) -> Version {
-    increment(self, release, None)
+  fn with_release(&self, release: &Release) -> Version {
+    macro_rules! build {
+      ($build:expr, $version:expr) => {{
+        let mut version = $version;
+        version.build = $build.clone();
+        version
+      }};
+    }
+
+    macro_rules! pre {
+      ($pre:expr, $build:expr, $version:expr) => {{
+        let mut version = $version;
+        version.pre = $pre.clone();
+        version.build = $build.clone();
+        version
+      }};
+    }
+
+    match release {
+      Release::Major(b) => build!(b, Version::major(self)),
+      Release::Minor(b) => build!(b, Version::minor(self)),
+      Release::Patch(b) => build!(b, Version::patch(self)),
+      Release::PreMajor(p, b) => pre!(p, b, Version::major(self)),
+      Release::PreMinor(p, b) => pre!(p, b, Version::minor(self)),
+      Release::PrePatch(p, b) => pre!(p, b, Version::patch(self)),
+      Release::PreRelease(p, b) => pre!(p, b, self.clone()),
+      Release::Literal(v) => v.clone(),
+    }
   }
-
-  #[must_use]
-  fn inc_with_pre(&self, release: &Release, pre: Prerelease) -> Version {
-    increment(self, release, Some(pre))
-  }
-}
-
-#[must_use]
-fn increment(version: &Version, release: &Release, pre: Option<Prerelease>) -> Version {
-  let mut new_version = match release {
-    Release::Major | Release::PreMajor => Version::major(version),
-    Release::Minor | Release::PreMinor => Version::minor(version),
-    Release::Patch | Release::PrePatch => Version::patch(version),
-    Release::PreRelease => version.clone(),
-    Release::Literal(v) => v.clone(),
-  };
-
-  if let Some(pre) = pre {
-    new_version.pre = pre;
-  }
-
-  new_version
 }

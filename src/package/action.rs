@@ -1,8 +1,6 @@
-mod bump;
 mod search;
 mod update;
 
-pub use bump::Bump;
 pub use search::Search;
 pub use update::Update;
 

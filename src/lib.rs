@@ -6,6 +6,6 @@ mod release;
 pub mod version;
 
 pub use error::Error;
-pub use release::Release;
+pub use release::{Parser, Release};
 
 pub type Result<T> = std::result::Result<T, Error>;
