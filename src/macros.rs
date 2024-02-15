@@ -1,9 +1,19 @@
-/// Returns early with an error.
 #[doc(hidden)]
 #[macro_export]
-macro_rules! bail {
-  ($err:expr) => {{
-    return Err($err);
+macro_rules! git_spawn {
+  ($command:expr, $args:expr) => {{
+    let mut child = $command.args($args).spawn()?;
+    let status = child.wait().await?;
+    Ok(status)
+  }};
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! git_output {
+  ($command:expr, $args:expr) => {{
+    let output = $command.args($args).output().await?;
+    Ok(output)
   }};
 }
 

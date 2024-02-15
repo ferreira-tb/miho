@@ -10,7 +10,7 @@ use command::{Bump, Command, Update};
 enum Cli {
   /// Bump your packages version.
   Bump(Bump),
-
+  
   /// Update your dependencies.
   Update(Update),
 }

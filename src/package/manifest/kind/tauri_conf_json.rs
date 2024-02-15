@@ -1,7 +1,7 @@
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::{Agent, Package};
 use crate::version::Version;
-use crate::Result;
+use anyhow::Result;
 use serde::Deserialize;
 use std::fs;
 use std::path::Path;

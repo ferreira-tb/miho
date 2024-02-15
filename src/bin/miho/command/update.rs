@@ -1,10 +1,10 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use clap::Args;
 use colored::Colorize;
 use miho::package::dependency::Tree;
 use miho::package::Package;
+use miho::release::Release;
 use miho::version::{Comparator, ComparatorExt, VersionReq, VersionReqExt};
-use miho::Release;
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinSet;
 
@@ -22,18 +22,17 @@ pub struct Update {
   no_ask: bool,
 
   /// Where to search for packages.
-  #[arg(short = 'p', long, value_name = "PATH")]
+  #[arg(short = 'p', long, value_name = "PATH", default_value = ".")]
   path: Option<Vec<String>>,
 }
 
 impl super::Command for Update {
   async fn execute(self) -> Result<()> {
-    let path = self.path.as_deref().unwrap_or_default();
+    let path = self.path.as_deref().unwrap();
     let packages = Package::search(path)?;
 
     if packages.is_empty() {
-      println!("{}", "No valid package found.".bold().red());
-      return Ok(());
+      bail!("{}", "No valid package found.".bold().red());
     }
 
     let release = self.release();

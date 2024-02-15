@@ -4,7 +4,7 @@ mod tauri_conf_json;
 
 use super::{Manifest, ManifestBox};
 
-use crate::Result;
+use anyhow::{anyhow, Result};
 use cargo_toml::CargoToml;
 use globset::Glob;
 use package_json::PackageJson;
@@ -44,7 +44,7 @@ impl Kind {
 }
 
 impl TryFrom<&Path> for Kind {
-  type Error = crate::error::Error;
+  type Error = anyhow::Error;
 
   fn try_from(path: &Path) -> Result<Self> {
     let variants = [Kind::CargoToml, Kind::PackageJson, Kind::TauriConfJson];
@@ -59,8 +59,7 @@ impl TryFrom<&Path> for Kind {
       }
     }
 
-    Err(Self::Error::InvalidManifestPath {
-      path: path.to_string_lossy().into_owned(),
-    })
+    let path = path.to_string_lossy().into_owned();
+    Err(anyhow!("invalid manifest:\n{path}"))
   }
 }

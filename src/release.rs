@@ -1,5 +1,5 @@
 use crate::version::{BuildMetadata, Prerelease, Version};
-use crate::Result;
+use anyhow::Result;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Release {

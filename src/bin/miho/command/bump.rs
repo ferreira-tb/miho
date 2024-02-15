@@ -1,12 +1,12 @@
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use clap::Args;
 use colored::Colorize;
 use inquire::{Confirm, MultiSelect, Select, Text};
 use miho::git::{Add, Commit, Git, Push};
 use miho::package::Package;
+use miho::release::Release;
 use miho::version::VersionExt;
 use miho::version::{BuildMetadata, Prerelease};
-use miho::Release;
 use std::fmt;
 
 #[derive(Debug, Args)]
@@ -44,7 +44,7 @@ pub struct Bump {
   no_verify: bool,
 
   /// Where to search for packages.
-  #[arg(short = 'p', long, value_name = "PATH")]
+  #[arg(short = 'p', long, value_name = "PATH", default_value = ".")]
   path: Option<Vec<String>>,
 
   /// Prerelease identifier.
@@ -54,12 +54,11 @@ pub struct Bump {
 
 impl super::Command for Bump {
   async fn execute(mut self) -> Result<()> {
-    let path = self.path.as_deref().unwrap_or_default();
+    let path = self.path.as_deref().unwrap();
     let packages = Package::search(path)?;
 
     if packages.is_empty() {
-      println!("{}", "No valid package found.".bold().red());
-      return Ok(());
+      bail!("{}", "No valid package found.".bold().red());
     }
 
     let release = self.release()?;

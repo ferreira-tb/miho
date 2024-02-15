@@ -1,8 +1,7 @@
 use super::{Dependency, Kind};
-use crate::error::Error;
 use crate::package::agent::Agent;
 use crate::version::{Comparator, Version};
-use crate::{bail, Result};
+use anyhow::{bail, Result};
 use reqwest::header::ACCEPT;
 use reqwest::Client;
 use serde::Deserialize;
@@ -92,7 +91,7 @@ impl Tree {
             json.versions.into_keys().collect()
           }
 
-          Agent::Tauri => bail!(Error::NotPackageManager),
+          Agent::Tauri => bail!("tauri is not a package manager"),
         };
 
         dependency.versions = versions

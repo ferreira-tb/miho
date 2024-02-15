@@ -4,9 +4,8 @@ mod flag;
 mod push;
 mod status;
 
-use crate::error::Error;
-use crate::{bail, Result};
 pub use add::Add;
+use anyhow::{bail, Result};
 pub use commit::Commit;
 pub use flag::Flag;
 pub use push::Push;
@@ -32,31 +31,13 @@ pub trait Git {
   fn output(&mut self) -> impl Future<Output = Result<Output>> + Send;
 }
 
-#[doc(hidden)]
-#[macro_export]
-macro_rules! git_spawn {
-  ($command:expr, $args:expr) => {{
-    type Child = $crate::Result<tokio::process::Child>;
-    let child: Child = $command.args($args).spawn().map_err(Into::into);
-    child?.wait().await.map_err(Into::into)
-  }};
-}
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! git_output {
-  ($command:expr, $args:expr) => {{
-    $command.args($args).output().await.map_err(Into::into)
-  }};
-}
-
 /// Determines whether there are uncommitted changes.
 pub async fn is_dirty() -> Result<bool> {
   let output = Status::new().output().await?;
 
   if !output.status.success() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
-    bail!(Error::Git { reason: stderr });
+    bail!("{stderr}");
   }
 
   let is_empty = output.stdout.is_empty();

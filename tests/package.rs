@@ -1,6 +1,6 @@
 use miho::package::Package;
+use miho::release::Release;
 use miho::version::BuildMetadata;
-use miho::Release;
 use std::path::{Path, PathBuf};
 use std::{env, fs};
 

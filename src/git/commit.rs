@@ -1,6 +1,7 @@
 use super::flag::Flag;
 use super::Git;
-use crate::{git_output, git_spawn, Result};
+use crate::{git_output, git_spawn};
+use anyhow::Result;
 use std::process::{ExitStatus, Output, Stdio};
 use tokio::process::Command;
 

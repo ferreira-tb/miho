@@ -2,11 +2,11 @@ mod agent;
 pub mod dependency;
 pub mod manifest;
 
-use crate::error::Error;
 use crate::release::Release;
+use crate::return_if_ne;
 use crate::version::{Version, VersionExt};
-use crate::{bail, return_if_ne, Result};
 pub use agent::Agent;
+use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
 use std::cmp::Ordering;
@@ -52,23 +52,10 @@ impl Package {
     let glob = build_globset();
     let mut packages = Vec::new();
 
-    for result in walker.build() {
-      let entry = match result {
-        Ok(entry) => entry,
-        Err(err) if err.is_io() => {
-          let io_err = err.into_io_error().unwrap();
-          bail!(Error::Io(io_err));
-        }
-        _ => continue,
-      };
-
+    for entry in walker.build() {
+      let entry = entry?;
       if is_match(&glob, &entry) {
-        let Ok(path) = entry.path().canonicalize() else {
-          bail!(Error::InvalidManifestPath {
-            path: entry.path().to_string_lossy().into_owned(),
-          });
-        };
-
+        let path = entry.path().canonicalize()?;
         if let Ok(package) = Self::new(path) {
           packages.push(package);
         }

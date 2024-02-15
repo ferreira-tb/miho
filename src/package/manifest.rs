@@ -3,7 +3,7 @@ mod kind;
 use super::dependency;
 use super::{Agent, Package};
 use crate::version::Version;
-use crate::Result;
+use anyhow::Result;
 pub use kind::Kind;
 use std::path::Path;
 
