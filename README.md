@@ -19,14 +19,14 @@ miho bump [OPTIONS] [RELEASE]
 |      Options       | Alias | Description                                        |
 | :----------------: | :---- | :------------------------------------------------- |
 |      `--add`       | `-a`  | Include untracked files with `git add <PATHSPEC>`. |
-|     `--build`      | none  | Build metadata.                                    |
+|     `--build`      | `-B`  | Build metadata.                                    |
 | `--commit-message` | `-m`  | Message of the commit.                             |
 |     `--no-ask`     | `-k`  | Do not ask for consent before bumping.             |
 |   `--no-commit`    | none  | Do not commit the modified files.                  |
 |    `--no-push`     | none  | Do not push the commit.                            |
 |   `--no-verify`    | `-n`  | Bypass `pre-commit` and `commit-msg` hooks.        |
 |      `--path`      | `-p`  | Where to search for packages.                      |
-|      `--pre`       | none  | Prerelease identifier, e.g. `1.0.0-beta.1`.        |
+|      `--pre`       | `-P`  | Prerelease identifier, e.g. `1.0.0-beta.1`.        |
 
 ### Update
 
