@@ -21,14 +21,14 @@ pub trait Git {
   /// returning a future that resolves to [`std::process::ExitStatus`] when the child process completes.
   ///
   /// By default, the stdout/stderr handles are inherited from the parent.
-  fn spawn(&mut self) -> impl Future<Output = Result<ExitStatus>> + Send;
+  fn spawn(self) -> impl Future<Output = Result<ExitStatus>> + Send;
 
   /// Executes the command as a child process,
   /// waiting for it to finish and collecting all of its output.
   ///
   /// This will unconditionally configure the stdout/stderr handles to be pipes,
   /// even if they have been previously configured.
-  fn output(&mut self) -> impl Future<Output = Result<Output>> + Send;
+  fn output(self) -> impl Future<Output = Result<Output>> + Send;
 }
 
 /// Determines whether there are uncommitted changes.

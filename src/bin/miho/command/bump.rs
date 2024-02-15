@@ -103,13 +103,13 @@ impl Bump {
     };
 
     let mut commit = Commit::new(message);
+    commit.all();
 
     if self.no_verify {
       commit.no_verify();
     }
 
     commit
-      .all()
       .spawn()
       .await
       .with_context(|| "failed to commit packages")?;

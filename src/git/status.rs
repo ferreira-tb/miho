@@ -38,11 +38,11 @@ impl Git for Status {
     self
   }
 
-  async fn spawn(&mut self) -> Result<ExitStatus> {
+  async fn spawn(mut self) -> Result<ExitStatus> {
     git_spawn!(self.command, &self.args)
   }
 
-  async fn output(&mut self) -> Result<Output> {
+  async fn output(mut self) -> Result<Output> {
     git_output!(self.command, &self.args)
   }
 }
