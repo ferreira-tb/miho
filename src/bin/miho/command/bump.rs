@@ -4,7 +4,7 @@ use clap::Args;
 use colored::Colorize;
 use inquire::{Confirm, MultiSelect, Select, Text};
 use miho::git::{Add, Commit, Git, Push};
-use miho::package::builder::{self, Builder};
+use miho::package::action::{self, Action};
 use miho::package::Package;
 use miho::version::VersionExt;
 use miho::version::{BuildMetadata, Prerelease};
@@ -127,7 +127,7 @@ impl Bump {
   }
 
   fn bump(&self, package: Package, release: &Release) -> Result<()> {
-    let mut bump = builder::Bump::new(package, release);
+    let mut bump = action::Bump::new(package, release);
 
     if let Some(pre) = self.pre.as_deref() {
       bump.pre(pre)?;

@@ -1,4 +1,4 @@
-use miho::package::builder::{Builder, Bump, Search};
+use miho::package::action::{Action, Bump, Search};
 use miho::package::Package;
 use miho::Release;
 use std::path::{Path, PathBuf};

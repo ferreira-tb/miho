@@ -1,9 +1,9 @@
-use super::Builder;
+use super::Action;
 use crate::Result;
 
 pub struct Update;
 
-impl Builder for Update {
+impl Action for Update {
   type Output = Result<()>;
 
   fn execute(self) -> Self::Output {

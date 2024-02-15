@@ -1,4 +1,4 @@
-use super::Builder;
+use super::Action;
 use crate::error::Error;
 use crate::package::manifest;
 use crate::package::Package;
@@ -11,7 +11,7 @@ pub struct Search {
   walker: WalkBuilder,
 }
 
-impl Builder for Search {
+impl Action for Search {
   type Output = Result<Vec<Package>>;
 
   /// Searchs recursively for all packages in the given directory.

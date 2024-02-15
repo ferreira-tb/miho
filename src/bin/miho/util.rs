@@ -1,5 +1,5 @@
 use anyhow::Result;
-use miho::package::builder::{Builder, Search};
+use miho::package::action::{Action, Search};
 use miho::package::Package;
 use std::convert::AsRef;
 

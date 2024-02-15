@@ -1,4 +1,4 @@
-use super::Builder;
+use super::Action;
 use crate::package::Package;
 use crate::release::Release;
 use crate::version::{BuildMetadata, Prerelease, VersionExt};
@@ -11,7 +11,7 @@ pub struct Bump<'a> {
   build: BuildMetadata,
 }
 
-impl Builder for Bump<'_> {
+impl Action for Bump<'_> {
   type Output = Result<()>;
 
   fn execute(self) -> Self::Output {

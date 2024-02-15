@@ -6,7 +6,7 @@ pub use bump::Bump;
 pub use search::Search;
 pub use update::Update;
 
-pub trait Builder {
+pub trait Action {
   type Output;
 
   fn execute(self) -> Self::Output;
