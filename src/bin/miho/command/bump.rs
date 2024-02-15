@@ -64,7 +64,12 @@ impl super::Command for Bump {
       return Ok(());
     }
 
-    let release: Release = self.release.as_deref().unwrap().try_into()?;
+    let release: Release = self
+      .release
+      .as_deref()
+      .unwrap()
+      .try_into()
+      .with_context(|| "invalid release type")?;
 
     self.preview(&packages, &release)?;
 
