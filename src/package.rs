@@ -56,8 +56,9 @@ impl Package {
       let entry = entry?;
       if is_match(&glob, &entry) {
         let path = entry.path().canonicalize()?;
-        if let Ok(package) = Self::new(path) {
-          packages.push(package);
+        let package = Self::new(path);
+        if matches!(package, Ok(ref p) if !packages.contains(p)) {
+          packages.push(package.unwrap());
         }
       }
     }
