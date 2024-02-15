@@ -14,6 +14,7 @@ use std::fmt;
 #[derive(Debug, Args)]
 pub struct Bump {
   /// Type of the release.
+  #[arg(default_value = "patch")]
   release: Option<String>,
 
   /// Include untracked files with `git add <PATHSPEC>`.
@@ -63,10 +64,7 @@ impl super::Command for Bump {
       return Ok(());
     }
 
-    let release = match self.release.as_deref() {
-      Some(r) => r.try_into()?,
-      None => Release::Patch,
-    };
+    let release: Release = self.release.as_deref().unwrap().try_into()?;
 
     self.preview(&packages, &release)?;
 

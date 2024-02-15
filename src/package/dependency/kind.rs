@@ -10,7 +10,7 @@ pub enum Kind {
 }
 
 impl Kind {
-  fn precedence(&self) -> u8 {
+  fn precedence(self) -> u8 {
     match self {
       Self::Normal => 0,
       Self::Development => 1,

@@ -42,7 +42,7 @@ impl Tree {
 
       let dependency = Dependency {
         name: name.as_ref().to_owned(),
-        version: comparator,
+        comparator,
         kind,
         versions: Vec::default(),
       };

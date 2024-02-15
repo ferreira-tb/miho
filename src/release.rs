@@ -1,5 +1,14 @@
 use crate::version::Version;
 
+macro_rules! match_release {
+  ( $release:expr, $( $variant:ident ),* ) => {{
+    match $release {
+      $( Release::$variant => true, )*
+      _ => false
+    }
+  }};
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Release {
   Major,
@@ -10,6 +19,23 @@ pub enum Release {
   PrePatch,
   PreRelease,
   Literal(Version),
+}
+
+impl Release {
+  #[must_use]
+  pub fn is_literal(&self) -> bool {
+    matches!(self, Release::Literal(_))
+  }
+
+  #[must_use]
+  pub fn is_pre(&self) -> bool {
+    match_release!(self, PreMajor, PreMinor, PrePatch, PreRelease)
+  }
+
+  #[must_use]
+  pub fn is_stable(&self) -> bool {
+    match_release!(self, Major, Minor, Patch)
+  }
 }
 
 impl TryFrom<&str> for Release {

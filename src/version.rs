@@ -1,7 +1,9 @@
 mod comparator;
+mod requirement;
 
-use crate::Release;
+use crate::release::Release;
 pub use comparator::ComparatorExt;
+pub use requirement::VersionReqExt;
 pub use semver::{BuildMetadata, Comparator, Op, Prerelease, Version, VersionReq};
 
 pub trait VersionExt {
@@ -45,27 +47,28 @@ pub trait VersionExt {
 impl VersionExt for Version {
   #[must_use]
   fn inc(&self, release: &Release) -> Version {
-    match release {
-      Release::Major => Self::major(self),
-      Release::Minor => Self::minor(self),
-      Release::Patch => Self::patch(self),
-      Release::Literal(v) => v.clone(),
-      _ => self.inc_with_pre(release, Prerelease::EMPTY),
-    }
+    increment(self, release, None)
   }
 
   #[must_use]
   fn inc_with_pre(&self, release: &Release, pre: Prerelease) -> Version {
-    let mut new_version = match release {
-      Release::PreMajor => Self::major(self),
-      Release::PreMinor => Self::minor(self),
-      Release::PrePatch => Self::patch(self),
-      Release::PreRelease => self.clone(),
-      _ => self.inc(release),
-    };
-
-    new_version.pre = pre;
-
-    new_version
+    increment(self, release, Some(pre))
   }
+}
+
+#[must_use]
+fn increment(version: &Version, release: &Release, pre: Option<Prerelease>) -> Version {
+  let mut new_version = match release {
+    Release::Major | Release::PreMajor => Version::major(version),
+    Release::Minor | Release::PreMinor => Version::minor(version),
+    Release::Patch | Release::PrePatch => Version::patch(version),
+    Release::PreRelease => version.clone(),
+    Release::Literal(v) => v.clone(),
+  };
+
+  if let Some(pre) = pre {
+    new_version.pre = pre;
+  }
+
+  new_version
 }

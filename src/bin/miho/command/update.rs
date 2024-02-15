@@ -3,8 +3,8 @@ use anyhow::Result;
 use clap::Args;
 use colored::Colorize;
 use miho::package::dependency::Tree;
-use miho::package::{Agent, Package};
-use miho::version::{Comparator, ComparatorExt};
+use miho::package::Package;
+use miho::version::{Comparator, ComparatorExt, VersionReq, VersionReqExt};
 use miho::Release;
 use std::convert::TryInto;
 use std::sync::{Arc, Mutex};
@@ -38,19 +38,19 @@ impl super::Command for Update {
       return Ok(());
     }
 
-    let _release = self.release();
-    let mut trees: Vec<(Package, Tree)> = self
-      .fetch_trees(packages)
-      .await?
-      .into_iter()
-      .filter(|(_, tree)| tree.agent != Agent::Cargo && !tree.dependencies.is_empty())
-      .collect();
+    let release = self.release();
+    let trees = self.trees(packages).await?;
 
     if trees.is_empty() {
-      todo!("add message when no dependencies are found");
+      todo!("ADD ERROR MESSAGE");
     }
 
-    Self::preview(&mut trees);
+    Self::preview(&trees, release.as_ref());
+
+    if self.no_ask {
+    } else {
+      todo!("ADD PROMPT");
+    }
 
     Ok(())
   }
@@ -86,15 +86,34 @@ impl Update {
   }
 
   fn release(&self) -> Option<Release> {
-    self
+    let release: Option<Release> = self
       .release
       .as_deref()
       .map(TryInto::try_into)
       .transpose()
-      .unwrap_or(None)
+      .unwrap_or(None);
+
+    release.filter(Release::is_stable)
   }
 
-  fn preview(trees: &mut [(Package, Tree)]) {
+  async fn trees(&self, packages: Vec<Package>) -> Result<Vec<(Package, Tree)>> {
+    let trees = self
+      .fetch_trees(packages)
+      .await?
+      .into_iter()
+      .filter_map(|(package, mut tree)| {
+        if tree.dependencies.is_empty() {
+          None
+        } else {
+          tree.dependencies.sort_unstable();
+          Some((package, tree))
+        }
+      });
+
+    Ok(trees.collect())
+  }
+
+  fn preview(trees: &[(Package, Tree)], release: Option<&Release>) {
     use tabled::builder::Builder;
     use tabled::settings::object::Segment;
     use tabled::settings::{Alignment, Modify, Panel, Style};
@@ -105,21 +124,28 @@ impl Update {
       let dep_amount = tree.dependencies.len();
       let mut builder = Builder::with_capacity(dep_amount, 2);
 
-      tree.dependencies.sort_unstable();
-
       for dependency in &tree.dependencies {
-        if let Some(max) = dependency.max() {
-          let op = dependency.version.op.clone();
+        let comparator = &dependency.comparator;
+        let mut requirement = VersionReq::from_comparator(comparator);
+
+        if let Some(release) = release {
+          requirement
+            .comparators
+            .push(comparator.with_release(release));
+        }
+
+        if let Some(max) = dependency.max(&requirement) {
+          let op = comparator.op;
           let max = Comparator::from_version(max, op);
 
-          if max == dependency.version {
+          if max == *comparator {
             continue;
           }
 
           builder.push_record([
             dependency.name.clone(),
             dependency.kind.to_string().bright_cyan().to_string(),
-            dependency.version.to_string().bright_blue().to_string(),
+            comparator.to_string().bright_blue().to_string(),
             "=>".to_string(),
             max.to_string().bright_green().to_string(),
           ]);
