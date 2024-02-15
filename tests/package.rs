@@ -1,4 +1,3 @@
-use miho::package::action::{Action, Search};
 use miho::package::Package;
 use miho::version::BuildMetadata;
 use miho::Release;
@@ -23,8 +22,7 @@ fn find_mocks_dir<P: AsRef<Path>>(path: P) -> Option<PathBuf> {
 
 #[test]
 fn should_find_package() {
-  let search = Search::new(".");
-  let entries = search.execute().unwrap();
+  let entries = Package::search(&["."]).unwrap();
   let cwd = env::current_dir().unwrap();
 
   let toml = cwd.join("Cargo.toml").canonicalize().unwrap();

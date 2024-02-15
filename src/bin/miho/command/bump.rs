@@ -1,4 +1,3 @@
-use crate::util::search_packages;
 use anyhow::{Context, Result};
 use clap::Args;
 use colored::Colorize;
@@ -56,7 +55,7 @@ pub struct Bump {
 impl super::Command for Bump {
   async fn execute(mut self) -> Result<()> {
     let path = self.path.as_deref().unwrap_or_default();
-    let packages = search_packages(path)?;
+    let packages = Package::search(path)?;
 
     if packages.is_empty() {
       println!("{}", "No valid package found.".bold().red());
@@ -65,12 +64,12 @@ impl super::Command for Bump {
 
     let release = self.release()?;
 
-    Self::preview(&packages, &release);
+    preview(&packages, &release);
 
     if self.no_ask {
-      self.bump_all(packages, &release)?;
+      bump_all(packages, &release)?;
     } else {
-      let should_continue = self.prompt(packages, &release)?;
+      let should_continue = prompt(packages, &release)?;
       if !should_continue {
         return Ok(());
       }
@@ -85,54 +84,6 @@ impl super::Command for Bump {
 }
 
 impl Bump {
-  fn prompt(&self, mut packages: Vec<Package>, release: &Release) -> Result<bool> {
-    if packages.len() == 1 {
-      let package = packages.swap_remove(0);
-      self.prompt_single(package, release)
-    } else {
-      self.prompt_many(packages, release)
-    }
-  }
-
-  fn prompt_single(&self, package: Package, release: &Release) -> Result<bool> {
-    let message = format!("Bump {}?", package.name);
-    let should_bump = Confirm::new(&message).with_default(true).prompt()?;
-
-    if should_bump {
-      package.bump(release)?;
-      Ok(true)
-    } else {
-      Ok(false)
-    }
-  }
-
-  fn prompt_many(&self, packages: Vec<Package>, release: &Release) -> Result<bool> {
-    let options = vec![Prompt::All, Prompt::Some, Prompt::None];
-    let response = Select::new("Select what to bump.", options).prompt()?;
-
-    match response {
-      Prompt::All => {
-        self.bump_all(packages, release)?;
-        Ok(true)
-      }
-      Prompt::Some => {
-        let message = "Select the packages to bump.";
-        let packages = MultiSelect::new(message, packages).prompt()?;
-        self.bump_all(packages, release)?;
-        Ok(true)
-      }
-      Prompt::None => Ok(false),
-    }
-  }
-
-  fn bump_all(&self, packages: Vec<Package>, release: &Release) -> Result<()> {
-    packages
-      .into_iter()
-      .try_for_each(|package| package.bump(release))?;
-
-    Ok(())
-  }
-
   async fn commit(&mut self) -> Result<()> {
     if let Some(pathspec) = &self.add {
       Add::new(pathspec)
@@ -190,46 +141,94 @@ impl Bump {
 
     Ok(release)
   }
+}
 
-  fn preview(packages: &[Package], release: &Release) {
-    use tabled::builder::Builder;
-    use tabled::settings::object::Segment;
-    use tabled::settings::{Alignment, Modify, Style};
+fn bump_all(packages: Vec<Package>, release: &Release) -> Result<()> {
+  packages
+    .into_iter()
+    .try_for_each(|package| package.bump(release))?;
 
-    let mut builder = Builder::with_capacity(packages.len(), 5);
+  Ok(())
+}
 
-    for package in packages {
-      let new_version = package.version.with_release(release);
-
-      let agent = package
-        .agent()
-        .to_string()
-        .to_uppercase()
-        .bright_magenta()
-        .bold();
-
-      let record = [
-        agent.to_string(),
-        package.name.bold().to_string(),
-        package.version.to_string().bright_blue().to_string(),
-        "=>".to_string(),
-        new_version.to_string().bright_green().to_string(),
-      ];
-
-      builder.push_record(record);
-    }
-
-    let mut table = builder.build();
-    table.with(Style::blank());
-
-    let version_col = Segment::new(.., 2..3);
-    table.with(Modify::new(version_col).with(Alignment::right()));
-
-    let new_version_col = Segment::new(.., 4..5);
-    table.with(Modify::new(new_version_col).with(Alignment::right()));
-
-    println!("{table}");
+fn prompt(mut packages: Vec<Package>, release: &Release) -> Result<bool> {
+  if packages.len() == 1 {
+    let package = packages.swap_remove(0);
+    prompt_single(package, release)
+  } else {
+    prompt_many(packages, release)
   }
+}
+
+fn prompt_single(package: Package, release: &Release) -> Result<bool> {
+  let message = format!("Bump {}?", package.name);
+  let should_bump = Confirm::new(&message).with_default(true).prompt()?;
+
+  if should_bump {
+    package.bump(release)?;
+    Ok(true)
+  } else {
+    Ok(false)
+  }
+}
+
+fn prompt_many(packages: Vec<Package>, release: &Release) -> Result<bool> {
+  let options = vec![Prompt::All, Prompt::Some, Prompt::None];
+  let response = Select::new("Select what to bump.", options).prompt()?;
+
+  match response {
+    Prompt::All => {
+      bump_all(packages, release)?;
+      Ok(true)
+    }
+    Prompt::Some => {
+      let message = "Select the packages to bump.";
+      let packages = MultiSelect::new(message, packages).prompt()?;
+      bump_all(packages, release)?;
+      Ok(true)
+    }
+    Prompt::None => Ok(false),
+  }
+}
+
+fn preview(packages: &[Package], release: &Release) {
+  use tabled::builder::Builder;
+  use tabled::settings::object::Segment;
+  use tabled::settings::{Alignment, Modify, Style};
+
+  let mut builder = Builder::with_capacity(packages.len(), 5);
+
+  for package in packages {
+    let new_version = package.version.with_release(release);
+
+    let agent = package
+      .agent()
+      .to_string()
+      .to_uppercase()
+      .bright_magenta()
+      .bold();
+
+    let record = [
+      agent.to_string(),
+      package.name.bold().to_string(),
+      package.version.to_string().bright_blue().to_string(),
+      "=>".to_string(),
+      new_version.to_string().bright_green().to_string(),
+    ];
+
+    builder.push_record(record);
+  }
+
+  let mut table = builder.build();
+  table.with(Style::blank());
+
+  let version_col = Segment::new(.., 2..3);
+  table.with(Modify::new(version_col).with(Alignment::right()));
+
+  let new_version_col = Segment::new(.., 4..5);
+  table.with(Modify::new(new_version_col).with(Alignment::right()));
+
+  println!("{table}");
 }
 
 enum Prompt {

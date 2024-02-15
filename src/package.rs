@@ -1,12 +1,14 @@
-pub mod action;
 mod agent;
 pub mod dependency;
 pub mod manifest;
 
+use crate::error::Error;
 use crate::release::Release;
 use crate::version::{Version, VersionExt};
-use crate::{return_if_ne, Result};
+use crate::{bail, return_if_ne, Result};
 pub use agent::Agent;
+use globset::{Glob, GlobSet, GlobSetBuilder};
+use ignore::{DirEntry, WalkBuilder};
 use std::cmp::Ordering;
 use std::fmt;
 use std::path::{Path, PathBuf};
@@ -33,6 +35,49 @@ impl Package {
     };
 
     Ok(package)
+  }
+
+  pub fn search<P: AsRef<Path>>(path: &[P]) -> Result<Vec<Self>> {
+    let Some((first, other)) = path.split_first() else {
+      return Ok(Vec::default());
+    };
+
+    let mut walker = WalkBuilder::new(first);
+    walker.add_ignore(".mihoignore");
+
+    for path in other {
+      walker.add(path);
+    }
+
+    let glob = build_globset();
+    let mut packages = Vec::new();
+
+    for result in walker.build() {
+      let entry = match result {
+        Ok(entry) => entry,
+        Err(err) if err.is_io() => {
+          let io_err = err.into_io_error().unwrap();
+          bail!(Error::Io(io_err));
+        }
+        _ => continue,
+      };
+
+      if is_match(&glob, &entry) {
+        let Ok(path) = entry.path().canonicalize() else {
+          bail!(Error::InvalidManifestPath {
+            path: entry.path().to_string_lossy().into_owned(),
+          });
+        };
+
+        if let Ok(package) = Self::new(path) {
+          packages.push(package);
+        }
+      }
+    }
+
+    packages.sort_unstable();
+
+    Ok(packages)
   }
 
   #[must_use]
@@ -83,4 +128,29 @@ impl Ord for Package {
 
     self.path.cmp(&other.path)
   }
+}
+
+fn build_globset() -> GlobSet {
+  let mut builder = GlobSetBuilder::new();
+
+  macro_rules! add {
+    ($kind:ident) => {
+      let glob = manifest::Kind::$kind.glob();
+      builder.add(Glob::new(glob).expect("hardcoded glob should always be valid"));
+    };
+  }
+
+  add!(CargoToml);
+  add!(PackageJson);
+  add!(TauriConfJson);
+
+  builder.build().unwrap()
+}
+
+fn is_match(glob: &GlobSet, entry: &DirEntry) -> bool {
+  if !glob.is_match(entry.path()) {
+    return false;
+  }
+
+  matches!(entry.file_type(), Some(t) if t.is_file())
 }
