@@ -111,6 +111,7 @@ impl PartialOrd for Package {
 
 impl Ord for Package {
   fn cmp(&self, other: &Self) -> Ordering {
+    return_if_ne!(self.agent().cmp(&other.agent()));
     return_if_ne!(self.name.cmp(&other.name));
     return_if_ne!(self.version.cmp(&other.version));
 
