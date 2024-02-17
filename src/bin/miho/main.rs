@@ -1,4 +1,5 @@
 mod command;
+mod prompt;
 
 use anyhow::Result;
 use clap::Parser;

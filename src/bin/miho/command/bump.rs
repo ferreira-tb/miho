@@ -1,3 +1,4 @@
+use crate::prompt::Choice;
 use anyhow::{bail, Context, Result};
 use clap::Args;
 use colored::Colorize;
@@ -7,7 +8,6 @@ use miho::package::Package;
 use miho::release::Release;
 use miho::version::VersionExt;
 use miho::version::{BuildMetadata, Prerelease};
-use std::fmt;
 
 #[derive(Debug, Args)]
 pub struct Bump {
@@ -145,9 +145,7 @@ impl Bump {
 fn bump_all(packages: Vec<Package>, release: &Release) -> Result<()> {
   packages
     .into_iter()
-    .try_for_each(|package| package.bump(release))?;
-
-  Ok(())
+    .try_for_each(|package| package.bump(release))
 }
 
 fn prompt(mut packages: Vec<Package>, release: &Release) -> Result<bool> {
@@ -172,21 +170,21 @@ fn prompt_single(package: Package, release: &Release) -> Result<bool> {
 }
 
 fn prompt_many(packages: Vec<Package>, release: &Release) -> Result<bool> {
-  let options = vec![Prompt::All, Prompt::Some, Prompt::None];
+  let options = vec![Choice::All, Choice::Some, Choice::None];
   let response = Select::new("Select what to bump.", options).prompt()?;
 
   match response {
-    Prompt::All => {
+    Choice::All => {
       bump_all(packages, release)?;
       Ok(true)
     }
-    Prompt::Some => {
+    Choice::Some => {
       let message = "Select the packages to bump.";
       let packages = MultiSelect::new(message, packages).prompt()?;
       bump_all(packages, release)?;
       Ok(true)
     }
-    Prompt::None => Ok(false),
+    Choice::None => Ok(false),
   }
 }
 
@@ -228,20 +226,4 @@ fn preview(packages: &[Package], release: &Release) {
   table.with(Modify::new(new_version_col).with(Alignment::right()));
 
   println!("{table}");
-}
-
-enum Prompt {
-  All,
-  Some,
-  None,
-}
-
-impl fmt::Display for Prompt {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    match self {
-      Self::All => write!(f, "All"),
-      Self::Some => write!(f, "Some"),
-      Self::None => write!(f, "None"),
-    }
-  }
 }

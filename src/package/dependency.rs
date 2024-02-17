@@ -2,7 +2,7 @@ mod kind;
 mod tree;
 
 use crate::return_if_ne;
-use crate::version::{Comparator, Version, VersionReq};
+use crate::version::{Comparator, Version, VersionReq, VersionReqExt};
 pub use kind::Kind;
 use std::cmp::Ordering;
 pub use tree::Tree;
@@ -29,7 +29,7 @@ impl Dependency {
     self
       .versions
       .iter()
-      .filter(|v| requirement.matches(v))
+      .filter(|v| requirement.matches_any(v))
       .max_by(|a, b| Version::cmp_precedence(a, b))
   }
 }

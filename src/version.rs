@@ -7,6 +7,7 @@ pub use requirement::VersionReqExt;
 pub use semver::{BuildMetadata, Comparator, Op, Prerelease, Version, VersionReq};
 
 pub trait VersionExt {
+  fn as_comparator(&self, op: Op) -> Comparator;
   fn with_release(&self, release: &Release) -> Version;
 
   #[must_use]
@@ -44,6 +45,11 @@ pub trait VersionExt {
 }
 
 impl VersionExt for Version {
+  #[must_use]
+  fn as_comparator(&self, op: Op) -> Comparator {
+    Comparator::from_version(self, op)
+  }
+
   #[must_use]
   fn with_release(&self, release: &Release) -> Version {
     macro_rules! build {

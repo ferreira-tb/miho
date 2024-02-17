@@ -55,7 +55,7 @@ impl Tree {
   /// Updates the dependency tree, fetching metadata from the registry.
   pub async fn fetch_metadata(&mut self) -> Result<()> {
     let client = Client::builder()
-      .user_agent("Miho/4.0")
+      .user_agent("Miho/4.1")
       .brotli(true)
       .gzip(true)
       .build()?;

@@ -7,6 +7,7 @@ use crate::return_if_ne;
 use crate::version::{Version, VersionExt};
 pub use agent::Agent;
 use anyhow::Result;
+use dependency::Tree;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
 use std::cmp::Ordering;
@@ -43,7 +44,6 @@ impl Package {
     };
 
     let mut walker = WalkBuilder::new(first);
-    walker.add_ignore(".mihoignore");
 
     for path in other {
       walker.add(path);
@@ -57,6 +57,7 @@ impl Package {
       if is_match(&glob, &entry) {
         let path = entry.path().canonicalize()?;
         let package = Self::new(path);
+
         if matches!(package, Ok(ref p) if !packages.contains(p)) {
           packages.push(package.unwrap());
         }
@@ -86,6 +87,11 @@ impl Package {
   #[must_use]
   pub fn filename(&self) -> &str {
     self.manifest.filename()
+  }
+
+  pub fn update(&self, _tree: Tree, _release: &Option<Release>) -> Result<()> {
+    // self.manifest.update(self, release)
+    Ok(())
   }
 }
 

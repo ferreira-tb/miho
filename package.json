@@ -7,7 +7,8 @@
   "packageManager": "pnpm@8.15.2",
   "scripts": {
     "format": "prettier . --write && cargo fmt",
-    "mock": "cargo run -- bump -p mocks --no-commit",
+    "mock:bump": "cargo run -- bump -p mocks --no-commit",
+    "mock:update": "cargo run -- update -p mocks",
     "pedantic": "cargo clippy -- -W clippy::pedantic",
     "prepare": "husky",
     "release": "cargo test && cargo clippy && cargo publish"

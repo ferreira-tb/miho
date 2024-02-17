@@ -4,7 +4,7 @@ use colored::Colorize;
 use miho::package::dependency::Tree;
 use miho::package::Package;
 use miho::release::Release;
-use miho::version::{Comparator, ComparatorExt, VersionReq, VersionReqExt};
+use miho::version::{Comparator, ComparatorExt, VersionExt};
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinSet;
 
@@ -42,11 +42,12 @@ impl super::Command for Update {
       todo!("ADD ERROR MESSAGE");
     }
 
-    preview(&trees, release.as_ref());
+    preview(&trees, &release);
 
     if self.no_ask {
+      update_all(trees, &release)?;
     } else {
-      todo!("ADD PROMPT");
+      prompt(trees, &release);
     }
 
     Ok(())
@@ -70,13 +71,13 @@ async fn fetch_trees(packages: Vec<Package>) -> Result<Vec<(Package, Tree)>> {
   let trees = Arc::new(Mutex::new(trees));
 
   for package in packages {
-    let tree_vec = Arc::clone(&trees);
+    let trees = Arc::clone(&trees);
     set.spawn(async move {
       let mut tree = package.dependency_tree();
       tree.fetch_metadata().await?;
 
-      let mut tree_vec = tree_vec.lock().unwrap();
-      tree_vec.push((package, tree));
+      let mut trees = trees.lock().unwrap();
+      trees.push((package, tree));
 
       Ok(())
     });
@@ -99,10 +100,23 @@ async fn fetch_trees(packages: Vec<Package>) -> Result<Vec<(Package, Tree)>> {
       }
     });
 
-  Ok(trees.collect())
+  let mut trees: Vec<(Package, Tree)> = trees.collect();
+  trees.sort_unstable_by(|(a, _), (b, _)| a.cmp(b));
+
+  Ok(trees)
 }
 
-fn preview(trees: &[(Package, Tree)], release: Option<&Release>) {
+fn update_all(trees: Vec<(Package, Tree)>, release: &Option<Release>) -> Result<()> {
+  trees
+    .into_iter()
+    .try_for_each(|(package, tree)| package.update(tree, release))
+}
+
+fn prompt(_trees: Vec<(Package, Tree)>, _release: &Option<Release>) {
+  unimplemented!()
+}
+
+fn preview(trees: &[(Package, Tree)], release: &Option<Release>) {
   use tabled::builder::Builder;
   use tabled::settings::object::Segment;
   use tabled::settings::{Alignment, Modify, Panel, Style};
@@ -115,16 +129,14 @@ fn preview(trees: &[(Package, Tree)], release: Option<&Release>) {
 
     for dependency in &tree.dependencies {
       let comparator = &dependency.comparator;
-      let mut requirement = VersionReq::from_comparator(comparator);
-
-      if let Some(release) = release {
-        requirement
-          .comparators
-          .push(comparator.with_release(release));
-      }
+      let requirement = if let Some(r) = release {
+        comparator.with_release(r).as_version_req()
+      } else {
+        comparator.as_version_req()
+      };
 
       if let Some(target) = dependency.latest_with_req(&requirement) {
-        let target_cmp = Comparator::from_version(target, comparator.op);
+        let target_cmp = target.as_comparator(comparator.op);
         if target_cmp == *comparator {
           continue;
         }
