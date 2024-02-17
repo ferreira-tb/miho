@@ -7,7 +7,6 @@ use miho::git::{Add, Commit, Git, Push};
 use miho::package::Package;
 use miho::release::Release;
 use miho::version::VersionExt;
-use miho::version::{BuildMetadata, Prerelease};
 
 #[derive(Debug, Args)]
 pub struct Bump {
@@ -128,11 +127,11 @@ impl Bump {
     let mut parser = Release::parser();
 
     if let Some(pre) = self.pre.as_deref() {
-      parser.prerelease(Prerelease::new(pre)?);
+      parser.prerelease(pre)?;
     }
 
     if let Some(build) = self.build.as_deref() {
-      parser.metadata(BuildMetadata::new(build)?);
+      parser.metadata(build)?;
     }
 
     let release = self.release.as_deref().unwrap();

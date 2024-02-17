@@ -52,14 +52,14 @@ impl Parser {
     }
   }
 
-  pub fn prerelease(&mut self, prerelease: Prerelease) -> &mut Self {
-    self.prerelease = prerelease;
-    self
+  pub fn prerelease(&mut self, prerelease: &str) -> Result<&mut Self> {
+    self.prerelease = Prerelease::new(prerelease)?;
+    Ok(self)
   }
 
-  pub fn metadata(&mut self, metadata: BuildMetadata) -> &mut Self {
-    self.metadata = metadata;
-    self
+  pub fn metadata(&mut self, metadata: &str) -> Result<&mut Self> {
+    self.metadata = BuildMetadata::new(metadata)?;
+    Ok(self)
   }
 
   pub fn parse(self, release: &str) -> Result<Release> {
