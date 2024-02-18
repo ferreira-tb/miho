@@ -4,7 +4,7 @@ use colored::Colorize;
 use miho::package::dependency::Tree;
 use miho::package::Package;
 use miho::release::Release;
-use miho::version::{Comparator, ComparatorExt, VersionExt};
+use miho::version::{Comparator, ComparatorExt};
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinSet;
 
@@ -36,7 +36,7 @@ impl super::Command for Update {
     }
 
     let release = self.release();
-    let trees = fetch_trees(packages).await?;
+    let trees = fetch_trees(packages, &release).await?;
 
     if trees.is_empty() {
       todo!("ADD ERROR MESSAGE");
@@ -65,7 +65,10 @@ impl Update {
   }
 }
 
-async fn fetch_trees(packages: Vec<Package>) -> Result<Vec<(Package, Tree)>> {
+async fn fetch_trees(
+  packages: Vec<Package>,
+  release: &Option<Release>,
+) -> Result<Vec<(Package, Tree)>> {
   let mut set: JoinSet<Result<()>> = JoinSet::new();
   let trees = Vec::with_capacity(packages.len());
   let trees = Arc::new(Mutex::new(trees));
@@ -92,6 +95,8 @@ async fn fetch_trees(packages: Vec<Package>) -> Result<Vec<(Package, Tree)>> {
     .into_inner()?
     .into_iter()
     .filter_map(|(package, mut tree)| {
+      filter_dependencies(&mut tree, release);
+
       if tree.dependencies.is_empty() {
         None
       } else {
@@ -104,6 +109,12 @@ async fn fetch_trees(packages: Vec<Package>) -> Result<Vec<(Package, Tree)>> {
   trees.sort_unstable_by(|(a, _), (b, _)| a.cmp(b));
 
   Ok(trees)
+}
+
+fn filter_dependencies(tree: &mut Tree, release: &Option<Release>) {
+  tree
+    .dependencies
+    .retain(|dependency| dependency.target_cmp(release).is_some());
 }
 
 fn update_all(trees: Vec<(Package, Tree)>, release: &Option<Release>) -> Result<()> {
@@ -128,18 +139,8 @@ fn preview(trees: &[(Package, Tree)], release: &Option<Release>) {
     let mut builder = Builder::with_capacity(dep_amount, 6);
 
     for dependency in &tree.dependencies {
-      let comparator = &dependency.comparator;
-      let requirement = if let Some(r) = release {
-        comparator.with_release(r).as_version_req()
-      } else {
-        comparator.as_version_req()
-      };
-
-      if let Some(target) = dependency.latest_with_req(&requirement) {
-        let target_cmp = target.as_comparator(comparator.op);
-        if target_cmp == *comparator {
-          continue;
-        }
+      if let Some(target_cmp) = dependency.target_cmp(release) {
+        let comparator = &dependency.comparator;
 
         let mut record = vec![
           dependency.name.clone(),

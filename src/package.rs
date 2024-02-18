@@ -89,7 +89,7 @@ impl Package {
     self.manifest.filename()
   }
 
-  pub fn update(&self, _tree: Tree, _release: &Option<Release>) -> Result<()> {
+  pub fn update(self, _tree: Tree, _release: &Option<Release>) -> Result<()> {
     // self.manifest.update(self, release)
     Ok(())
   }

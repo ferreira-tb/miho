@@ -1,8 +1,9 @@
 mod kind;
 mod tree;
 
+use crate::release::Release;
 use crate::return_if_ne;
-use crate::version::{Comparator, Version, VersionReq, VersionReqExt};
+use crate::version::{Comparator, ComparatorExt, Version, VersionExt, VersionReq, VersionReqExt};
 pub use kind::Kind;
 use std::cmp::Ordering;
 pub use tree::Tree;
@@ -31,6 +32,25 @@ impl Dependency {
       .iter()
       .filter(|v| requirement.matches_any(v))
       .max_by(|a, b| Version::cmp_precedence(a, b))
+  }
+
+  #[must_use]
+  pub fn target_cmp(&self, release: &Option<Release>) -> Option<Comparator> {
+    let comparator = &self.comparator;
+    let requirement = if let Some(r) = release {
+      comparator.with_release(r).as_version_req()
+    } else {
+      comparator.as_version_req()
+    };
+
+    self.latest_with_req(&requirement).and_then(|target| {
+      let target_cmp = target.as_comparator(comparator.op);
+      if target_cmp == *comparator {
+        None
+      } else {
+        Some(target_cmp)
+      }
+    })
   }
 }
 
