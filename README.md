@@ -1,6 +1,6 @@
 # Miho
 
-Miho is a crate that provides a set of tools to manage your projects. Bump your packages version, update your dependencies, and run tasks defined in a configuration file leveraging the power of [Lua](https://www.lua.org/start.html).
+Miho provides a set of tools to manage projects. Bump your packages version, update your dependencies, and run tasks defined in a configuration file leveraging the power of [Lua](https://www.lua.org/start.html).
 
 ```sh
 cargo install miho
@@ -52,7 +52,7 @@ miho.task = {
 }
 ```
 
-You can run the `cargo` and `rustc` tasks with the following command:
+You can run the `cargo` and `rustc` tasks with the command:
 
 ```sh
 miho run cargo rustc
