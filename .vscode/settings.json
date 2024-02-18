@@ -1,9 +1,7 @@
 {
   "conventionalCommits.promptScopes": false,
-  "prettier.requireConfig": true,
   "rust-analyzer.showUnlinkedFileNotification": false,
   "rust-analyzer.files.excludeDirs": ["mocks"],
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.tabSize": 2,
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
@@ -11,10 +9,9 @@
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },
-  "explorer.fileNesting.enabled": true,
-  "explorer.fileNesting.expand": false,
-  "explorer.fileNesting.patterns": {
-    "Cargo.toml": "",
-    "package.json": "*.js, pnpm-lock.yaml, .prettierignore"
-  }
+  "[lua]": {
+    "editor.defaultFormatter": "sumneko.lua"
+  },
+  "Lua.diagnostics.disable": ["lowercase-global"],
+  "Lua.diagnostics.globals": ["miho"]
 }

@@ -28,3 +28,14 @@ macro_rules! return_if_ne {
     }
   };
 }
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! match_once {
+  ($expr:expr, $pat:pat => $then:expr) => {
+    match $expr {
+      $pat => $then,
+      _ => {}
+    }
+  };
+}
