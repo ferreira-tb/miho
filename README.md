@@ -1,6 +1,6 @@
 # Miho
 
-Miho provides a set of tools to manage projects. Bump your packages version, update your dependencies, and run tasks defined in a configuration file leveraging the power of [Lua](https://www.lua.org/start.html).
+Bump your packages version, update your dependencies, and run tasks defined in a configuration file leveraging the power of [Lua](https://www.lua.org/start.html).
 
 ```sh
 cargo install miho
