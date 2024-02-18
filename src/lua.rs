@@ -1,7 +1,7 @@
 mod task;
 
 use crate::match_once;
-use anyhow::{anyhow, Result};
+use anyhow::{bail, Result};
 use std::path::Path;
 use std::{env, fs};
 pub use task::Task;
@@ -39,10 +39,15 @@ impl Lua {
     Self::new(chunk)
   }
 
+  fn miho(&self) -> Result<mlua::Table> {
+    let miho: mlua::Table = self.lua.globals().get(Self::MIHO)?;
+    Ok(miho)
+  }
+
   pub async fn run_task(&self, task: &str, parallel: bool) -> Result<()> {
     let tasks = self.collect_tasks(task)?;
     if tasks.is_empty() {
-      return Err(anyhow!("no such task: {task}"));
+      bail!("no such task: {task}");
     }
 
     let mut set = JoinSet::new();
@@ -101,10 +106,5 @@ impl Lua {
     }
 
     Ok(tasks)
-  }
-
-  fn miho(&self) -> Result<mlua::Table> {
-    let miho: mlua::Table = self.lua.globals().get(Self::MIHO)?;
-    Ok(miho)
   }
 }
