@@ -1,7 +1,7 @@
 use anyhow::{bail, Result};
 use clap::Args;
 use colored::Colorize;
-use miho::package::dependency::Tree;
+use miho::package::dependency::{self, Tree};
 use miho::package::Package;
 use miho::release::Release;
 use miho::search_packages;
@@ -29,6 +29,10 @@ pub struct Update {
   /// Where to search for packages.
   #[arg(short = 'p', long, value_name = "PATH", default_value = ".")]
   path: Option<Vec<String>>,
+
+  /// Whether to include peer dependencies.
+  #[arg(long)]
+  peer: bool,
 }
 
 impl super::Command for Update {
@@ -41,7 +45,7 @@ impl super::Command for Update {
     }
 
     let release = self.release();
-    let trees = fetch(packages, &release).await?;
+    let trees = self.fetch(packages, &release).await?;
 
     if trees.is_empty() {
       println!("{}", "all dependencies are up to date".bright_green());
@@ -67,55 +71,63 @@ impl Update {
       release.filter(Release::is_stable)
     })
   }
-}
 
-async fn fetch(packages: Vec<Package>, release: &Option<Release>) -> Result<Vec<(Package, Tree)>> {
-  let mut set: JoinSet<Result<()>> = JoinSet::new();
-  let trees = Vec::with_capacity(packages.len());
-  let trees = Arc::new(Mutex::new(trees));
+  async fn fetch(
+    &self,
+    packages: Vec<Package>,
+    release: &Option<Release>,
+  ) -> Result<Vec<(Package, Tree)>> {
+    let mut set: JoinSet<Result<()>> = JoinSet::new();
+    let trees = Vec::with_capacity(packages.len());
+    let trees = Arc::new(Mutex::new(trees));
 
-  for package in packages {
-    let trees = Arc::clone(&trees);
-    set.spawn(async move {
-      let mut tree = package.dependency_tree();
-      tree.fetch().await?;
+    for package in packages {
+      let trees = Arc::clone(&trees);
+      set.spawn(async move {
+        let mut tree = package.dependency_tree();
+        tree.fetch().await?;
 
-      let mut trees = trees.lock().unwrap();
-      trees.push((package, tree));
+        let mut trees = trees.lock().unwrap();
+        trees.push((package, tree));
 
-      Ok(())
-    });
+        Ok(())
+      });
+    }
+
+    while let Some(result) = set.join_next().await {
+      result??;
+    }
+
+    let trees = Arc::into_inner(trees)
+      .unwrap()
+      .into_inner()?
+      .into_iter()
+      .filter_map(|(package, mut tree)| {
+        self.filter_dependencies(&mut tree, release);
+
+        if tree.dependencies.is_empty() {
+          None
+        } else {
+          tree.dependencies.sort_unstable();
+          Some((package, tree))
+        }
+      });
+
+    let mut trees: Vec<(Package, Tree)> = trees.collect();
+    trees.sort_unstable_by(|(a, _), (b, _)| a.cmp(b));
+
+    Ok(trees)
   }
 
-  while let Some(result) = set.join_next().await {
-    result??;
-  }
-
-  let trees = Arc::into_inner(trees)
-    .unwrap()
-    .into_inner()?
-    .into_iter()
-    .filter_map(|(package, mut tree)| {
-      filter_dependencies(&mut tree, release);
-
-      if tree.dependencies.is_empty() {
-        None
-      } else {
-        tree.dependencies.sort_unstable();
-        Some((package, tree))
+  fn filter_dependencies(&self, tree: &mut Tree, release: &Option<Release>) {
+    tree.dependencies.retain(|dependency| {
+      if dependency.kind == dependency::Kind::Peer && !self.peer {
+        return false;
       }
+
+      dependency.target_cmp(release).is_some()
     });
-
-  let mut trees: Vec<(Package, Tree)> = trees.collect();
-  trees.sort_unstable_by(|(a, _), (b, _)| a.cmp(b));
-
-  Ok(trees)
-}
-
-fn filter_dependencies(tree: &mut Tree, release: &Option<Release>) {
-  tree
-    .dependencies
-    .retain(|dependency| dependency.target_cmp(release).is_some());
+  }
 }
 
 fn update_all(trees: Vec<(Package, Tree)>, release: &Option<Release>) -> Result<()> {
