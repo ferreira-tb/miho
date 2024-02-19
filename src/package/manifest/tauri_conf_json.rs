@@ -7,8 +7,6 @@ use serde::Deserialize;
 use std::fs;
 use std::path::Path;
 
-const FILENAME_TAURI_CONF_JSON: &str = "tauri.conf.json";
-
 #[derive(Deserialize)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub(super) struct TauriConfJson {
@@ -18,6 +16,8 @@ pub(super) struct TauriConfJson {
 
 impl Manifest for TauriConfJson {
   type Value = serde_json::Value;
+
+  const FILENAME: &'static str = "tauri.conf.json";
 
   fn read<P: AsRef<Path>>(path: P) -> Result<ManifestBox> {
     let contents = fs::read_to_string(path)?;
@@ -48,7 +48,7 @@ impl Handler for TauriConfJson {
   }
 
   fn filename(&self) -> &str {
-    FILENAME_TAURI_CONF_JSON
+    Self::FILENAME
   }
 
   fn name(&self) -> &str {
@@ -56,9 +56,7 @@ impl Handler for TauriConfJson {
   }
 
   fn update(&self, _package: &Package, _batch: Vec<dependency::Update>) -> Result<()> {
-    Err(anyhow!(
-      "{FILENAME_TAURI_CONF_JSON} does not support dependencies"
-    ))
+    Err(anyhow!("{} does not support dependencies", Self::FILENAME))
   }
 
   fn version(&self) -> Result<Version> {

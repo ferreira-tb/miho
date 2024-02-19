@@ -9,8 +9,6 @@ use std::fs;
 use std::path::Path;
 use toml::Value;
 
-const FILENAME_CARGO_TOML: &str = "Cargo.toml";
-
 #[derive(Deserialize)]
 pub(super) struct CargoToml {
   pub package: CargoPackage,
@@ -31,6 +29,8 @@ pub(super) struct CargoPackage {
 
 impl Manifest for CargoToml {
   type Value = toml::Value;
+
+  const FILENAME: &'static str = "Cargo.toml";
 
   fn read<P: AsRef<Path>>(path: P) -> Result<ManifestBox> {
     let contents = fs::read_to_string(path)?;
@@ -80,7 +80,7 @@ impl Handler for CargoToml {
   }
 
   fn filename(&self) -> &str {
-    FILENAME_CARGO_TOML
+    Self::FILENAME
   }
 
   fn name(&self) -> &str {
@@ -108,7 +108,7 @@ impl Handler for CargoToml {
         if target.starts_with('^') {
           target.remove(0);
         }
-        
+
         if value.is_str() {
           *value = Value::String(target);
         } else if value.is_table() {

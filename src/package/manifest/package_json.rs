@@ -9,8 +9,6 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
-const FILENAME_PACKAGE_JSON: &str = "package.json";
-
 #[derive(Deserialize)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub(super) struct PackageJson {
@@ -25,6 +23,8 @@ pub(super) struct PackageJson {
 
 impl Manifest for PackageJson {
   type Value = serde_json::Value;
+
+  const FILENAME: &'static str = "package.json";
 
   fn read<P: AsRef<Path>>(path: P) -> Result<ManifestBox> {
     let contents = fs::read_to_string(path)?;
@@ -77,7 +77,7 @@ impl Handler for PackageJson {
   }
 
   fn filename(&self) -> &str {
-    FILENAME_PACKAGE_JSON
+    Self::FILENAME
   }
 
   fn name(&self) -> &str {
