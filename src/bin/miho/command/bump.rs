@@ -98,10 +98,9 @@ impl Bump {
       self.commit_message.take()
     };
 
-    let message = match message.as_deref().map(str::trim) {
-      Some(m) if !m.is_empty() => m,
-      _ => "chore: bump version",
-    };
+    let message = message
+      .as_deref()
+      .map_or_else(|| "chore: bump version", str::trim);
 
     let mut commit = Commit::new(message);
     commit.all();
