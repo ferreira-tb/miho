@@ -19,7 +19,7 @@ pub struct Bump {
   add: Option<String>,
 
   /// Build metadata.
-  #[arg(short = 'B', long, value_name = "METADATA")]
+  #[arg(long, value_name = "METADATA")]
   build: Option<String>,
 
   /// Commit the modified packages.
@@ -42,19 +42,31 @@ pub struct Bump {
   #[arg(short = 'n', long)]
   no_verify: bool,
 
+  /// Package to bump.
+  #[arg(short = 'P', long, value_name = "PACKAGE")]
+  package: Option<Vec<String>>,
+
   /// Where to search for packages.
   #[arg(short = 'p', long, value_name = "PATH", default_value = ".")]
   path: Option<Vec<String>>,
 
   /// Prerelease identifier.
-  #[arg(short = 'P', long, value_name = "IDENTIFIER")]
+  #[arg(long, value_name = "IDENTIFIER")]
   pre: Option<String>,
 }
 
 impl super::Command for Bump {
   async fn execute(mut self) -> Result<()> {
     let path = self.path.as_deref().unwrap();
-    let packages = Package::search(path)?;
+    let packages = {
+      let mut packages = Package::search(path)?;
+
+      if let Some(names) = self.package.as_deref() {
+        packages.retain(|package| names.contains(&package.name));
+      }
+
+      packages
+    };
 
     if packages.is_empty() {
       bail!("{}", "No valid package found.".bold().red());
