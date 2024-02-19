@@ -14,10 +14,6 @@ pub struct Update {
   /// Type of the release.
   release: Option<String>,
 
-  /// Install the updated packages.
-  #[arg(short = 'i', long)]
-  install: bool,
-
   /// Do not ask for consent before updating.
   #[arg(short = 'k', long)]
   no_ask: bool,

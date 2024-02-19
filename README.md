@@ -69,7 +69,6 @@ miho update [OPTIONS] [RELEASE]
 
 |   Options   | Alias | Description                             |
 | :---------: | :---- | :-------------------------------------- |
-| `--install` | `-i`  | Install the updated packages.           |
 | `--no-ask`  | `-k`  | Do not ask for consent before updating. |
 | `--package` | `-P`  | Packages to update.                     |
 |  `--path`   | `-p`  | Where to search for packages.           |
