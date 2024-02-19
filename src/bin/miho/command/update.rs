@@ -4,6 +4,7 @@ use colored::Colorize;
 use miho::package::dependency::Tree;
 use miho::package::Package;
 use miho::release::Release;
+use miho::search_packages;
 use miho::version::{Comparator, ComparatorExt};
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinSet;
@@ -21,6 +22,10 @@ pub struct Update {
   #[arg(short = 'k', long)]
   no_ask: bool,
 
+  /// Package to update.
+  #[arg(short = 'P', long, value_name = "PACKAGE")]
+  package: Option<Vec<String>>,
+
   /// Where to search for packages.
   #[arg(short = 'p', long, value_name = "PATH", default_value = ".")]
   path: Option<Vec<String>>,
@@ -29,17 +34,17 @@ pub struct Update {
 impl super::Command for Update {
   async fn execute(self) -> Result<()> {
     let path = self.path.as_deref().unwrap();
-    let packages = Package::search(path)?;
+    let packages = search_packages!(path, self.package.as_deref())?;
 
     if packages.is_empty() {
-      bail!("{}", "No valid package found.".bold().red());
+      bail!("{}", "no valid package found".bold().red());
     }
 
     let release = self.release();
     let trees = fetch(packages, &release).await?;
 
     if trees.is_empty() {
-      println!("{}", "All dependencies are up to date.".bright_green());
+      println!("{}", "all dependencies are up to date".bright_green());
       return Ok(());
     }
 
@@ -73,7 +78,7 @@ async fn fetch(packages: Vec<Package>, release: &Option<Release>) -> Result<Vec<
     let trees = Arc::clone(&trees);
     set.spawn(async move {
       let mut tree = package.dependency_tree();
-      tree.fetch_metadata().await?;
+      tree.fetch().await?;
 
       let mut trees = trees.lock().unwrap();
       trees.push((package, tree));

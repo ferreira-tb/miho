@@ -31,11 +31,18 @@ macro_rules! return_if_ne {
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! match_once {
-  ($expr:expr, $pat:pat => $then:expr) => {
-    match $expr {
-      $pat => $then,
-      _ => {}
-    }
-  };
+macro_rules! search_packages {
+  ($path:expr) => {{
+    $crate::package::Package::search($path)
+  }};
+
+  ($path:expr, $names:expr) => {{
+    $crate::package::Package::search($path).map(|mut packages| {
+      if let Some(names) = $names {
+        packages.retain(|package| names.contains(&package.name));
+      }
+
+      packages
+    })
+  }};
 }

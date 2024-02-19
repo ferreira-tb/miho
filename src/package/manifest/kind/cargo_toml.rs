@@ -98,7 +98,23 @@ impl Handler for CargoToml {
         dependency::Kind::Peer => continue,
       };
 
-      todo!()
+      let version = manifest
+        .get_mut(key)
+        .and_then(Value::as_table_mut)
+        .and_then(|deps| deps.get_mut(&update.dependency.name));
+
+      if let Some(value) = version {
+        let mut target = update.target.to_string();
+        if target.starts_with('^') {
+          target.remove(0);
+        }
+        
+        if value.is_str() {
+          *value = Value::String(target);
+        } else if value.is_table() {
+          value["version"] = Value::String(target);
+        }
+      }
     }
 
     let contents = toml::to_string_pretty(&manifest)?;
@@ -108,8 +124,7 @@ impl Handler for CargoToml {
   }
 
   fn version(&self) -> Result<Version> {
-    let version = Version::parse(&self.package.version)?;
-    Ok(version)
+    Version::parse(&self.package.version).map_err(Into::into)
   }
 }
 

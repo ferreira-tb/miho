@@ -20,7 +20,7 @@ pub struct Run {
 impl super::Command for Run {
   async fn execute(self) -> Result<()> {
     if self.task.is_empty() {
-      bail!("{}", "No task to run.".bold().red());
+      bail!("{}", "no task to run".bold().red());
     }
 
     let lua = Lua::from_path(self.config.as_deref().unwrap())?;

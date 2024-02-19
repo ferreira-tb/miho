@@ -44,28 +44,17 @@ impl Dependency {
 
     self.latest_with_req(&requirement).and_then(|target| {
       let target_cmp = target.as_comparator(comparator.op);
-      if target_cmp == *comparator {
-        None
-      } else {
-        Some(target_cmp)
-      }
+      (target_cmp != *comparator).then_some(target_cmp)
     })
   }
 
   #[must_use]
   pub fn into_update(self, release: &Option<Release>) -> Option<Update> {
     let target = self.target_cmp(release);
-
-    if matches!(target, Some(ref t) if *t != self.comparator) {
-      let update = Update {
-        dependency: self,
-        target: target.unwrap(),
-      };
-
-      Some(update)
-    } else {
-      None
-    }
+    matches!(target, Some(ref t) if *t != self.comparator).then(|| Update {
+      dependency: self,
+      target: target.unwrap(),
+    })
   }
 }
 

@@ -1,11 +1,12 @@
 use super::Choice;
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, Result};
 use clap::Args;
 use colored::Colorize;
 use inquire::{Confirm, MultiSelect, Select, Text};
 use miho::git::{Add, Commit, Git, Push};
 use miho::package::Package;
 use miho::release::Release;
+use miho::search_packages;
 use miho::version::VersionExt;
 
 #[derive(Debug, Args)]
@@ -58,18 +59,10 @@ pub struct Bump {
 impl super::Command for Bump {
   async fn execute(mut self) -> Result<()> {
     let path = self.path.as_deref().unwrap();
-    let packages = {
-      let mut packages = Package::search(path)?;
-
-      if let Some(names) = self.package.as_deref() {
-        packages.retain(|package| names.contains(&package.name));
-      }
-
-      packages
-    };
+    let packages = search_packages!(path, self.package.as_deref())?;
 
     if packages.is_empty() {
-      bail!("{}", "No valid package found.".bold().red());
+      bail!("{}", "no valid package found".bold().red());
     }
 
     let release = self.release()?;
@@ -96,10 +89,7 @@ impl super::Command for Bump {
 impl Bump {
   async fn commit(&mut self) -> Result<()> {
     if let Some(pathspec) = &self.add {
-      Add::new(pathspec)
-        .spawn()
-        .await
-        .with_context(|| "failed to update git index")?;
+      Add::new(pathspec).spawn().await?;
     }
 
     let message = if !self.no_ask && self.commit_message.is_none() {
@@ -120,16 +110,10 @@ impl Bump {
       commit.no_verify();
     }
 
-    commit
-      .spawn()
-      .await
-      .with_context(|| "failed to commit packages")?;
+    commit.spawn().await?;
 
     if !self.no_push {
-      Push::new()
-        .spawn()
-        .await
-        .with_context(|| "failed to push commit")?;
+      Push::new().spawn().await?;
     }
 
     Ok(())

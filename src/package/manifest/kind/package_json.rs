@@ -108,7 +108,6 @@ impl Handler for PackageJson {
   }
 
   fn version(&self) -> Result<Version> {
-    let version = Version::parse(&self.version)?;
-    Ok(version)
+    Version::parse(&self.version).map_err(Into::into)
   }
 }
