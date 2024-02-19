@@ -86,7 +86,7 @@ impl Handler for CargoToml {
     self.package.name.as_str()
   }
 
-  fn update_dependencies(&self) -> Result<()> {
+  fn update(&self, _package: &Package, _batch: Vec<dependency::Update>) -> Result<()> {
     Ok(())
   }
 

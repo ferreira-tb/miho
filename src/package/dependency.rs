@@ -1,11 +1,10 @@
-mod kind;
 mod tree;
 
 use crate::release::Release;
 use crate::return_if_ne;
 use crate::version::{Comparator, ComparatorExt, Version, VersionExt, VersionReq, VersionReqExt};
-pub use kind::Kind;
 use std::cmp::Ordering;
+use std::fmt;
 pub use tree::Tree;
 
 #[derive(Debug)]
@@ -52,6 +51,22 @@ impl Dependency {
       }
     })
   }
+
+  #[must_use]
+  pub fn into_update(self, release: &Option<Release>) -> Option<Update> {
+    let target = self.target_cmp(release);
+
+    if matches!(target, Some(ref t) if *t != self.comparator) {
+      let update = Update {
+        dependency: self,
+        target: target.unwrap(),
+      };
+
+      Some(update)
+    } else {
+      None
+    }
+  }
 }
 
 impl PartialEq for Dependency {
@@ -73,4 +88,52 @@ impl Ord for Dependency {
     return_if_ne!(self.kind.cmp(&other.kind));
     self.name.cmp(&other.name)
   }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Kind {
+  Build,
+  Development,
+  Normal,
+  Peer,
+}
+
+impl Kind {
+  fn precedence(self) -> u8 {
+    match self {
+      Self::Normal => 0,
+      Self::Development => 1,
+      Self::Build => 2,
+      Self::Peer => 3,
+    }
+  }
+}
+
+impl fmt::Display for Kind {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      Self::Build => write!(f, "build"),
+      Self::Development => write!(f, "dev"),
+      Self::Normal => write!(f, ""),
+      Self::Peer => write!(f, "peer"),
+    }
+  }
+}
+
+impl PartialOrd for Kind {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    Some(self.cmp(other))
+  }
+}
+
+impl Ord for Kind {
+  fn cmp(&self, other: &Self) -> Ordering {
+    self.precedence().cmp(&other.precedence())
+  }
+}
+
+#[derive(Debug)]
+pub struct Update {
+  pub dependency: Dependency,
+  pub target: Comparator,
 }

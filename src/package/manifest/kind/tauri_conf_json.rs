@@ -1,7 +1,8 @@
+use crate::package::dependency;
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::{Agent, Package};
 use crate::version::Version;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use serde::Deserialize;
 use std::fs;
 use std::path::Path;
@@ -54,8 +55,10 @@ impl Handler for TauriConfJson {
     self.product_name.as_str()
   }
 
-  fn update_dependencies(&self) -> Result<()> {
-    Ok(())
+  fn update(&self, _package: &Package, _batch: Vec<dependency::Update>) -> Result<()> {
+    Err(anyhow!(
+      "{FILENAME_TAURI_CONF_JSON} does not support dependencies"
+    ))
   }
 
   fn version(&self) -> Result<Version> {

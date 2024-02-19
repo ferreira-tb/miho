@@ -89,9 +89,14 @@ impl Package {
     self.manifest.filename()
   }
 
-  pub fn update(self, _tree: Tree, _release: &Option<Release>) -> Result<()> {
-    // self.manifest.update(self, release)
-    Ok(())
+  pub fn update(self, tree: Tree, release: &Option<Release>) -> Result<()> {
+    let dependencies: Vec<dependency::Update> = tree
+      .dependencies
+      .into_iter()
+      .filter_map(|dep| dep.into_update(release))
+      .collect();
+
+    self.manifest.update(&self, dependencies)
   }
 }
 

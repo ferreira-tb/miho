@@ -4,6 +4,7 @@ use crate::package::{Agent, Package};
 use crate::version::Version;
 use anyhow::Result;
 use serde::Deserialize;
+use serde_json::Value;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
@@ -49,7 +50,7 @@ impl Handler for PackageJson {
 
   fn bump(&self, package: &Package, version: Version) -> Result<()> {
     let mut manifest = PackageJson::read_as_value(&package.path)?;
-    manifest["version"] = serde_json::Value::String(version.to_string());
+    manifest["version"] = Value::String(version.to_string());
 
     let contents = serde_json::to_string_pretty(&manifest)?;
     fs::write(&package.path, contents)?;
@@ -83,7 +84,26 @@ impl Handler for PackageJson {
     self.name.as_str()
   }
 
-  fn update_dependencies(&self) -> Result<()> {
+  fn update(&self, package: &Package, batch: Vec<dependency::Update>) -> Result<()> {
+    let mut manifest = PackageJson::read_as_value(&package.path)?;
+
+    for update in batch {
+      let key = match update.dependency.kind {
+        dependency::Kind::Normal => "dependencies",
+        dependency::Kind::Development => "devDependencies",
+        dependency::Kind::Peer => "peerDependencies",
+        dependency::Kind::Build => continue,
+      };
+
+      if let Some(deps) = manifest.get_mut(key).and_then(Value::as_object_mut) {
+        let target_version = Value::String(update.target.to_string());
+        deps.insert(update.dependency.name, target_version);
+      }
+    }
+
+    let contents = serde_json::to_string_pretty(&manifest)?;
+    fs::write(&package.path, contents)?;
+
     Ok(())
   }
 
