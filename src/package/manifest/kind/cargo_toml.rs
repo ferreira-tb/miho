@@ -7,19 +7,20 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+use toml::Value;
 
 const FILENAME_CARGO_TOML: &str = "Cargo.toml";
 
 #[derive(Deserialize)]
 pub(super) struct CargoToml {
   pub package: CargoPackage,
-  pub dependencies: Option<HashMap<String, toml::Value>>,
+  pub dependencies: Option<HashMap<String, Value>>,
 
   #[serde(rename(deserialize = "dev-dependencies"))]
-  pub dev_dependencies: Option<HashMap<String, toml::Value>>,
+  pub dev_dependencies: Option<HashMap<String, Value>>,
 
   #[serde(rename(deserialize = "build-dependencies"))]
-  pub build_dependencies: Option<HashMap<String, toml::Value>>,
+  pub build_dependencies: Option<HashMap<String, Value>>,
 }
 
 #[derive(Deserialize)]
@@ -51,7 +52,7 @@ impl Handler for CargoToml {
 
   fn bump(&self, package: &Package, version: Version) -> Result<()> {
     let mut manifest = CargoToml::read_as_value(&package.path)?;
-    manifest["package"]["version"] = toml::Value::String(version.to_string());
+    manifest["package"]["version"] = Value::String(version.to_string());
 
     let contents = toml::to_string_pretty(&manifest)?;
     fs::write(&package.path, contents)?;
@@ -86,7 +87,23 @@ impl Handler for CargoToml {
     self.package.name.as_str()
   }
 
-  fn update(&self, _package: &Package, _batch: Vec<dependency::Update>) -> Result<()> {
+  fn update(&self, package: &Package, batch: Vec<dependency::Update>) -> Result<()> {
+    let mut manifest = CargoToml::read_as_value(&package.path)?;
+
+    for update in batch {
+      let key = match update.dependency.kind {
+        dependency::Kind::Normal => "dependencies",
+        dependency::Kind::Development => "dev-dependencies",
+        dependency::Kind::Build => "build-dependencies",
+        dependency::Kind::Peer => continue,
+      };
+
+      todo!()
+    }
+
+    let contents = toml::to_string_pretty(&manifest)?;
+    fs::write(&package.path, contents)?;
+
     Ok(())
   }
 
@@ -96,7 +113,8 @@ impl Handler for CargoToml {
   }
 }
 
-fn parse_dependencies(deps: &HashMap<String, toml::Value>) -> HashMap<String, String> {
+// Could we refactor this so less cloning is needed?
+fn parse_dependencies(deps: &HashMap<String, Value>) -> HashMap<String, String> {
   let mut dependencies = HashMap::with_capacity(deps.len());
   for (name, version) in deps {
     if let Some(version) = parse_version(version) {
@@ -107,13 +125,12 @@ fn parse_dependencies(deps: &HashMap<String, toml::Value>) -> HashMap<String, St
   dependencies
 }
 
-// Could we refactor this so less cloning is needed?
-fn parse_version(value: &toml::Value) -> Option<&String> {
-  if let toml::Value::String(version) = value {
+fn parse_version(value: &Value) -> Option<&String> {
+  if let Value::String(version) = value {
     return Some(version);
   }
 
-  if let toml::Value::String(version) = &value["version"] {
+  if let Value::String(version) = &value["version"] {
     return Some(version);
   }
 

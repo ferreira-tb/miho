@@ -31,7 +31,7 @@ impl Task {
   }
 
   pub async fn run(self) -> Result<()> {
-    for command in self.commands.iter() {
+    for command in self.commands {
       let Some((program, args)) = command.split_first() else {
         continue;
       };

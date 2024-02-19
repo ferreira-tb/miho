@@ -1,4 +1,4 @@
-use crate::prompt::Choice;
+use super::Choice;
 use anyhow::{bail, Context, Result};
 use clap::Args;
 use colored::Colorize;

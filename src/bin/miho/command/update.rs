@@ -36,10 +36,11 @@ impl super::Command for Update {
     }
 
     let release = self.release();
-    let trees = fetch_trees(packages, &release).await?;
+    let trees = fetch(packages, &release).await?;
 
     if trees.is_empty() {
-      todo!("ADD ERROR MESSAGE");
+      println!("{}", "All dependencies are up to date.".bright_green());
+      return Ok(());
     }
 
     preview(&trees, &release);
@@ -56,19 +57,14 @@ impl super::Command for Update {
 
 impl Update {
   fn release(&self) -> Option<Release> {
-    if let Some(release) = self.release.as_deref() {
+    self.release.as_deref().and_then(|release| {
       let release = Release::parser().parse(release).ok();
       release.filter(Release::is_stable)
-    } else {
-      None
-    }
+    })
   }
 }
 
-async fn fetch_trees(
-  packages: Vec<Package>,
-  release: &Option<Release>,
-) -> Result<Vec<(Package, Tree)>> {
+async fn fetch(packages: Vec<Package>, release: &Option<Release>) -> Result<Vec<(Package, Tree)>> {
   let mut set: JoinSet<Result<()>> = JoinSet::new();
   let trees = Vec::with_capacity(packages.len());
   let trees = Arc::new(Mutex::new(trees));
