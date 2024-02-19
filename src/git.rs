@@ -1,13 +1,11 @@
 mod add;
 mod commit;
-mod flag;
 mod push;
 mod status;
 
 pub use add::Add;
-use anyhow::{bail, Result};
+use anyhow::Result;
 pub use commit::Commit;
-pub use flag::Flag;
 pub use push::Push;
 pub use status::Status;
 use std::future::Future;
@@ -31,16 +29,27 @@ pub trait Git {
   fn output(self) -> impl Future<Output = Result<Output>> + Send;
 }
 
-/// Determines whether there are uncommitted changes.
-pub async fn is_dirty() -> Result<bool> {
-  let output = Status::new().output().await?;
+pub enum Flag {
+  All,
+  Message,
+  NoVerify,
+  Porcelain,
+}
 
-  if !output.status.success() {
-    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
-    bail!("{stderr}");
+impl From<Flag> for &str {
+  fn from(flag: Flag) -> Self {
+    match flag {
+      Flag::All => "--all",
+      Flag::Message => "--message",
+      Flag::NoVerify => "--no-verify",
+      Flag::Porcelain => "--porcelain",
+    }
   }
+}
 
-  let is_empty = output.stdout.is_empty();
-
-  Ok(!is_empty)
+impl From<Flag> for String {
+  fn from(flag: Flag) -> Self {
+    let raw: &str = flag.into();
+    String::from(raw)
+  }
 }

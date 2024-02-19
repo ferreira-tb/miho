@@ -1,4 +1,4 @@
-use super::flag::Flag;
+use super::Flag;
 use super::Git;
 use crate::{git_output, git_spawn};
 use anyhow::Result;

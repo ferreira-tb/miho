@@ -1,7 +1,7 @@
-use super::flag::Flag;
+use super::Flag;
 use super::Git;
 use crate::{git_output, git_spawn};
-use anyhow::Result;
+use anyhow::{bail, Result};
 use std::process::{ExitStatus, Output, Stdio};
 use tokio::process::Command;
 
@@ -24,6 +24,19 @@ impl Status {
   pub fn porcelain(&mut self) -> &mut Self {
     self.args.push(Flag::Porcelain.into());
     self
+  }
+
+  pub async fn is_dirty() -> Result<bool> {
+    let output = Self::new().output().await?;
+
+    if !output.status.success() {
+      let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+      bail!("{stderr}");
+    }
+
+    let is_empty = output.stdout.is_empty();
+
+    Ok(!is_empty)
   }
 }
 

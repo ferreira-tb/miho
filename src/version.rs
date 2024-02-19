@@ -1,9 +1,4 @@
-mod comparator;
-mod requirement;
-
 use crate::release::Release;
-pub use comparator::ComparatorExt;
-pub use requirement::VersionReqExt;
 pub use semver::{BuildMetadata, Comparator, Op, Prerelease, Version, VersionReq};
 
 pub trait VersionExt {
@@ -79,5 +74,67 @@ impl VersionExt for Version {
       Release::PreRelease(p, b) => pre!(p, b, self.clone()),
       Release::Literal(v) => v.clone(),
     }
+  }
+}
+
+pub trait ComparatorExt {
+  fn as_version_req(&self) -> VersionReq;
+  fn with_release(&self, release: &Release) -> Comparator;
+
+  #[must_use]
+  fn from_version(version: &Version, op: Op) -> Comparator {
+    Comparator {
+      op,
+      major: version.major,
+      minor: Some(version.minor),
+      patch: Some(version.patch),
+      pre: version.pre.clone(),
+    }
+  }
+}
+
+impl ComparatorExt for Comparator {
+  #[must_use]
+  fn as_version_req(&self) -> VersionReq {
+    VersionReq::from_comparator(self)
+  }
+
+  #[must_use]
+  fn with_release(&self, release: &Release) -> Comparator {
+    let mut comparator = self.clone();
+
+    match release {
+      Release::Major(_) | Release::PreMajor(_, _) => {
+        comparator.op = Op::GreaterEq;
+      }
+      Release::Minor(_) | Release::PreMinor(_, _) => {
+        comparator.op = Op::Caret;
+      }
+      Release::Patch(_) | Release::PrePatch(_, _) => {
+        comparator.op = Op::Tilde;
+      }
+      Release::Literal(_) | Release::PreRelease(_, _) => {
+        comparator.op = Op::Exact;
+      }
+    }
+
+    comparator
+  }
+}
+
+pub trait VersionReqExt {
+  fn from_comparator(comparator: &Comparator) -> VersionReq;
+  fn matches_any(&self, version: &Version) -> bool;
+}
+
+impl VersionReqExt for VersionReq {
+  fn from_comparator(comparator: &Comparator) -> VersionReq {
+    let comparator = comparator.to_string();
+    VersionReq::parse(&comparator).unwrap()
+  }
+
+  /// Evaluates if the version matches any of the comparators.
+  fn matches_any(&self, version: &Version) -> bool {
+    self.comparators.iter().any(|c| c.matches(version))
   }
 }
