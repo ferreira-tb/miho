@@ -8,6 +8,8 @@ use miho::package::Package;
 use miho::release::Release;
 use miho::search_packages;
 use miho::version::VersionExt;
+use std::fmt;
+use std::path::PathBuf;
 
 #[derive(Debug, Args)]
 pub struct Bump {
@@ -49,7 +51,7 @@ pub struct Bump {
 
   /// Where to search for packages.
   #[arg(short = 'p', long, value_name = "PATH", default_value = ".")]
-  path: Option<Vec<String>>,
+  path: Option<Vec<PathBuf>>,
 
   /// Prerelease identifier.
   #[arg(long, value_name = "IDENTIFIER")]
@@ -173,9 +175,20 @@ fn prompt_many(packages: Vec<Package>, release: &Release) -> Result<bool> {
       Ok(true)
     }
     Choice::Some => {
+      struct Wrapper(Package);
+
+      impl fmt::Display for Wrapper {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+          let agent = self.0.agent().to_string().to_uppercase();
+          write!(f, "{agent}: {}", self.0.name)
+        }
+      }
+
       let message = "Select the packages to bump.";
+      let packages: Vec<Wrapper> = packages.into_iter().map(Wrapper).collect();
       let packages = MultiSelect::new(message, packages).prompt()?;
-      bump_all(packages, release)?;
+      bump_all(packages.into_iter().map(|p| p.0).collect(), release)?;
+
       Ok(true)
     }
     Choice::None => Ok(false),

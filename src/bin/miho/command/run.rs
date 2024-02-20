@@ -2,6 +2,7 @@ use anyhow::{bail, Result};
 use clap::Args;
 use colored::Colorize;
 use miho::lua::Lua;
+use std::path::PathBuf;
 
 #[derive(Debug, Args)]
 pub struct Run {
@@ -10,7 +11,7 @@ pub struct Run {
 
   /// Path to the configuration file.
   #[arg(short = 'c', long, default_value = ".config/miho.lua")]
-  config: Option<String>,
+  config: Option<PathBuf>,
 
   /// Run tasks in parallel.
   #[arg(short = 'P', long)]

@@ -72,7 +72,7 @@ miho update [OPTIONS] [RELEASE]
 | `--no-ask`  | `-k`  | Do not ask for consent before updating. |
 | `--package` | `-P`  | Packages to update.                     |
 |  `--path`   | `-p`  | Where to search for packages.           |
-|   `--peer`  | none  | Whether to include peer dependencies.   |
+|  `--peer`   | none  | Whether to include peer dependencies.   |
 
 ## License
 

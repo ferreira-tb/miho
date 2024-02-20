@@ -11,7 +11,6 @@ use dependency::Tree;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
 use std::cmp::Ordering;
-use std::fmt;
 use std::path::{Path, PathBuf};
 
 pub struct Package {
@@ -97,12 +96,6 @@ impl Package {
       .collect();
 
     self.manifest.update(&self, dependencies)
-  }
-}
-
-impl fmt::Display for Package {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    write!(f, "{} ({})", self.name, self.agent())
   }
 }
 

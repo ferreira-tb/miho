@@ -6,6 +6,7 @@ use miho::package::Package;
 use miho::release::Release;
 use miho::search_packages;
 use miho::version::{Comparator, ComparatorExt};
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinSet;
 
@@ -24,7 +25,7 @@ pub struct Update {
 
   /// Where to search for packages.
   #[arg(short = 'p', long, value_name = "PATH", default_value = ".")]
-  path: Option<Vec<String>>,
+  path: Option<Vec<PathBuf>>,
 
   /// Whether to include peer dependencies.
   #[arg(long)]
