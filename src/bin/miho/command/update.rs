@@ -7,8 +7,10 @@ use miho::release::Release;
 use miho::search_packages;
 use miho::version::{Comparator, ComparatorExt};
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 use tokio::task::JoinSet;
+
+static RELEASE: OnceLock<Option<Release>> = OnceLock::new();
 
 #[derive(Debug, Args)]
 pub struct Update {
@@ -41,20 +43,20 @@ impl super::Command for Update {
       bail!("{}", "no valid package found".bold().red());
     }
 
-    let release = self.release();
-    let trees = self.fetch(packages, &release).await?;
+    RELEASE.set(self.release()).unwrap();
+    let trees = self.fetch(packages).await?;
 
     if trees.is_empty() {
       println!("{}", "all dependencies are up to date".bright_green());
       return Ok(());
     }
 
-    preview(&trees, &release);
+    preview(&trees);
 
     if self.no_ask {
-      update_all(trees, &release)?;
+      update_all(trees)?;
     } else {
-      prompt(trees, &release);
+      prompt(trees);
     }
 
     Ok(())
@@ -69,11 +71,7 @@ impl Update {
     })
   }
 
-  async fn fetch(
-    &self,
-    packages: Vec<Package>,
-    release: &Option<Release>,
-  ) -> Result<Vec<(Package, Tree)>> {
+  async fn fetch(&self, packages: Vec<Package>) -> Result<Vec<(Package, Tree)>> {
     let mut set: JoinSet<Result<()>> = JoinSet::new();
     let trees = Vec::with_capacity(packages.len());
     let trees = Arc::new(Mutex::new(trees));
@@ -100,7 +98,7 @@ impl Update {
       .into_inner()?
       .into_iter()
       .filter_map(|(package, mut tree)| {
-        self.filter_dependencies(&mut tree, release);
+        self.filter_dependencies(&mut tree);
 
         if tree.dependencies.is_empty() {
           None
@@ -116,32 +114,35 @@ impl Update {
     Ok(trees)
   }
 
-  fn filter_dependencies(&self, tree: &mut Tree, release: &Option<Release>) {
+  fn filter_dependencies(&self, tree: &mut Tree) {
     tree.dependencies.retain(|dependency| {
       if dependency.kind == dependency::Kind::Peer && !self.peer {
         return false;
       }
 
+      let release = RELEASE.get().unwrap();
       dependency.target_cmp(release).is_some()
     });
   }
 }
 
-fn update_all(trees: Vec<(Package, Tree)>, release: &Option<Release>) -> Result<()> {
+fn update_all(trees: Vec<(Package, Tree)>) -> Result<()> {
+  let release = RELEASE.get().unwrap();
   trees
     .into_iter()
     .try_for_each(|(package, tree)| package.update(tree, release))
 }
 
-fn prompt(_trees: Vec<(Package, Tree)>, _release: &Option<Release>) {
+fn prompt(_trees: Vec<(Package, Tree)>) {
   unimplemented!()
 }
 
-fn preview(trees: &[(Package, Tree)], release: &Option<Release>) {
+fn preview(trees: &[(Package, Tree)]) {
   use tabled::builder::Builder;
   use tabled::settings::object::Segment;
   use tabled::settings::{Alignment, Modify, Panel, Style};
 
+  let release = RELEASE.get().unwrap();
   let mut tables = Vec::with_capacity(trees.len());
 
   for (package, tree) in trees {

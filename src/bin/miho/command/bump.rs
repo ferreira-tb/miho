@@ -10,6 +10,9 @@ use miho::search_packages;
 use miho::version::VersionExt;
 use std::fmt;
 use std::path::PathBuf;
+use std::sync::OnceLock;
+
+static RELEASE: OnceLock<Release> = OnceLock::new();
 
 #[derive(Debug, Args)]
 pub struct Bump {
@@ -67,14 +70,14 @@ impl super::Command for Bump {
       bail!("{}", "no valid package found".bold().red());
     }
 
-    let release = self.release()?;
+    RELEASE.set(self.release()?).unwrap();
 
-    preview(&packages, &release);
+    preview(&packages);
 
     if self.no_ask {
-      bump_all(packages, &release)?;
+      bump_all(packages)?;
     } else {
-      let should_continue = prompt(packages, &release)?;
+      let should_continue = prompt(packages)?;
       if !should_continue {
         return Ok(());
       }
@@ -138,26 +141,28 @@ impl Bump {
   }
 }
 
-fn bump_all(packages: Vec<Package>, release: &Release) -> Result<()> {
+fn bump_all(packages: Vec<Package>) -> Result<()> {
+  let release = RELEASE.get().unwrap();
   packages
     .into_iter()
     .try_for_each(|package| package.bump(release))
 }
 
-fn prompt(mut packages: Vec<Package>, release: &Release) -> Result<bool> {
+fn prompt(mut packages: Vec<Package>) -> Result<bool> {
   if packages.len() == 1 {
     let package = packages.swap_remove(0);
-    prompt_single(package, release)
+    prompt_single(package)
   } else {
-    prompt_many(packages, release)
+    prompt_many(packages)
   }
 }
 
-fn prompt_single(package: Package, release: &Release) -> Result<bool> {
+fn prompt_single(package: Package) -> Result<bool> {
   let message = format!("Bump {}?", package.name);
   let should_bump = Confirm::new(&message).with_default(true).prompt()?;
 
   if should_bump {
+    let release = RELEASE.get().unwrap();
     package.bump(release)?;
     Ok(true)
   } else {
@@ -165,13 +170,13 @@ fn prompt_single(package: Package, release: &Release) -> Result<bool> {
   }
 }
 
-fn prompt_many(packages: Vec<Package>, release: &Release) -> Result<bool> {
+fn prompt_many(packages: Vec<Package>) -> Result<bool> {
   let options = vec![Choice::All, Choice::Some, Choice::None];
   let response = Select::new("Select what to bump.", options).prompt()?;
 
   match response {
     Choice::All => {
-      bump_all(packages, release)?;
+      bump_all(packages)?;
       Ok(true)
     }
     Choice::Some => {
@@ -187,7 +192,7 @@ fn prompt_many(packages: Vec<Package>, release: &Release) -> Result<bool> {
       let message = "Select the packages to bump.";
       let packages: Vec<Wrapper> = packages.into_iter().map(Wrapper).collect();
       let packages = MultiSelect::new(message, packages).prompt()?;
-      bump_all(packages.into_iter().map(|p| p.0).collect(), release)?;
+      bump_all(packages.into_iter().map(|p| p.0).collect())?;
 
       Ok(true)
     }
@@ -195,11 +200,12 @@ fn prompt_many(packages: Vec<Package>, release: &Release) -> Result<bool> {
   }
 }
 
-fn preview(packages: &[Package], release: &Release) {
+fn preview(packages: &[Package]) {
   use tabled::builder::Builder;
   use tabled::settings::object::Segment;
   use tabled::settings::{Alignment, Modify, Style};
 
+  let release = RELEASE.get().unwrap();
   let mut builder = Builder::with_capacity(packages.len(), 5);
 
   for package in packages {
