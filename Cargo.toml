@@ -11,6 +11,6 @@ authors = ["Andrew Ferreira <andrew.shien2@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 edition = "2021"
-rust-version = "1.76"
+rust-version = "1.75"
 keywords = ["miho", "repository", "lua"]
 categories = ["development-tools"]
