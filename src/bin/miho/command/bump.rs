@@ -172,9 +172,9 @@ fn prompt_single(package: Package) -> Result<bool> {
 
 fn prompt_many(packages: Vec<Package>) -> Result<bool> {
   let options = vec![Choice::All, Choice::Some, Choice::None];
-  let response = Select::new("Bump packages?", options).prompt()?;
+  let choice = Select::new("Bump packages?", options).prompt()?;
 
-  match response {
+  match choice {
     Choice::All => {
       bump_all(packages)?;
       Ok(true)

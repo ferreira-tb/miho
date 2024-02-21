@@ -148,14 +148,14 @@ fn update_all(trees: Vec<(Package, Tree)>) -> Result<()> {
     .try_for_each(|(package, tree)| package.update(tree, release))
 }
 
-fn prompt(mut trees: Vec<(Package, Tree)>) -> Result<()> {
+fn prompt(mut trees: Vec<(Package, Tree)>) -> Result<bool> {
   let options = vec![Choice::All, Choice::Some, Choice::None];
-  let response = Select::new("Update dependencies?", options).prompt()?;
+  let choice = Select::new("Update dependencies?", options).prompt()?;
 
-  match response {
+  match choice {
     Choice::All => {
       update_all(trees)?;
-      Ok(())
+      Ok(true)
     }
     Choice::Some => {
       struct Wrapper(Dependency);
@@ -183,13 +183,13 @@ fn prompt(mut trees: Vec<(Package, Tree)>) -> Result<()> {
 
       if trees.is_empty() {
         println!("{}", "no dependencies selected".truecolor(105, 105, 105));
-        Ok(())
+        Ok(false)
       } else {
         update_all(trees)?;
-        Ok(())
+        Ok(true)
       }
     }
-    Choice::None => Ok(()),
+    Choice::None => Ok(false),
   }
 }
 

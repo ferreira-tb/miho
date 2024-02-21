@@ -67,13 +67,13 @@ Update your dependencies.
 miho update [OPTIONS] [RELEASE]
 ```
 
-|    Options     | Alias | Description                             |
-| :------------: | :---- | :-------------------------------------- |
-| `--dependency` | `-D`  | Dependencies to update.                 |
-|   `--no-ask`   | `-k`  | Do not ask for consent before updating. |
-|  `--package`   | `-P`  | Packages to update.                     |
-|    `--path`    | `-p`  | Where to search for packages.           |
-|    `--peer`    | none  | Whether to only update peer dependencies.   |
+|    Options     | Alias | Description                               |
+| :------------: | :---- | :---------------------------------------- |
+| `--dependency` | `-D`  | Dependencies to update.                   |
+|   `--no-ask`   | `-k`  | Do not ask for consent before updating.   |
+|  `--package`   | `-P`  | Packages to update.                       |
+|    `--path`    | `-p`  | Where to search for packages.             |
+|    `--peer`    | none  | Whether to only update peer dependencies. |
 
 ## License
 
