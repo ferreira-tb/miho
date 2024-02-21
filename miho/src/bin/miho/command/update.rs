@@ -1,4 +1,4 @@
-use super::Choice;
+use super::{Choice, CommitFromCommand};
 use anyhow::{bail, Result};
 use clap::Args;
 use colored::Colorize;
@@ -8,6 +8,7 @@ use miho::package::Package;
 use miho::release::Release;
 use miho::search_packages;
 use miho::version::{Comparator, ComparatorExt};
+use miho_derive::Commit;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, OnceLock};
 use std::{fmt, mem};
@@ -15,10 +16,18 @@ use tokio::task::JoinSet;
 
 static RELEASE: OnceLock<Option<Release>> = OnceLock::new();
 
-#[derive(Debug, Args)]
+#[derive(Debug, Args, Commit)]
 pub struct Update {
   /// Type of the release.
   release: Option<String>,
+
+  /// Include untracked files with `git add <PATHSPEC>`.
+  #[arg(short = 'a', long, value_name = "PATHSPEC")]
+  add: Option<String>,
+
+  /// Commit the modified packages.
+  #[arg(short = 'm', long, value_name = "MESSAGE")]
+  commit_message: Option<String>,
 
   /// Dependencies to update.
   #[arg(short = 'D', long, value_name = "DEPENDENCY")]
@@ -27,6 +36,18 @@ pub struct Update {
   /// Do not ask for consent before updating.
   #[arg(short = 'k', long)]
   no_ask: bool,
+
+  /// Do not commit the modified packages.
+  #[arg(long)]
+  no_commit: bool,
+
+  /// Do not push the commit.
+  #[arg(long)]
+  no_push: bool,
+
+  /// Bypass `pre-commit` and `commit-msg` hooks.
+  #[arg(short = 'n', long)]
+  no_verify: bool,
 
   /// Package to update.
   #[arg(short = 'P', long, value_name = "PACKAGE")]
@@ -42,7 +63,7 @@ pub struct Update {
 }
 
 impl super::Command for Update {
-  async fn execute(self) -> Result<()> {
+  async fn execute(mut self) -> Result<()> {
     let path = self.path.as_deref().unwrap();
     let packages = search_packages!(path, self.package.as_deref())?;
 
@@ -63,7 +84,14 @@ impl super::Command for Update {
     if self.no_ask {
       update_all(trees)?;
     } else {
-      prompt(trees)?;
+      let should_continue = prompt(trees)?;
+      if !should_continue {
+        return Ok(());
+      }
+    }
+
+    if !self.no_commit {
+      self.commit("chore: bump dependencies").await?;
     }
 
     Ok(())

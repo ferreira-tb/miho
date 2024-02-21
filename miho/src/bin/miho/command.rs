@@ -6,10 +6,15 @@ use anyhow::Result;
 pub use bump::Bump;
 pub use run::Run;
 use std::fmt;
+use std::future::Future;
 pub use update::Update;
 
 pub trait Command {
   async fn execute(self) -> Result<()>;
+}
+
+trait CommitFromCommand: Command {
+  fn commit(&mut self, default_message: &str) -> impl Future<Output = Result<()>> + Send;
 }
 
 pub enum Choice {

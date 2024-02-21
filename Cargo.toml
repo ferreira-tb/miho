@@ -1,48 +1,16 @@
-[package]
-name = "miho"
-version = "4.1.0"
+[workspace]
+members = ["miho", "miho_derive"]
+exclude = ["mocks"]
+resolver = "2"
+
+[workspace.package]
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
 authors = ["Andrew Ferreira <andrew.shien2@gmail.com>"]
 license = "MIT"
-edition = "2021"
 readme = "README.md"
+edition = "2021"
+rust-version = "1.76"
 keywords = ["miho", "repository", "lua"]
 categories = ["development-tools"]
-rust-version = "1.76"
-
-[dependencies]
-anyhow = "1.0"
-colored = "2.1"
-globset = "0.4"
-ignore = "0.4"
-inquire = "0.6"
-mlua = { version = "0.9", features = ["lua54", "vendored"] }
-semver = "1.0"
-tabled = { version = "0.15", features = ["ansi"] }
-thiserror = "1.0"
-
-[dependencies.reqwest]
-version = "0.11"
-features = ["brotli", "gzip", "json"]
-
-[dependencies.tokio]
-version = "1.36"
-features = ["process", "macros", "rt-multi-thread"]
-
-[dependencies.clap]
-version = "4.5"
-features = ["derive"]
-
-[dependencies.serde]
-version = "1.0"
-features = ["derive"]
-
-[dependencies.serde_json]
-version = "1.0"
-features = ["preserve_order"]
-
-[dependencies.toml]
-version = "0.8"
-features = ["preserve_order"]

@@ -1,8 +1,10 @@
+local publish = 'cargo publish -p miho_derive && cargo publish -p miho'
+
 miho.task = {
   clippy = 'cargo clippy -- -D warnings',
-  format = 'cmd /C prettier . --write && cargo fmt',
+  format = 'cmd /C prettier . --write && cargo fmt --all',
   pedantic = 'cargo clippy -- -W clippy::pedantic',
-  release = 'cargo test && cargo clippy && cargo publish',
+  release = 'cargo test && cargo clippy && ' .. publish,
 }
 
 miho.task.mock = {

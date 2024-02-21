@@ -1,20 +1,20 @@
-use super::Choice;
+use super::{Choice, CommitFromCommand};
 use anyhow::{bail, Result};
 use clap::Args;
 use colored::Colorize;
-use inquire::{Confirm, MultiSelect, Select, Text};
-use miho::git::{Add, Commit, Git, Push};
+use inquire::{Confirm, MultiSelect, Select};
 use miho::package::Package;
 use miho::release::Release;
 use miho::search_packages;
 use miho::version::VersionExt;
+use miho_derive::Commit;
 use std::fmt;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
 static RELEASE: OnceLock<Release> = OnceLock::new();
 
-#[derive(Debug, Args)]
+#[derive(Debug, Args, Commit)]
 pub struct Bump {
   /// Type of the release.
   #[arg(default_value = "patch")]
@@ -83,7 +83,7 @@ impl super::Command for Bump {
     }
 
     if !self.no_commit {
-      self.commit().await?;
+      self.commit("chore: bump version").await?;
     }
 
     Ok(())
@@ -91,37 +91,6 @@ impl super::Command for Bump {
 }
 
 impl Bump {
-  async fn commit(&mut self) -> Result<()> {
-    if let Some(pathspec) = &self.add {
-      Add::new(pathspec).spawn().await?;
-    }
-
-    let message = if !self.no_ask && self.commit_message.is_none() {
-      Text::new("Commit message: ").prompt_skippable()?
-    } else {
-      self.commit_message.take()
-    };
-
-    let message = message
-      .as_deref()
-      .map_or_else(|| "chore: bump version", str::trim);
-
-    let mut commit = Commit::new(message);
-    commit.all();
-
-    if self.no_verify {
-      commit.no_verify();
-    }
-
-    commit.spawn().await?;
-
-    if !self.no_push {
-      Push::new().spawn().await?;
-    }
-
-    Ok(())
-  }
-
   fn set_release(&self) -> Result<()> {
     let mut parser = Release::parser();
 
