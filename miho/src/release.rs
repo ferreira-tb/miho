@@ -1,87 +1,77 @@
+use crate::version::{BuildMetadata, Prerelease, Version};
 use anyhow::Result;
-use semver::{BuildMetadata, Prerelease, Version};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Release {
-  Major,
-  Minor,
-  Patch,
-  PreMajor,
-  PreMinor,
-  PrePatch,
-  PreRelease,
+  Major(BuildMetadata),
+  Minor(BuildMetadata),
+  Patch(BuildMetadata),
+  PreMajor(Prerelease, BuildMetadata),
+  PreMinor(Prerelease, BuildMetadata),
+  PrePatch(Prerelease, BuildMetadata),
+  PreRelease(Prerelease, BuildMetadata),
   Literal(Version),
 }
 
 impl Release {
-  pub fn increment(&self, version: &Version) -> Version {
-    match self {
-      Release::Major => self.major(version),
-      Release::Minor => self.minor(version),
-      Release::Patch => self.patch(version),
-      Release::Literal(v) => v.clone(),
-      _ => self.increment_pre(version, Prerelease::EMPTY),
-    }
+  #[must_use]
+  pub fn parser() -> Parser {
+    Parser::new()
   }
 
-  pub fn increment_pre(&self, version: &Version, pre: Prerelease) -> Version {
-    let mut new_version = match self {
-      Release::PreMajor => self.major(version),
-      Release::PreMinor => self.minor(version),
-      Release::PrePatch => self.patch(version),
-      Release::PreRelease => version.clone(),
-      _ => self.increment(version),
-    };
-
-    new_version.pre = pre;
-
-    new_version
+  #[must_use]
+  pub fn is_literal(&self) -> bool {
+    matches!(self, Release::Literal(_))
   }
 
-  fn major(&self, version: &Version) -> Version {
-    Version {
-      major: version.major + 1,
-      minor: 0,
-      patch: 0,
-      pre: Prerelease::EMPTY,
-      build: BuildMetadata::EMPTY,
-    }
+  #[must_use]
+  pub fn is_prerelease(&self) -> bool {
+    !self.is_stable() && !self.is_literal()
   }
 
-  fn minor(&self, version: &Version) -> Version {
-    Version {
-      major: version.major,
-      minor: version.minor + 1,
-      patch: 0,
-      pre: Prerelease::EMPTY,
-      build: BuildMetadata::EMPTY,
-    }
-  }
-
-  fn patch(&self, version: &Version) -> Version {
-    Version {
-      major: version.major,
-      minor: version.minor,
-      patch: version.patch + 1,
-      pre: Prerelease::EMPTY,
-      build: BuildMetadata::EMPTY,
-    }
+  #[must_use]
+  pub fn is_stable(&self) -> bool {
+    matches!(
+      self,
+      Release::Major(_) | Release::Minor(_) | Release::Patch(_)
+    )
   }
 }
 
-impl TryFrom<&str> for Release {
-  type Error = anyhow::Error;
+pub struct Parser {
+  prerelease: Prerelease,
+  metadata: BuildMetadata,
+}
 
-  fn try_from(val: &str) -> Result<Self> {
-    let release = val.to_lowercase();
+impl Parser {
+  #[must_use]
+  fn new() -> Self {
+    Self {
+      prerelease: Prerelease::EMPTY,
+      metadata: BuildMetadata::EMPTY,
+    }
+  }
+
+  pub fn prerelease(&mut self, prerelease: &str) -> Result<&mut Self> {
+    self.prerelease = Prerelease::new(prerelease)?;
+    Ok(self)
+  }
+
+  pub fn metadata(&mut self, metadata: &str) -> Result<&mut Self> {
+    self.metadata = BuildMetadata::new(metadata)?;
+    Ok(self)
+  }
+
+  pub fn parse(self, release: &str) -> Result<Release> {
+    let release = release.to_lowercase();
     let release = match release.trim() {
-      "major" => Release::Major,
-      "minor" => Release::Minor,
-      "patch" => Release::Patch,
-      "premajor" => Release::PreMajor,
-      "preminor" => Release::PreMinor,
-      "prepatch" => Release::PrePatch,
-      "prerelease" => Release::PreRelease,
+      "major" => Release::Major(self.metadata),
+      "minor" => Release::Minor(self.metadata),
+      "patch" => Release::Patch(self.metadata),
+      "premajor" => Release::PreMajor(self.prerelease, self.metadata),
+      "preminor" => Release::PreMinor(self.prerelease, self.metadata),
+      "prepatch" => Release::PrePatch(self.prerelease, self.metadata),
+      "prerelease" => Release::PreRelease(self.prerelease, self.metadata),
       rt => {
         let version = Version::parse(rt)?;
         Release::Literal(version)
@@ -89,5 +79,11 @@ impl TryFrom<&str> for Release {
     };
 
     Ok(release)
+  }
+}
+
+impl Default for Parser {
+  fn default() -> Self {
+    Self::new()
   }
 }

@@ -1,7 +1,7 @@
 {
   "conventionalCommits.promptScopes": false,
-  "prettier.requireConfig": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "rust-analyzer.showUnlinkedFileNotification": false,
+  "rust-analyzer.files.excludeDirs": ["mocks"],
   "editor.tabSize": 2,
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
@@ -9,6 +9,9 @@
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },
-  "rust-analyzer.showUnlinkedFileNotification": false,
-  "rust-analyzer.files.excludeDirs": ["mocks"]
+  "[lua]": {
+    "editor.defaultFormatter": "sumneko.lua"
+  },
+  "Lua.diagnostics.disable": ["lowercase-global"],
+  "Lua.diagnostics.globals": ["miho"]
 }

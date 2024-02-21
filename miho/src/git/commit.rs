@@ -1,20 +1,23 @@
-use super::flag::Flag;
-use miho_derive::GitCommand;
-use std::process::Command;
+use super::Flag;
+use super::Git;
+use crate::{git_output, git_spawn};
+use anyhow::Result;
+use std::process::{ExitStatus, Output, Stdio};
+use tokio::process::Command;
 
 /// <https://git-scm.com/docs/git-commit>
-#[derive(GitCommand)]
 pub struct Commit {
-  cmd: Command,
+  command: Command,
   args: Vec<String>,
 }
 
 impl Commit {
+  #[must_use]
   pub fn new<T: AsRef<str>>(message: T) -> Self {
     let message = message.as_ref();
     Self {
-      cmd: Command::new("git"),
-      args: vec!["commit".into(), Flag::Message.into(), message.to_string()],
+      command: Command::new("git"),
+      args: vec!["commit".into(), Flag::Message.into(), message.into()],
     }
   }
 
@@ -28,5 +31,25 @@ impl Commit {
   pub fn no_verify(&mut self) -> &mut Self {
     self.args.push(Flag::NoVerify.into());
     self
+  }
+}
+
+impl Git for Commit {
+  fn stderr(&mut self, cfg: Stdio) -> &mut Self {
+    self.command.stderr(cfg);
+    self
+  }
+
+  fn stdout(&mut self, cfg: Stdio) -> &mut Self {
+    self.command.stdout(cfg);
+    self
+  }
+
+  async fn spawn(mut self) -> Result<ExitStatus> {
+    git_spawn!(self.command, &self.args)
+  }
+
+  async fn output(mut self) -> Result<Output> {
+    git_output!(self.command, &self.args)
   }
 }

@@ -1,41 +1,65 @@
-use super::{Manifest, ManifestHandler};
-use crate::package::Package;
-use anyhow::Result;
-use miho_derive::Manifest;
-use semver::Version;
-use serde::{Deserialize, Serialize};
+use crate::package::dependency;
+use crate::package::manifest::{Handler, Manifest, ManifestBox};
+use crate::package::{Agent, Package};
+use crate::version::Version;
+use anyhow::{anyhow, Result};
+use serde::Deserialize;
 use std::fs;
+use std::path::Path;
 
-const FILENAME_TAURI_CONF_JSON: &str = "tauri.conf.json";
-
-#[derive(Manifest, Deserialize, Serialize)]
-#[serde(rename_all(serialize = "snake_case", deserialize = "camelCase"))]
+#[derive(Deserialize)]
+#[serde(rename_all(deserialize = "camelCase"))]
 pub(super) struct TauriConfJson {
   pub product_name: String,
   pub version: String,
 }
 
-impl ManifestHandler for TauriConfJson {
+impl Manifest for TauriConfJson {
+  type Value = serde_json::Value;
+
+  const FILENAME: &'static str = "tauri.conf.json";
+
+  fn read<P: AsRef<Path>>(path: P) -> Result<ManifestBox> {
+    let contents = fs::read_to_string(path)?;
+    let manifest: TauriConfJson = serde_json::from_str(&contents)?;
+    Ok(Box::new(manifest))
+  }
+
+  fn read_as_value<P: AsRef<Path>>(path: P) -> Result<Self::Value> {
+    let contents = fs::read_to_string(path)?;
+    let manifest: Self::Value = serde_json::from_str(&contents)?;
+    Ok(manifest)
+  }
+}
+
+impl Handler for TauriConfJson {
+  fn agent(&self) -> Agent {
+    Agent::Tauri
+  }
+
   fn bump(&self, package: &Package, version: Version) -> Result<()> {
-    let mut manifest = TauriConfJson::read_as_value(&package.manifest_path)?;
+    let mut manifest = TauriConfJson::read_as_value(&package.path)?;
     manifest["version"] = serde_json::Value::String(version.to_string());
 
     let contents = serde_json::to_string_pretty(&manifest)?;
-    fs::write(&package.manifest_path, contents)?;
+    fs::write(&package.path, contents)?;
 
     Ok(())
   }
 
   fn filename(&self) -> &str {
-    FILENAME_TAURI_CONF_JSON
+    Self::FILENAME
   }
 
   fn name(&self) -> &str {
     self.product_name.as_str()
   }
 
+  fn update(&self, _: &Package, _: Vec<dependency::Target>) -> Result<()> {
+    Err(anyhow!("{} does not support dependencies", Self::FILENAME))
+  }
+
   fn version(&self) -> Result<Version> {
-    let version = Version::parse(&self.version)?;
-    Ok(version)
+    Version::parse(&self.version).map_err(Into::into)
   }
 }

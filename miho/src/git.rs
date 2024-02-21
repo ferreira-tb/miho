@@ -1,32 +1,55 @@
 mod add;
 mod commit;
-mod flag;
 mod push;
 mod status;
 
 pub use add::Add;
-use anyhow::{bail, Result};
+use anyhow::Result;
 pub use commit::Commit;
-pub use flag::Flag;
 pub use push::Push;
 pub use status::Status;
-use std::process::Stdio;
+use std::future::Future;
+use std::process::{ExitStatus, Output, Stdio};
 
-/// Determine whether there are uncommitted changes.
-pub fn is_dirty() -> Result<bool> {
-  let output = Status::new()
-    .stdout(Stdio::piped())
-    .stderr(Stdio::piped())
-    .output()?;
+pub trait Git {
+  fn stderr(&mut self, cfg: Stdio) -> &mut Self;
+  fn stdout(&mut self, cfg: Stdio) -> &mut Self;
 
-  if !output.status.success() {
-    let stderr = String::from_utf8(output.stderr)?;
-    bail!("Failed to get git status: {}", stderr);
+  /// Executes the command as a child process,
+  /// returning a future that resolves to [`std::process::ExitStatus`] when the child process completes.
+  ///
+  /// By default, the stdout/stderr handles are inherited from the parent.
+  fn spawn(self) -> impl Future<Output = Result<ExitStatus>> + Send;
+
+  /// Executes the command as a child process,
+  /// waiting for it to finish and collecting all of its output.
+  ///
+  /// This will unconditionally configure the stdout/stderr handles to be pipes,
+  /// even if they have been previously configured.
+  fn output(self) -> impl Future<Output = Result<Output>> + Send;
+}
+
+pub enum Flag {
+  All,
+  Message,
+  NoVerify,
+  Porcelain,
+}
+
+impl From<Flag> for &str {
+  fn from(flag: Flag) -> Self {
+    match flag {
+      Flag::All => "--all",
+      Flag::Message => "--message",
+      Flag::NoVerify => "--no-verify",
+      Flag::Porcelain => "--porcelain",
+    }
   }
+}
 
-  if output.stdout.is_empty() {
-    Ok(false)
-  } else {
-    Ok(true)
+impl From<Flag> for String {
+  fn from(flag: Flag) -> Self {
+    let raw: &str = flag.into();
+    String::from(raw)
   }
 }

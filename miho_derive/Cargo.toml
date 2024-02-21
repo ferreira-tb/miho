@@ -1,6 +1,6 @@
 [package]
 name = "miho_derive"
-version = "4.0.0"
+version = "4.1.0"
 
 [package.description]
 workspace = true
@@ -20,6 +20,9 @@ workspace = true
 [package.edition]
 workspace = true
 
+[package.rust-version]
+workspace = true
+
 [package.readme]
 workspace = true
 
@@ -33,7 +36,6 @@ workspace = true
 proc-macro = true
 
 [dependencies]
-convert_case = "0.6"
-quote = "1.0"
-syn = "2.0"
-proc-macro2 = "1.0"
+quote = "1.0.35"
+syn = "2.0.50"
+proc-macro2 = "1.0.78"

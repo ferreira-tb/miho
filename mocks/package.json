@@ -1,4 +1,13 @@
 {
   "name": "package-json",
-  "version": "3.0.4"
+  "version": "3.1.206",
+  "dependencies": {
+    "vue": "^3.4.19"
+  },
+  "devDependencies": {
+    "vite": "^4.5.2"
+  },
+  "peerDependencies": {
+    "manatsu": "^0.3.8"
+  }
 }

@@ -1,21 +1,28 @@
-mod commands;
+mod command;
 
 use anyhow::Result;
 use clap::Parser;
-use commands::*;
+use command::{Bump, Command, Run, Update};
 
 #[derive(Debug, Parser)]
 #[command(name = "miho")]
 #[command(version, about, long_about = None)]
 enum Cli {
-  /// Recursively bump your packages version.
-  Bump(BumpCommand),
+  /// Bump your packages version.
+  Bump(Bump),
+  /// Run scripts defined in your miho.lua.
+  Run(Run),
+  /// Update your dependencies.
+  Update(Update),
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
   let cli = Cli::parse();
 
   match cli {
-    Cli::Bump(mut cmd) => cmd.execute(),
+    Cli::Bump(cmd) => cmd.execute().await,
+    Cli::Run(cmd) => cmd.execute().await,
+    Cli::Update(cmd) => cmd.execute().await,
   }
 }

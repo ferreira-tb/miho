@@ -1,0 +1,140 @@
+use crate::release::Release;
+pub use semver::{BuildMetadata, Comparator, Op, Prerelease, Version, VersionReq};
+
+pub trait VersionExt {
+  fn as_comparator(&self, op: Op) -> Comparator;
+  fn with_release(&self, release: &Release) -> Version;
+
+  #[must_use]
+  fn major(version: &Version) -> Version {
+    Version {
+      major: version.major + 1,
+      minor: 0,
+      patch: 0,
+      pre: Prerelease::EMPTY,
+      build: BuildMetadata::EMPTY,
+    }
+  }
+
+  #[must_use]
+  fn minor(version: &Version) -> Version {
+    Version {
+      major: version.major,
+      minor: version.minor + 1,
+      patch: 0,
+      pre: Prerelease::EMPTY,
+      build: BuildMetadata::EMPTY,
+    }
+  }
+
+  #[must_use]
+  fn patch(version: &Version) -> Version {
+    Version {
+      major: version.major,
+      minor: version.minor,
+      patch: version.patch + 1,
+      pre: Prerelease::EMPTY,
+      build: BuildMetadata::EMPTY,
+    }
+  }
+}
+
+impl VersionExt for Version {
+  #[must_use]
+  fn as_comparator(&self, op: Op) -> Comparator {
+    Comparator::from_version(self, op)
+  }
+
+  #[must_use]
+  fn with_release(&self, release: &Release) -> Version {
+    macro_rules! build {
+      ($build:expr, $version:expr) => {{
+        let mut version = $version;
+        version.build = $build.clone();
+        version
+      }};
+    }
+
+    macro_rules! pre {
+      ($pre:expr, $build:expr, $version:expr) => {{
+        let mut version = $version;
+        version.pre = $pre.clone();
+        version.build = $build.clone();
+        version
+      }};
+    }
+
+    match release {
+      Release::Major(b) => build!(b, Version::major(self)),
+      Release::Minor(b) => build!(b, Version::minor(self)),
+      Release::Patch(b) => build!(b, Version::patch(self)),
+      Release::PreMajor(p, b) => pre!(p, b, Version::major(self)),
+      Release::PreMinor(p, b) => pre!(p, b, Version::minor(self)),
+      Release::PrePatch(p, b) => pre!(p, b, Version::patch(self)),
+      Release::PreRelease(p, b) => pre!(p, b, self.clone()),
+      Release::Literal(v) => v.clone(),
+    }
+  }
+}
+
+pub trait ComparatorExt {
+  fn as_version_req(&self) -> VersionReq;
+  fn with_release(&self, release: &Release) -> Comparator;
+
+  #[must_use]
+  fn from_version(version: &Version, op: Op) -> Comparator {
+    Comparator {
+      op,
+      major: version.major,
+      minor: Some(version.minor),
+      patch: Some(version.patch),
+      pre: version.pre.clone(),
+    }
+  }
+}
+
+impl ComparatorExt for Comparator {
+  #[must_use]
+  fn as_version_req(&self) -> VersionReq {
+    VersionReq::from_comparator(self)
+  }
+
+  #[must_use]
+  fn with_release(&self, release: &Release) -> Comparator {
+    let mut comparator = self.clone();
+
+    match release {
+      Release::Major(_) | Release::PreMajor(_, _) => {
+        comparator.op = Op::GreaterEq;
+      }
+      Release::Minor(_) | Release::PreMinor(_, _) => {
+        comparator.op = Op::Caret;
+      }
+      Release::Patch(_) | Release::PrePatch(_, _) => {
+        comparator.op = Op::Tilde;
+      }
+      Release::Literal(_) | Release::PreRelease(_, _) => {
+        comparator.op = Op::Exact;
+      }
+    }
+
+    comparator
+  }
+}
+
+pub trait VersionReqExt {
+  fn from_comparator(comparator: &Comparator) -> VersionReq;
+  fn matches_any(&self, version: &Version) -> bool;
+}
+
+impl VersionReqExt for VersionReq {
+  fn from_comparator(comparator: &Comparator) -> VersionReq {
+    let comparator = comparator.to_string();
+    VersionReq::parse(&comparator).unwrap()
+  }
+
+  /// Evaluates if the version matches any of the comparators.
+  fn matches_any(&self, version: &Version) -> bool {
+    self.comparators.iter().any(|c| c.matches(version))
+  }
+}

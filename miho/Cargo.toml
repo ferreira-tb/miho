@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "4.0.0"
+version = "4.1.0"
 
 [package.description]
 workspace = true
@@ -20,6 +20,9 @@ workspace = true
 [package.edition]
 workspace = true
 
+[package.rust-version]
+workspace = true
+
 [package.readme]
 workspace = true
 
@@ -30,30 +33,57 @@ workspace = true
 workspace = true
 
 [dependencies]
-anyhow = "1.0"
-colored = "2.1"
-globset = "0.4"
-ignore = "0.4"
-inquire = "0.6"
-regex = "1.10"
-semver = "1.0"
+anyhow = "1.0.80"
+colored = "2.1.0"
+globset = "0.4.14"
+ignore = "0.4.22"
+inquire = "0.6.2"
+semver = "1.0.22"
+thiserror = "1.0.57"
 
-[dependencies.miho_derive]
-version = "4.0"
-path = "../miho_derive"
+[dependencies.mlua]
+version = "0.9.5"
+features = [
+    "lua54",
+    "vendored",
+]
+
+[dependencies.tabled]
+version = "0.15.0"
+features = ["ansi"]
+
+[dependencies.reqwest]
+version = "0.11.24"
+features = [
+    "brotli",
+    "gzip",
+    "json",
+]
+
+[dependencies.tokio]
+version = "1.36.0"
+features = [
+    "process",
+    "macros",
+    "rt-multi-thread",
+]
 
 [dependencies.clap]
-version = "4.4"
+version = "4.5.1"
 features = ["derive"]
 
 [dependencies.serde]
-version = "1.0"
+version = "1.0.197"
 features = ["derive"]
 
 [dependencies.serde_json]
-version = "1.0"
+version = "1.0.114"
 features = ["preserve_order"]
 
 [dependencies.toml]
-version = "0.8"
+version = "0.8.10"
 features = ["preserve_order"]
+
+[dependencies.miho_derive]
+version = "4.1"
+path = "../miho_derive"
