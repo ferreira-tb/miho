@@ -9,8 +9,18 @@ pub enum Agent {
   Cargo,
   Npm,
   Pnpm,
-  Tauri,
-  Yarn,
+  Tauri
+}
+
+impl Agent {
+  pub fn lockfile(&self) -> Option<&str> {
+    match self {
+      Self::Cargo => Some("Cargo.lock"),
+      Self::Npm => Some("package-lock.json"),
+      Self::Pnpm => Some("pnpm-lock.yaml"),
+      Self::Tauri => None
+    }
+  }
 }
 
 impl From<Agent> for &str {
@@ -20,7 +30,6 @@ impl From<Agent> for &str {
       Agent::Npm => "npm",
       Agent::Pnpm => "pnpm",
       Agent::Tauri => "tauri",
-      Agent::Yarn => "yarn",
     }
   }
 }

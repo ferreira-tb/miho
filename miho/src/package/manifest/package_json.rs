@@ -43,7 +43,6 @@ impl Handler for PackageJson {
   fn agent(&self) -> Agent {
     match &self.package_manager {
       Some(pm) if pm.starts_with("pnpm") => Agent::Pnpm,
-      Some(pm) if pm.starts_with("yarn") => Agent::Yarn,
       _ => Agent::Npm,
     }
   }

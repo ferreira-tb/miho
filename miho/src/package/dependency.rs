@@ -168,7 +168,7 @@ impl Tree {
           }
 
           // https://github.com/npm/registry/blob/master/docs/responses/package-metadata.md
-          Agent::Npm | Agent::Pnpm | Agent::Yarn => {
+          Agent::Npm | Agent::Pnpm => {
             let url = format!("{NPM_REGISTRY}/{}", dependency.name);
             let response = client
               .get(&url)

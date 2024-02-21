@@ -15,4 +15,5 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo clippy -- -D warnings
       - run: cargo test
-      - run: cargo publish
+      - run: cargo publish -p miho_derive
+      - run: cargo publish -p miho
