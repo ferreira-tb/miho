@@ -1,6 +1,6 @@
 miho.task = {
-  cargo = "cargo --version",
-  rustc = "rustc --version",
+  foo = "cargo --version",
+  bar = "rustc --version",
   task_a = "cmd /C echo task_a",
   task_b = "cmd /C echo task_b",
   task_c = "cmd /C echo task_c",

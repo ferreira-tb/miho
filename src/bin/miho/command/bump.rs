@@ -70,8 +70,7 @@ impl super::Command for Bump {
       bail!("{}", "no valid package found".bold().red());
     }
 
-    RELEASE.set(self.release()?).unwrap();
-
+    self.set_release()?;
     preview(&packages);
 
     if self.no_ask {
@@ -123,7 +122,7 @@ impl Bump {
     Ok(())
   }
 
-  fn release(&self) -> Result<Release> {
+  fn set_release(&self) -> Result<()> {
     let mut parser = Release::parser();
 
     if let Some(pre) = self.pre.as_deref() {
@@ -136,8 +135,9 @@ impl Bump {
 
     let release = self.release.as_deref().unwrap();
     let release = parser.parse(release)?;
+    RELEASE.set(release).unwrap();
 
-    Ok(release)
+    Ok(())
   }
 }
 
@@ -172,7 +172,7 @@ fn prompt_single(package: Package) -> Result<bool> {
 
 fn prompt_many(packages: Vec<Package>) -> Result<bool> {
   let options = vec![Choice::All, Choice::Some, Choice::None];
-  let response = Select::new("Select what to bump.", options).prompt()?;
+  let response = Select::new("Bump packages?", options).prompt()?;
 
   match response {
     Choice::All => {
@@ -192,9 +192,14 @@ fn prompt_many(packages: Vec<Package>) -> Result<bool> {
       let message = "Select the packages to bump.";
       let packages: Vec<Wrapper> = packages.into_iter().map(Wrapper).collect();
       let packages = MultiSelect::new(message, packages).prompt()?;
-      bump_all(packages.into_iter().map(|p| p.0).collect())?;
 
-      Ok(true)
+      if packages.is_empty() {
+        println!("{}", "no package selected".truecolor(105, 105, 105));
+        Ok(false)
+      } else {
+        bump_all(packages.into_iter().map(|p| p.0).collect())?;
+        Ok(true)
+      }
     }
     Choice::None => Ok(false),
   }

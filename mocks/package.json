@@ -2,7 +2,7 @@
   "name": "package-json",
   "version": "3.1.205",
   "dependencies": {
-    "vue": "^3.4.17"
+    "vue": "^3.4.0"
   },
   "devDependencies": {
     "vite": "^4.0.0"

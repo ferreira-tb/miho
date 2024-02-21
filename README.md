@@ -48,15 +48,15 @@ Given the following configuration file:
 -- .config/miho.lua
 
 miho.task = {
-  cargo = 'cargo --version',
-  rustc = 'rustc --version',
+  foo = 'cargo --version',
+  bar = 'rustc --version',
 }
 ```
 
-You can run the `cargo` and `rustc` tasks with the command:
+You can run the `foo` and `bar` tasks with the command:
 
 ```sh
-miho run cargo rustc
+miho run foo bar
 ```
 
 ### Update

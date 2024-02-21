@@ -1,13 +1,16 @@
+use super::Choice;
 use anyhow::{bail, Result};
 use clap::Args;
 use colored::Colorize;
-use miho::package::dependency::{self, Tree};
+use inquire::{MultiSelect, Select};
+use miho::package::dependency::{self, Dependency, Tree};
 use miho::package::Package;
 use miho::release::Release;
 use miho::search_packages;
 use miho::version::{Comparator, ComparatorExt};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, OnceLock};
+use std::{fmt, mem};
 use tokio::task::JoinSet;
 
 static RELEASE: OnceLock<Option<Release>> = OnceLock::new();
@@ -43,7 +46,7 @@ impl super::Command for Update {
       bail!("{}", "no valid package found".bold().red());
     }
 
-    RELEASE.set(self.release()).unwrap();
+    self.set_release();
     let trees = self.fetch(packages).await?;
 
     if trees.is_empty() {
@@ -56,7 +59,7 @@ impl super::Command for Update {
     if self.no_ask {
       update_all(trees)?;
     } else {
-      prompt(trees);
+      prompt(trees)?;
     }
 
     Ok(())
@@ -64,11 +67,13 @@ impl super::Command for Update {
 }
 
 impl Update {
-  fn release(&self) -> Option<Release> {
-    self.release.as_deref().and_then(|release| {
+  fn set_release(&self) {
+    let release = self.release.as_deref().and_then(|release| {
       let release = Release::parser().parse(release).ok();
       release.filter(Release::is_stable)
-    })
+    });
+
+    RELEASE.set(release).unwrap();
   }
 
   async fn fetch(&self, packages: Vec<Package>) -> Result<Vec<(Package, Tree)>> {
@@ -133,8 +138,49 @@ fn update_all(trees: Vec<(Package, Tree)>) -> Result<()> {
     .try_for_each(|(package, tree)| package.update(tree, release))
 }
 
-fn prompt(_trees: Vec<(Package, Tree)>) {
-  unimplemented!()
+fn prompt(mut trees: Vec<(Package, Tree)>) -> Result<()> {
+  let options = vec![Choice::All, Choice::Some, Choice::None];
+  let response = Select::new("Update dependencies?", options).prompt()?;
+
+  match response {
+    Choice::All => {
+      update_all(trees)?;
+      Ok(())
+    }
+    Choice::Some => {
+      struct Wrapper(Dependency);
+
+      impl fmt::Display for Wrapper {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+          write!(f, "{}", self.0.name)
+        }
+      }
+
+      for (package, tree) in &mut trees {
+        let message = display_package(package);
+        let dependencies = mem::take(&mut tree.dependencies);
+        let dependencies: Vec<Wrapper> = dependencies.into_iter().map(Wrapper).collect();
+
+        let length = dependencies.len();
+        let dependencies = MultiSelect::new(&message, dependencies)
+          .with_default(&((0..length).collect::<Vec<_>>()))
+          .prompt()?;
+
+        tree.dependencies = dependencies.into_iter().map(|d| d.0).collect();
+      }
+
+      trees.retain(|(_, tree)| !tree.dependencies.is_empty());
+
+      if trees.is_empty() {
+        println!("{}", "no dependencies selected".truecolor(105, 105, 105));
+        Ok(())
+      } else {
+        update_all(trees)?;
+        Ok(())
+      }
+    }
+    Choice::None => Ok(()),
+  }
 }
 
 fn preview(trees: &[(Package, Tree)]) {
@@ -177,18 +223,8 @@ fn preview(trees: &[(Package, Tree)]) {
       continue;
     }
 
-    let header = format!(
-      "[ {} ] {}",
-      package
-        .agent()
-        .to_string()
-        .to_uppercase()
-        .bright_magenta()
-        .bold(),
-      package.name.bright_yellow().bold()
-    );
-
     let mut table = builder.build();
+    let header = display_package(package);
     table.with(Style::blank()).with(Panel::header(header));
 
     let version_col = Segment::new(.., 2..3);
@@ -210,4 +246,17 @@ fn preview(trees: &[(Package, Tree)]) {
 
     println!("{table}");
   }
+}
+
+fn display_package(package: &Package) -> String {
+  format!(
+    "[ {} ] {}",
+    package
+      .agent()
+      .to_string()
+      .to_uppercase()
+      .bright_magenta()
+      .bold(),
+    package.name.bright_yellow().bold()
+  )
 }
