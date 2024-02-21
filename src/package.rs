@@ -89,10 +89,10 @@ impl Package {
   }
 
   pub fn update(self, tree: Tree, release: &Option<Release>) -> Result<()> {
-    let dependencies: Vec<dependency::Update> = tree
+    let dependencies: Vec<dependency::Target> = tree
       .dependencies
       .into_iter()
-      .filter_map(|dep| dep.into_update(release))
+      .filter_map(|dep| dep.into_target(release))
       .collect();
 
     self.manifest.update(&self, dependencies)

@@ -3,7 +3,7 @@ use anyhow::{bail, Result};
 use clap::Args;
 use colored::Colorize;
 use inquire::{MultiSelect, Select};
-use miho::package::dependency::{self, Dependency, Tree};
+use miho::package::dependency::{Dependency, Tree};
 use miho::package::Package;
 use miho::release::Release;
 use miho::search_packages;
@@ -20,6 +20,10 @@ pub struct Update {
   /// Type of the release.
   release: Option<String>,
 
+  /// Dependencies to update.
+  #[arg(short = 'D', long, value_name = "DEPENDENCY")]
+  dependency: Option<Vec<String>>,
+
   /// Do not ask for consent before updating.
   #[arg(short = 'k', long)]
   no_ask: bool,
@@ -32,7 +36,7 @@ pub struct Update {
   #[arg(short = 'p', long, value_name = "PATH", default_value = ".")]
   path: Option<Vec<PathBuf>>,
 
-  /// Whether to include peer dependencies.
+  /// Whether to only update peer dependencies.
   #[arg(long)]
   peer: bool,
 }
@@ -120,12 +124,18 @@ impl Update {
   }
 
   fn filter_dependencies(&self, tree: &mut Tree) {
+    let release = RELEASE.get().unwrap();
+    let chosen_deps = self.dependency.as_deref().unwrap_or_default();
+
     tree.dependencies.retain(|dependency| {
-      if dependency.kind == dependency::Kind::Peer && !self.peer {
+      if !chosen_deps.is_empty() && !chosen_deps.contains(&dependency.name) {
         return false;
       }
 
-      let release = RELEASE.get().unwrap();
+      if self.peer && !dependency.is_peer() {
+        return false;
+      }
+
       dependency.target_cmp(release).is_some()
     });
   }

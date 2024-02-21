@@ -55,7 +55,7 @@ impl Handler for TauriConfJson {
     self.product_name.as_str()
   }
 
-  fn update(&self, _package: &Package, _batch: Vec<dependency::Update>) -> Result<()> {
+  fn update(&self, _: &Package, _: Vec<dependency::Target>) -> Result<()> {
     Err(anyhow!("{} does not support dependencies", Self::FILENAME))
   }
 

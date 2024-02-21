@@ -37,8 +37,10 @@ macro_rules! search_packages {
   }};
 
   ($path:expr, $names:expr) => {{
+    let names = $names;
     $crate::package::Package::search($path).map(|mut packages| {
-      if let Some(names) = $names {
+      if matches!(names, Some(n) if !n.is_empty()) {
+        let names = names.unwrap();
         packages.retain(|package| names.contains(&package.name));
       }
 

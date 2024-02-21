@@ -24,6 +24,10 @@ pub struct Dependency {
 }
 
 impl Dependency {
+  pub fn is_peer(&self) -> bool {
+    self.kind == Kind::Peer
+  }
+
   #[must_use]
   pub fn latest(&self) -> Option<&Version> {
     self
@@ -57,11 +61,11 @@ impl Dependency {
   }
 
   #[must_use]
-  pub fn into_update(self, release: &Option<Release>) -> Option<Update> {
-    let target = self.target_cmp(release);
-    matches!(target, Some(ref t) if *t != self.comparator).then(|| Update {
+  pub fn into_target(self, release: &Option<Release>) -> Option<Target> {
+    let comparator = self.target_cmp(release);
+    matches!(comparator, Some(ref t) if *t != self.comparator).then(|| Target {
       dependency: self,
-      target: target.unwrap(),
+      comparator: comparator.unwrap(),
     })
   }
 }
@@ -248,7 +252,7 @@ impl Ord for Kind {
 }
 
 #[derive(Debug)]
-pub struct Update {
+pub struct Target {
   pub dependency: Dependency,
-  pub target: Comparator,
+  pub comparator: Comparator,
 }

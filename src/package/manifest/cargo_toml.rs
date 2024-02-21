@@ -87,11 +87,11 @@ impl Handler for CargoToml {
     self.package.name.as_str()
   }
 
-  fn update(&self, package: &Package, batch: Vec<dependency::Update>) -> Result<()> {
+  fn update(&self, package: &Package, batch: Vec<dependency::Target>) -> Result<()> {
     let mut manifest = CargoToml::read_as_value(&package.path)?;
 
-    for update in batch {
-      let key = match update.dependency.kind {
+    for target in batch {
+      let key = match target.dependency.kind {
         dependency::Kind::Normal => "dependencies",
         dependency::Kind::Development => "dev-dependencies",
         dependency::Kind::Build => "build-dependencies",
@@ -101,18 +101,18 @@ impl Handler for CargoToml {
       let version = manifest
         .get_mut(key)
         .and_then(Value::as_table_mut)
-        .and_then(|deps| deps.get_mut(&update.dependency.name));
+        .and_then(|deps| deps.get_mut(&target.dependency.name));
 
       if let Some(value) = version {
-        let mut target = update.target.to_string();
-        if target.starts_with('^') {
-          target.remove(0);
+        let mut comparator = target.comparator.to_string();
+        if comparator.starts_with('^') {
+          comparator.remove(0);
         }
 
         if value.is_str() {
-          *value = Value::String(target);
+          *value = Value::String(comparator);
         } else if value.is_table() {
-          value["version"] = Value::String(target);
+          value["version"] = Value::String(comparator);
         }
       }
     }

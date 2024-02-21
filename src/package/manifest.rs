@@ -32,7 +32,7 @@ pub trait Handler {
   fn bump(&self, package: &Package, new_version: Version) -> Result<()>;
   fn filename(&self) -> &str;
   fn name(&self) -> &str;
-  fn update(&self, package: &Package, batch: Vec<dependency::Update>) -> Result<()>;
+  fn update(&self, package: &Package, batch: Vec<dependency::Target>) -> Result<()>;
   fn version(&self) -> Result<Version>;
 
   fn dependency_tree(&self) -> dependency::Tree {
