@@ -2,14 +2,6 @@
 name = "miho_derive"
 version = "4.1.0"
 
-[lib]
-proc-macro = true
-
-[dependencies]
-quote = "1.0"
-syn = "2.0"
-proc-macro2 = "1.0"
-
 [package.description]
 workspace = true
 
@@ -39,3 +31,11 @@ workspace = true
 
 [package.categories]
 workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1.0.35"
+syn = "2.0.50"
+proc-macro2 = "1.0.78"

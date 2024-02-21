@@ -20,7 +20,10 @@ pub fn impl_commit(ast: &DeriveInput) -> TokenStream {
           self.commit_message.take()
         };
 
-        let message = message.as_deref().map_or_else(|| default_message, str::trim);
+        let message = match message.as_deref().map(str::trim) {
+          Some(m) if !m.is_empty() => m,
+          _ => default_message,
+        };
 
         let mut commit = miho::git::Commit::new(message);
         commit.all();

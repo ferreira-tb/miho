@@ -67,13 +67,18 @@ Update your dependencies.
 miho update [OPTIONS] [RELEASE]
 ```
 
-|    Options     | Alias | Description                               |
-| :------------: | :---- | :---------------------------------------- |
-| `--dependency` | `-D`  | Dependencies to update.                   |
-|   `--no-ask`   | `-k`  | Do not ask for consent before updating.   |
-|  `--package`   | `-P`  | Packages to update.                       |
-|    `--path`    | `-p`  | Where to search for packages.             |
-|    `--peer`    | none  | Whether to only update peer dependencies. |
+|      Options       | Alias | Description                                        |
+| :----------------: | :---- | :------------------------------------------------- |
+|      `--add`       | `-a`  | Include untracked files with `git add <PATHSPEC>`. |
+| `--commit-message` | `-m`  | Message of the commit.                             |
+|   `--dependency`   | `-D`  | Dependencies to update.                            |
+|     `--no-ask`     | `-k`  | Do not ask for consent before updating.            |
+|   `--no-commit`    | none  | Do not commit the modified files.                  |
+|    `--no-push`     | none  | Do not push the commit.                            |
+|   `--no-verify`    | `-n`  | Bypass `pre-commit` and `commit-msg` hooks.        |
+|    `--package`     | `-P`  | Packages to update.                                |
+|      `--path`      | `-p`  | Where to search for packages.                      |
+|      `--peer`      | none  | Whether to only update peer dependencies.          |
 
 ## License
 
