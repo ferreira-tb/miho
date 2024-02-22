@@ -1,10 +1,8 @@
 use super::Git;
-use crate::{git_output, git_spawn};
-use anyhow::Result;
-use std::process::{ExitStatus, Output, Stdio};
 use tokio::process::Command;
 
 /// <https://git-scm.com/docs/git-add>
+#[derive(miho_derive::Git)]
 pub struct Add {
   command: Command,
   args: Vec<String>,
@@ -18,25 +16,5 @@ impl Add {
       command: Command::new("git"),
       args: vec!["add".into(), pathspec.into()],
     }
-  }
-}
-
-impl Git for Add {
-  fn stderr(&mut self, cfg: Stdio) -> &mut Self {
-    self.command.stderr(cfg);
-    self
-  }
-
-  fn stdout(&mut self, cfg: Stdio) -> &mut Self {
-    self.command.stdout(cfg);
-    self
-  }
-
-  async fn spawn(mut self) -> Result<ExitStatus> {
-    git_spawn!(self.command, &self.args)
-  }
-
-  async fn output(mut self) -> Result<Output> {
-    git_output!(self.command, &self.args)
   }
 }

@@ -1,4 +1,4 @@
-use super::{Choice, CommitFromCommand};
+use super::{Choice, Commit};
 use anyhow::{bail, Result};
 use clap::Args;
 use colored::Colorize;
@@ -8,7 +8,6 @@ use miho::package::Package;
 use miho::release::Release;
 use miho::search_packages;
 use miho::version::{Comparator, ComparatorExt};
-use miho_derive::Commit;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, OnceLock};
 use std::{fmt, mem};
@@ -16,7 +15,7 @@ use tokio::task::JoinSet;
 
 static RELEASE: OnceLock<Option<Release>> = OnceLock::new();
 
-#[derive(Debug, Args, Commit)]
+#[derive(Debug, Args, miho_derive::Commit)]
 pub struct Update {
   /// Type of the release.
   release: Option<String>,

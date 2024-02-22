@@ -1,4 +1,5 @@
 mod commit;
+mod git;
 
 use proc_macro::TokenStream;
 
@@ -6,4 +7,10 @@ use proc_macro::TokenStream;
 pub fn commit_derive(input: TokenStream) -> TokenStream {
   let ast = syn::parse(input).unwrap();
   commit::impl_commit(&ast)
+}
+
+#[proc_macro_derive(Git)]
+pub fn git_derive(input: TokenStream) -> TokenStream {
+  let ast = syn::parse(input).unwrap();
+  git::impl_git(&ast)
 }

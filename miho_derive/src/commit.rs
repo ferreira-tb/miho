@@ -6,7 +6,7 @@ pub fn impl_commit(ast: &DeriveInput) -> TokenStream {
   let name = &ast.ident;
 
   let gen = quote! {
-    impl CommitFromCommand for #name {
+    impl crate::command::Commit for #name {
       async fn commit(&mut self, default_message: &str) -> anyhow::Result<()> {
         use miho::git::Git;
 

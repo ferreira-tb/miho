@@ -49,7 +49,7 @@ macro_rules! search_packages {
   }};
 }
 
-/// Wrap [tokio::process::Command], executing `cmd` as the program if the current OS is Windows.
+/// Wrap [`tokio::process::Command`], executing `cmd` as the program if the current OS is Windows.
 ///
 /// This is only useful in some very specific cases.
 #[macro_export]

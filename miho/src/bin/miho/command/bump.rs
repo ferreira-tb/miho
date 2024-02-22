@@ -1,4 +1,4 @@
-use super::{Choice, CommitFromCommand};
+use super::{Choice, Commit};
 use anyhow::{bail, Result};
 use clap::Args;
 use colored::Colorize;
@@ -7,14 +7,13 @@ use miho::package::Package;
 use miho::release::Release;
 use miho::search_packages;
 use miho::version::VersionExt;
-use miho_derive::Commit;
 use std::fmt;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
 static RELEASE: OnceLock<Release> = OnceLock::new();
 
-#[derive(Debug, Args, Commit)]
+#[derive(Debug, Args, miho_derive::Commit)]
 pub struct Bump {
   /// Type of the release.
   #[arg(default_value = "patch")]

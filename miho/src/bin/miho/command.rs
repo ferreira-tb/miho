@@ -13,7 +13,7 @@ pub trait Command {
   async fn execute(self) -> Result<()>;
 }
 
-trait CommitFromCommand: Command {
+pub trait Commit: Command {
   fn commit(&mut self, default_message: &str) -> impl Future<Output = Result<()>> + Send;
 }
 
