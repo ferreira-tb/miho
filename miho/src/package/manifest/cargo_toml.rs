@@ -87,7 +87,7 @@ impl Handler for CargoToml {
     self.package.name.as_str()
   }
 
-  fn update(&self, package: &Package, batch: Vec<dependency::Target>) -> Result<()> {
+  fn update(&self, package: &Package, batch: &[dependency::Target]) -> Result<()> {
     let mut manifest = CargoToml::read_as_value(&package.path)?;
 
     for target in batch {

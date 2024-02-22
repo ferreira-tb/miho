@@ -82,9 +82,9 @@ impl super::Command for Update {
     preview(&trees);
 
     if self.no_ask {
-      update_all(trees)?;
+      update_all(trees).await?;
     } else {
-      let should_continue = prompt(trees)?;
+      let should_continue = prompt(trees).await?;
       if !should_continue {
         return Ok(());
       }
@@ -169,20 +169,22 @@ impl Update {
   }
 }
 
-fn update_all(trees: Vec<(Package, Tree)>) -> Result<()> {
+async fn update_all(trees: Vec<(Package, Tree)>) -> Result<()> {
   let release = RELEASE.get().unwrap();
-  trees
-    .into_iter()
-    .try_for_each(|(package, tree)| package.update(tree, release))
+  for (package, tree) in trees {
+    package.update(tree, release).await?;
+  }
+
+  Ok(())
 }
 
-fn prompt(mut trees: Vec<(Package, Tree)>) -> Result<bool> {
+async fn prompt(mut trees: Vec<(Package, Tree)>) -> Result<bool> {
   let options = vec![Choice::All, Choice::Some, Choice::None];
   let choice = Select::new("Update dependencies?", options).prompt()?;
 
   match choice {
     Choice::All => {
-      update_all(trees)?;
+      update_all(trees).await?;
       Ok(true)
     }
     Choice::Some => {
@@ -213,7 +215,7 @@ fn prompt(mut trees: Vec<(Package, Tree)>) -> Result<bool> {
         println!("{}", "no dependencies selected".truecolor(105, 105, 105));
         Ok(false)
       } else {
-        update_all(trees)?;
+        update_all(trees).await?;
         Ok(true)
       }
     }

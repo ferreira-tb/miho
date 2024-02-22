@@ -9,16 +9,28 @@ pub enum Agent {
   Cargo,
   Npm,
   Pnpm,
-  Tauri
+  Tauri,
 }
 
 impl Agent {
+  pub fn is_cargo(&self) -> bool {
+    *self == Agent::Cargo
+  }
+
+  pub fn is_node(&self) -> bool {
+    matches!(self, Agent::Npm | Agent::Pnpm)
+  }
+
+  pub fn is_tauri(&self) -> bool {
+    *self == Agent::Tauri
+  }
+
   pub fn lockfile(&self) -> Option<&str> {
     match self {
       Self::Cargo => Some("Cargo.lock"),
       Self::Npm => Some("package-lock.json"),
       Self::Pnpm => Some("pnpm-lock.yaml"),
-      Self::Tauri => None
+      Self::Tauri => None,
     }
   }
 }

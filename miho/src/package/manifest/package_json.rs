@@ -83,7 +83,7 @@ impl Handler for PackageJson {
     self.name.as_str()
   }
 
-  fn update(&self, package: &Package, batch: Vec<dependency::Target>) -> Result<()> {
+  fn update(&self, package: &Package, batch: &[dependency::Target]) -> Result<()> {
     let mut manifest = PackageJson::read_as_value(&package.path)?;
 
     for target in batch {
@@ -96,7 +96,7 @@ impl Handler for PackageJson {
 
       if let Some(deps) = manifest.get_mut(key).and_then(Value::as_object_mut) {
         let comparator = Value::String(target.comparator.to_string());
-        deps.insert(target.dependency.name, comparator);
+        deps.insert(target.dependency.name.clone(), comparator);
       }
     }
 

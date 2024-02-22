@@ -3,15 +3,16 @@ pub mod dependency;
 pub mod manifest;
 
 use crate::release::Release;
-use crate::return_if_ne;
 use crate::version::{Version, VersionExt};
+use crate::{return_if_ne, win_cmd};
 pub use agent::Agent;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use dependency::Tree;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
 use std::cmp::Ordering;
 use std::path::{Path, PathBuf};
+use tokio::process::Command;
 
 pub struct Package {
   pub name: String,
@@ -88,14 +89,52 @@ impl Package {
     self.manifest.filename()
   }
 
-  pub fn update(self, tree: Tree, release: &Option<Release>) -> Result<()> {
-    let dependencies: Vec<dependency::Target> = tree
+  pub fn path_as_str(&self) -> Result<&str> {
+    self
+      .path
+      .to_str()
+      .ok_or_else(|| anyhow!("invalid path: {}", self.path.display()))
+  }
+
+  pub async fn update(self, tree: Tree, release: &Option<Release>) -> Result<()> {
+    let targets: Vec<dependency::Target> = tree
       .dependencies
       .into_iter()
       .filter_map(|dep| dep.into_target(release))
       .collect();
 
-    self.manifest.update(&self, dependencies)
+    self.manifest.update(&self, &targets)?;
+
+    let agent = self.agent();
+
+    if agent.is_cargo() {
+      Command::new("cargo")
+        .arg("update")
+        .args(targets.iter().map(|t| &t.dependency.name))
+        .args(["--manifest-path", self.path_as_str()?])
+        .spawn()?
+        .wait()
+        .await?;
+    } else if agent.is_node() {
+      let Some(parent_dir) = self.path.parent() else {
+        return Ok(());
+      };
+
+      let lockfile = agent.lockfile().unwrap();
+      let lockfile = parent_dir.join(lockfile);
+
+      if let Ok(true) = lockfile.try_exists() {
+        let program: &str = agent.into();
+        win_cmd!(program)
+          .arg("install")
+          .current_dir(parent_dir)
+          .spawn()?
+          .wait()
+          .await?;
+      }
+    }
+
+    Ok(())
   }
 }
 
