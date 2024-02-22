@@ -2,12 +2,14 @@ use super::{Choice, Commit};
 use anyhow::{bail, Result};
 use clap::Args;
 use colored::Colorize;
+use crossterm::{cursor, terminal, ExecutableCommand};
 use inquire::{MultiSelect, Select};
 use miho::package::dependency::{Dependency, Tree};
 use miho::package::Package;
 use miho::release::Release;
 use miho::search_packages;
 use miho::version::{Comparator, ComparatorExt};
+use std::io::{self, Write};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, OnceLock};
 use std::{fmt, mem};
@@ -108,18 +110,47 @@ impl Update {
   }
 
   async fn fetch(&self, packages: Vec<Package>) -> Result<Vec<(Package, Tree)>> {
-    let mut set: JoinSet<Result<()>> = JoinSet::new();
-    let trees = Vec::with_capacity(packages.len());
+    let package_amount = packages.len();
+    let trees: Vec<(Package, Tree)> = Vec::with_capacity(package_amount);
     let trees = Arc::new(Mutex::new(trees));
+
+    let mut set: JoinSet<Result<()>> = JoinSet::new();
+    let mut stdout = io::stdout();
+
+    macro_rules! update_progress {
+      ($stdout:expr, $amount:expr) => {
+        let progress = format!("({}/{})", $amount, package_amount);
+        writeln!(
+          $stdout,
+          "{} {}",
+          "fetching dependencies...".bright_cyan(),
+          progress.truecolor(105, 105, 105)
+        )?;
+
+        $stdout.flush()?;
+      };
+    }
+
+    update_progress!(&mut stdout, 0);
+
+    let stdout = Arc::new(Mutex::new(stdout));
 
     for package in packages {
       let trees = Arc::clone(&trees);
+      let stdout = Arc::clone(&stdout);
+
       set.spawn(async move {
         let mut tree = package.dependency_tree();
         tree.fetch().await?;
 
         let mut trees = trees.lock().unwrap();
         trees.push((package, tree));
+
+        let mut stdout = stdout.lock().unwrap();
+        stdout.execute(cursor::MoveUp(1))?;
+        stdout.execute(terminal::Clear(terminal::ClearType::FromCursorDown))?;
+
+        update_progress!(&mut stdout, trees.len());
 
         Ok(())
       });
@@ -128,6 +159,10 @@ impl Update {
     while let Some(result) = set.join_next().await {
       result??;
     }
+
+    let mut stdout = stdout.lock().unwrap();
+    stdout.execute(cursor::MoveUp(1))?;
+    stdout.execute(terminal::Clear(terminal::ClearType::FromCursorDown))?;
 
     let trees = Arc::into_inner(trees)
       .unwrap()
