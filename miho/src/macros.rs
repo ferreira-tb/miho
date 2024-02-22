@@ -62,7 +62,7 @@ macro_rules! win_cmd {
     };
 
     if cfg!(windows) {
-      cmd.creation_flags(0x08000000).arg("/C").arg($program);
+      cmd.arg("/C").arg($program);
     };
 
     cmd

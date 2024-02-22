@@ -11,6 +11,7 @@ use dependency::Tree;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
 use std::cmp::Ordering;
+use std::env;
 use std::path::{Path, PathBuf};
 use tokio::process::Command;
 
@@ -116,21 +117,13 @@ impl Package {
         .wait()
         .await?;
     } else if agent.is_node() {
-      let Some(parent_dir) = self.path.parent() else {
-        return Ok(());
-      };
-
+      let cwd = env::current_dir()?;
       let lockfile = agent.lockfile().unwrap();
-      let lockfile = parent_dir.join(lockfile);
+      let lockfile = cwd.join(lockfile);
 
       if let Ok(true) = lockfile.try_exists() {
         let program: &str = agent.into();
-        win_cmd!(program)
-          .arg("install")
-          .current_dir(parent_dir)
-          .spawn()?
-          .wait()
-          .await?;
+        win_cmd!(program).arg("install").spawn()?.wait().await?;
       }
     }
 
