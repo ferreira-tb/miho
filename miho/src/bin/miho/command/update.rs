@@ -249,7 +249,7 @@ fn preview(trees: &[(Package, Tree)]) {
 
         if let Some(latest) = dependency.latest() {
           let latest_cmp = Comparator::from_version(latest, comparator.op);
-          if latest_cmp != target_cmp {
+          if latest_cmp.pre.is_empty() && latest_cmp != target_cmp {
             let latest = format!("({latest} available)");
             record.push(latest.truecolor(105, 105, 105).to_string());
           }
