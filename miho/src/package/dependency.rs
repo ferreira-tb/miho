@@ -9,7 +9,6 @@ use serde_json::Value;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
-use std::sync::Arc;
 use tokio::task::JoinSet;
 
 const CARGO_REGISTRY: &str = "https://crates.io/api/v1/crates";
@@ -139,12 +138,11 @@ impl Tree {
       .gzip(true)
       .build()?;
 
-    let client = Arc::new(client);
     let mut set = JoinSet::new();
 
     for mut dependency in &mut self.dependencies.drain(..) {
       let agent = self.agent.clone();
-      let client = Arc::clone(&client);
+      let client = client.clone();
 
       set.spawn(async move {
         dependency.versions = match agent {
