@@ -2,7 +2,7 @@ mod cargo_toml;
 mod package_json;
 mod tauri_conf_json;
 
-use super::dependency;
+use super::dependency::{self, Target};
 use super::{Agent, Package};
 use crate::version::Version;
 use anyhow::{anyhow, Result};
@@ -32,7 +32,7 @@ pub trait Handler {
   fn bump(&self, package: &Package, new_version: Version) -> Result<()>;
   fn filename(&self) -> &str;
   fn name(&self) -> &str;
-  fn update(&self, package: &Package, batch: &[dependency::Target]) -> Result<()>;
+  fn update(&self, package: &Package, batch: &[Target]) -> Result<()>;
   fn version(&self) -> Result<Version>;
 
   fn dependency_tree(&self) -> dependency::Tree {
@@ -48,10 +48,7 @@ pub enum Kind {
 }
 
 impl Kind {
-  pub(crate) fn read<P>(&self, path: P) -> Result<ManifestBox>
-  where
-    P: AsRef<Path>,
-  {
+  pub(crate) fn read<P: AsRef<Path>>(&self, path: P) -> Result<ManifestBox> {
     match self {
       Kind::CargoToml => CargoToml::read(path),
       Kind::PackageJson => PackageJson::read(path),

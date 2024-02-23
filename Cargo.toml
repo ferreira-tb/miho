@@ -12,5 +12,5 @@ license = "MIT"
 readme = "README.md"
 edition = "2021"
 rust-version = "1.76"
-keywords = ["miho", "repository", "lua"]
+keywords = ["lua", "miho", "repository"]
 categories = ["development-tools"]

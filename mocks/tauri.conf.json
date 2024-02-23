@@ -1,4 +1,6 @@
 {
-  "productName": "tauri-conf-json",
-  "version": "3.1.17"
+  "package": {
+    "productName": "tauri-conf-json",
+    "version": "3.1.18"
+  }
 }
