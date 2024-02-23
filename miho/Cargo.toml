@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "4.1.4"
+version = "4.1.5"
 
 [package.description]
 workspace = true
@@ -44,7 +44,10 @@ thiserror = "1.0.57"
 
 [dependencies.mlua]
 version = "0.9.5"
-features = ["lua54", "vendored"]
+features = [
+    "lua54",
+    "vendored",
+]
 
 [dependencies.tabled]
 version = "0.15.0"
@@ -52,11 +55,19 @@ features = ["ansi"]
 
 [dependencies.reqwest]
 version = "0.11.24"
-features = ["brotli", "gzip", "json"]
+features = [
+    "brotli",
+    "gzip",
+    "json",
+]
 
 [dependencies.tokio]
 version = "1.36.0"
-features = ["process", "macros", "rt-multi-thread"]
+features = [
+    "process",
+    "macros",
+    "rt-multi-thread",
+]
 
 [dependencies.clap]
 version = "4.5.1"
