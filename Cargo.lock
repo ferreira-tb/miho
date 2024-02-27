@@ -798,7 +798,7 @@ checksum = "523dc4f511e55ab87b694dc30d0f820d60906ef06413f93d4d7a1385599cc149"
 
 [[package]]
 name = "miho"
-version = "4.1.5"
+version = "4.1.6"
 dependencies = [
  "anyhow",
  "clap",
@@ -821,7 +821,7 @@ dependencies = [
 
 [[package]]
 name = "miho_derive"
-version = "4.1.5"
+version = "4.1.6"
 dependencies = [
  "proc-macro2",
  "quote",
