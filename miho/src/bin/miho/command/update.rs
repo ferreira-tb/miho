@@ -194,8 +194,12 @@ impl Update {
         return false;
       }
 
+      if self.peer {
+        return dependency.is_peer();
+      }
+      
       if dependency.is_peer() {
-        return self.peer;
+        return false;
       }
 
       dependency.target_cmp(release).is_some()
