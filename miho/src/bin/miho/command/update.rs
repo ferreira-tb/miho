@@ -194,11 +194,11 @@ impl Update {
         return false;
       }
 
-      if self.peer {
-        return dependency.is_peer();
+      if self.peer && !dependency.is_peer() {
+        return false;
       }
 
-      if dependency.is_peer() {
+      if !self.peer && dependency.is_peer() {
         return false;
       }
 
