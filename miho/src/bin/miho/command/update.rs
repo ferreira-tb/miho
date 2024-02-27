@@ -197,7 +197,7 @@ impl Update {
       if self.peer {
         return dependency.is_peer();
       }
-      
+
       if dependency.is_peer() {
         return false;
       }
@@ -239,9 +239,8 @@ async fn prompt(mut trees: Vec<(Package, Tree)>) -> Result<bool> {
         let dependencies = mem::take(&mut tree.dependencies);
         let dependencies: Vec<Wrapper> = dependencies.into_iter().map(Wrapper).collect();
 
-        let length = dependencies.len();
         let dependencies = MultiSelect::new(&message, dependencies)
-          .with_default(&((0..length).collect::<Vec<_>>()))
+          .with_all_selected_by_default()
           .prompt()?;
 
         tree.dependencies = dependencies.into_iter().map(|d| d.0).collect();
