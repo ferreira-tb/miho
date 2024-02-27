@@ -3,15 +3,15 @@ name = "cargo-toml"
 version = "2.2.40"
 
 [dependencies]
-semver = "1.0"
+semver = "1.0.22"
 thiserror = "1.0.57"
 
 [dependencies.clap]
-version = "4.5"
+version = "4.5.1"
 features = ["derive"]
 
 [dependencies.serde]
-version = "1.0"
+version = "1.0.197"
 features = ["derive"]
 
 [dependencies.miho]
