@@ -1,4 +1,4 @@
-local publish = 'cargo publish -p miho_derive && cargo publish -p miho'
+publish = 'cargo publish -p miho_derive && cargo publish -p miho'
 
 miho.task = {
   clippy = 'cargo clippy -- -D warnings',
