@@ -43,7 +43,7 @@ semver = "1.0.22"
 thiserror = "1.0.57"
 
 [dependencies.mlua]
-version = "0.9.5"
+version = "0.9.6"
 features = ["lua54", "vendored"]
 
 [dependencies.tabled]
