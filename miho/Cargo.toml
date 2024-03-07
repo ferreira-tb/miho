@@ -44,7 +44,10 @@ thiserror = "1.0.57"
 
 [dependencies.mlua]
 version = "0.9.6"
-features = ["lua54", "vendored"]
+features = [
+    "lua54",
+    "vendored",
+]
 
 [dependencies.tabled]
 version = "0.15.0"
@@ -52,14 +55,22 @@ features = ["ansi"]
 
 [dependencies.reqwest]
 version = "0.11.24"
-features = ["brotli", "gzip", "json"]
+features = [
+    "brotli",
+    "gzip",
+    "json",
+]
 
 [dependencies.tokio]
 version = "1.36.0"
-features = ["macros", "process", "rt-multi-thread"]
+features = [
+    "macros",
+    "process",
+    "rt-multi-thread",
+]
 
 [dependencies.clap]
-version = "4.5.1"
+version = "4.5.2"
 features = ["derive"]
 
 [dependencies.serde]

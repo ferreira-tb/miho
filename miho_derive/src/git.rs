@@ -7,6 +7,21 @@ pub fn impl_git(ast: &DeriveInput) -> TokenStream {
 
   let gen = quote! {
       impl Git for #name {
+        fn arg<A: AsRef<str>>(&mut self, arg: A) -> &mut Self {
+          self.args.push(arg.as_ref().to_owned());
+          self
+        }
+
+        fn args<I, A>(&mut self, args: I) -> &mut Self
+        where
+          I: IntoIterator<Item = A>,
+          A: AsRef<str>,
+        {
+          let args = args.into_iter().map(|arg| arg.as_ref().to_owned());
+          self.args.extend(args);
+          self
+        }
+
         fn stderr(&mut self, cfg: std::process::Stdio) -> &mut Self {
           self.command.stderr(cfg);
           self

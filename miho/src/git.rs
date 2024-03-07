@@ -1,17 +1,25 @@
 mod add;
 mod commit;
+mod diff;
 mod push;
 mod status;
 
 pub use add::Add;
 use anyhow::Result;
 pub use commit::Commit;
+pub use diff::Diff;
 pub use push::Push;
 pub use status::Status;
 use std::future::Future;
 use std::process::{ExitStatus, Output, Stdio};
 
 pub trait Git {
+  fn arg<A: AsRef<str>>(&mut self, arg: A) -> &mut Self;
+  fn args<I, A>(&mut self, args: I) -> &mut Self
+  where
+    I: IntoIterator<Item = A>,
+    A: AsRef<str>;
+
   fn stderr(&mut self, cfg: Stdio) -> &mut Self;
   fn stdout(&mut self, cfg: Stdio) -> &mut Self;
 
@@ -52,4 +60,29 @@ impl From<Flag> for String {
     let raw: &str = flag.into();
     String::from(raw)
   }
+}
+
+macro_rules! bail_on_error {
+  ($result:expr) => {
+    if !$result.status.success() {
+      let stderr = String::from_utf8_lossy(&$result.stderr).into_owned();
+      anyhow::bail!("{}", stderr);
+    }
+  };
+}
+
+pub async fn is_dirty() -> Result<bool> {
+  let diff = Diff::new().output().await?;
+  bail_on_error!(diff);
+
+  if !diff.stdout.is_empty() {
+    return Ok(true);
+  }
+
+  let output = Status::new().porcelain().output().await?;
+  bail_on_error!(output);
+
+  let is_empty = output.stdout.is_empty();
+
+  Ok(!is_empty)
 }
