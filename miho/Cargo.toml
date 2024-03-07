@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "4.2.0"
+version = "4.2.1"
 
 [package.description]
 workspace = true
@@ -86,5 +86,5 @@ version = "0.8.10"
 features = ["preserve_order"]
 
 [dependencies.miho_derive]
-version = "4.1.4"
+version = "4.2"
 path = "../miho_derive"
