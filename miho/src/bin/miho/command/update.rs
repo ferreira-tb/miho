@@ -5,14 +5,16 @@ use colored::Colorize;
 use crossterm::{cursor, terminal, ExecutableCommand};
 use inquire::{MultiSelect, Select};
 use miho::package::dependency::{Dependency, Tree};
-use miho::package::Package;
+use miho::package::{Agent, Package};
 use miho::release::Release;
-use miho::search_packages;
 use miho::version::{Comparator, ComparatorExt};
+use miho::{search_packages, win_cmd};
+use std::collections::HashSet;
 use std::io::{self, Write};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, OnceLock};
-use std::{fmt, mem};
+use std::{env, fmt, mem};
+use tokio::process::Command;
 use tokio::task::JoinSet;
 
 static RELEASE: OnceLock<Option<Release>> = OnceLock::new();
@@ -209,8 +211,25 @@ impl Update {
 
 async fn update_all(trees: Vec<(Package, Tree)>) -> Result<()> {
   let release = RELEASE.get().unwrap();
+  let agents: HashSet<Agent> = HashSet::from_iter(trees.iter().map(|(package, _)| package.agent()));
+
   for (package, tree) in trees {
     package.update(tree, release).await?;
+  }
+
+  if agents.contains(&Agent::Cargo) {
+    Command::new("cargo").arg("update").spawn()?.wait().await?;
+  }
+
+  if let Some(agent) = agents.iter().find(|a| a.is_node()) {
+    let cwd = env::current_dir()?;
+    let lockfile = agent.lockfile().unwrap();
+    let lockfile = cwd.join(lockfile);
+
+    if let Ok(true) = lockfile.try_exists() {
+      let program: &str = agent.clone().into();
+      win_cmd!(program).arg("install").spawn()?.wait().await?;
+    }
   }
 
   Ok(())

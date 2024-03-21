@@ -10,12 +10,6 @@ use std::path::Path;
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub struct TauriConfJson {
-  pub package: TauriPackage,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all(deserialize = "camelCase"))]
-pub struct TauriPackage {
   pub product_name: String,
   pub version: String,
 }
@@ -45,7 +39,7 @@ impl Handler for TauriConfJson {
 
   fn bump(&self, package: &Package, version: Version) -> Result<()> {
     let mut manifest = TauriConfJson::read_as_value(&package.path)?;
-    manifest["package"]["version"] = serde_json::Value::String(version.to_string());
+    manifest["version"] = serde_json::Value::String(version.to_string());
 
     let contents = serde_json::to_string_pretty(&manifest)?;
     fs::write(&package.path, contents)?;
@@ -58,7 +52,7 @@ impl Handler for TauriConfJson {
   }
 
   fn name(&self) -> &str {
-    self.package.product_name.as_str()
+    self.product_name.as_str()
   }
 
   fn update(&self, _: &Package, _: &[dependency::Target]) -> Result<()> {
@@ -66,6 +60,6 @@ impl Handler for TauriConfJson {
   }
 
   fn version(&self) -> Result<Version> {
-    Version::parse(&self.package.version).map_err(Into::into)
+    Version::parse(&self.version).map_err(Into::into)
   }
 }

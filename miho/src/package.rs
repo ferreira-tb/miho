@@ -3,17 +3,15 @@ pub mod dependency;
 pub mod manifest;
 
 use crate::release::Release;
+use crate::return_if_ne;
 use crate::version::{Version, VersionExt};
-use crate::{return_if_ne, win_cmd};
 pub use agent::Agent;
 use anyhow::{anyhow, Result};
 use dependency::Tree;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
 use std::cmp::Ordering;
-use std::env;
 use std::path::{Path, PathBuf};
-use tokio::process::Command;
 
 pub struct Package {
   pub name: String,
@@ -103,30 +101,7 @@ impl Package {
       .filter_map(|dep| dep.into_target(release))
       .collect();
 
-    self.manifest.update(&self, &targets)?;
-
-    let agent = self.agent();
-
-    if agent.is_cargo() {
-      Command::new("cargo")
-        .arg("update")
-        .args(targets.iter().map(|t| &t.dependency.name))
-        .args(["--manifest-path", self.path_as_str()?])
-        .spawn()?
-        .wait()
-        .await?;
-    } else if agent.is_node() {
-      let cwd = env::current_dir()?;
-      let lockfile = agent.lockfile().unwrap();
-      let lockfile = cwd.join(lockfile);
-
-      if let Ok(true) = lockfile.try_exists() {
-        let program: &str = agent.into();
-        win_cmd!(program).arg("install").spawn()?.wait().await?;
-      }
-    }
-
-    Ok(())
+    self.manifest.update(&self, &targets)
   }
 }
 

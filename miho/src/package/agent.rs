@@ -4,7 +4,7 @@ use std::fmt;
 /// Agent responsible for the manifest.
 ///
 /// This tipically represents the package manager used.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Agent {
   Cargo,
   Npm,

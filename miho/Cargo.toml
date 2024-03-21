@@ -33,14 +33,14 @@ workspace = true
 workspace = true
 
 [dependencies]
-anyhow = "1.0.80"
+anyhow = "1.0.81"
 colored = "2.1.0"
 crossterm = "0.27.0"
 globset = "0.4.14"
 ignore = "0.4.22"
-inquire = "0.7.0"
+inquire = "0.7.3"
 semver = "1.0.22"
-thiserror = "1.0.57"
+thiserror = "1.0.58"
 
 [dependencies.mlua]
 version = "0.9.6"
@@ -70,7 +70,7 @@ features = [
 ]
 
 [dependencies.clap]
-version = "4.5.2"
+version = "4.5.3"
 features = ["derive"]
 
 [dependencies.serde]
@@ -82,7 +82,7 @@ version = "1.0.114"
 features = ["preserve_order"]
 
 [dependencies.toml]
-version = "0.8.10"
+version = "0.8.12"
 features = ["preserve_order"]
 
 [dependencies.miho_derive]

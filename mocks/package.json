@@ -5,7 +5,7 @@
     "vue": "^3.4.21"
   },
   "devDependencies": {
-    "vite": "^4.5.2"
+    "vite": "^5.2.2"
   },
   "peerDependencies": {
     "manatsu": "^0.3.8"
