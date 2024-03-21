@@ -36,7 +36,7 @@ pub struct Bump {
   no_ask: bool,
 
   /// Do not commit the modified packages.
-  #[arg(long)]
+  #[arg(short = 't', long)]
   no_commit: bool,
 
   /// Do not push the commit.

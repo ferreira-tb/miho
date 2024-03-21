@@ -22,7 +22,7 @@ miho bump [OPTIONS] [RELEASE]
 |     `--build`      | none  | Build metadata.                                    |
 | `--commit-message` | `-m`  | Message of the commit.                             |
 |     `--no-ask`     | `-k`  | Do not ask for consent before bumping.             |
-|   `--no-commit`    | none  | Do not commit the modified files.                  |
+|   `--no-commit`    | `-t`  | Do not commit the modified files.                  |
 |    `--no-push`     | none  | Do not push the commit.                            |
 |   `--no-verify`    | `-n`  | Bypass `pre-commit` and `commit-msg` hooks.        |
 |    `--package`     | `-P`  | Packages to bump.                                  |
@@ -73,7 +73,7 @@ miho update [OPTIONS] [RELEASE]
 | `--commit-message` | `-m`  | Message of the commit.                             |
 |   `--dependency`   | `-D`  | Dependencies to update.                            |
 |     `--no-ask`     | `-k`  | Do not ask for consent before updating.            |
-|   `--no-commit`    | none  | Do not commit the modified files.                  |
+|   `--no-commit`    | `-t`  | Do not commit the modified files.                  |
 |    `--no-push`     | none  | Do not push the commit.                            |
 |   `--no-verify`    | `-n`  | Bypass `pre-commit` and `commit-msg` hooks.        |
 |    `--package`     | `-P`  | Packages to update.                                |

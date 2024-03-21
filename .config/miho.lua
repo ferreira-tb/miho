@@ -10,5 +10,5 @@ miho.task = {
 miho.task.mock = {
   bump = 'cargo run -- bump -p mocks --no-commit',
   run = 'cargo run -- run inner:mock -c ./mocks/miho.lua -P',
-  update = 'cargo run -- update major -p mocks -k',
+  update = 'cargo run -- update major -p mocks --no-commit',
 }
