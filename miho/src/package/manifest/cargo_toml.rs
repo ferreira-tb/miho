@@ -128,7 +128,6 @@ impl Handler for CargoToml {
   }
 }
 
-// Could we refactor this so less cloning is needed?
 fn parse_dependencies(deps: &HashMap<String, Value>) -> HashMap<String, String> {
   let mut dependencies = HashMap::with_capacity(deps.len());
   for (name, version) in deps {
@@ -145,7 +144,11 @@ fn parse_version(value: &Value) -> Option<&String> {
     return Some(version);
   }
 
-  if let Value::String(version) = &value["version"] {
+  let Some(version) = value.get("version") else {
+    return None;
+  };
+
+  if let Value::String(version) = version {
     // Doesn't include local dependencies.
     let path = value.get("path");
     if path.is_none() {
