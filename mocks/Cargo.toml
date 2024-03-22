@@ -1,6 +1,6 @@
 [package]
 name = "cargo-toml"
-version = "2.4.3"
+version = "2.4.4"
 
 [dependencies]
 semver = "1.0.22"

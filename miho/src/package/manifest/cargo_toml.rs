@@ -144,11 +144,7 @@ fn parse_version(value: &Value) -> Option<&String> {
     return Some(version);
   }
 
-  let Some(version) = value.get("version") else {
-    return None;
-  };
-
-  if let Value::String(version) = version {
+  if let Value::String(version) = value.get("version")? {
     // Doesn't include local dependencies.
     let path = value.get("path");
     if path.is_none() {
