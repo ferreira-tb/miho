@@ -1,6 +1,6 @@
 {
   "name": "package-json",
-  "version": "3.3.6",
+  "version": "3.3.8",
   "dependencies": {
     "vue": "^3.4.21"
   },
