@@ -3,7 +3,7 @@ mod update;
 
 use crate::prelude::*;
 pub use bump::Bump;
-use strum::{Display, EnumString, EnumIter};
+use strum::{Display, EnumIter, EnumString};
 pub use update::Update;
 
 pub trait Command {

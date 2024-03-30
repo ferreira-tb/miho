@@ -2,7 +2,7 @@ use crate::prelude::*;
 use strum::{AsRefStr, Display, EnumIs, EnumString};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, AsRefStr, Display, EnumString, EnumIs)]
-#[strum(serialize_all = "snake_case")]
+#[strum(serialize_all = "UPPERCASE")]
 pub enum Agent {
   Cargo,
   Npm,

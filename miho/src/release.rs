@@ -1,6 +1,8 @@
 use crate::prelude::*;
+use strum::EnumIs;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[allow(clippy::enum_variant_names)]
+#[derive(Clone, Debug, PartialEq, Eq, EnumIs)]
 pub enum Release {
   Major(BuildMetadata),
   Minor(BuildMetadata),
@@ -20,13 +22,11 @@ impl Release {
 
   #[must_use]
   pub fn is_stable(&self) -> bool {
-    matches!(
-      self,
-      Release::Major(_) | Release::Minor(_) | Release::Patch(_)
-    )
+    self.is_major() || self.is_minor() || self.is_patch()
   }
 }
 
+#[derive(Default)]
 pub struct Parser {
   prerelease: Prerelease,
   metadata: BuildMetadata,
@@ -68,11 +68,5 @@ impl Parser {
     };
 
     Ok(release)
-  }
-}
-
-impl Default for Parser {
-  fn default() -> Self {
-    Self::new()
   }
 }

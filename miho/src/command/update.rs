@@ -1,19 +1,19 @@
 use super::{Choice, Commit};
-use crate::package::dependency::{Dependency, Tree};
+use crate::package::dependency::{Dependency, DependencyTree};
 use crate::package::{Agent, Package};
 use crate::prelude::*;
 use crate::release::Release;
 use crate::version::ComparatorExt;
-use crate::{search_packages, win_cmd};
+use crate::win_cmd;
 use clap::Args;
 use colored::Colorize;
 use crossterm::{cursor, terminal, ExecutableCommand};
 use inquire::{MultiSelect, Select};
 use std::io::{self, Write};
-use strum::IntoEnumIterator;
 
 static RELEASE: OnceLock<Option<Release>> = OnceLock::new();
 
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Args, miho_derive::Commit)]
 pub struct Update {
   /// Type of the release.
@@ -63,7 +63,7 @@ pub struct Update {
 impl super::Command for Update {
   async fn execute(mut self) -> Result<()> {
     let path = self.path.as_deref().unwrap();
-    let packages = search_packages!(path, self.package.as_deref())?;
+    let packages = Package::search(path, self.package.as_deref())?;
 
     if packages.is_empty() {
       bail!("{}", "no valid package found".bold().red());
@@ -106,9 +106,9 @@ impl Update {
     RELEASE.set(release).unwrap();
   }
 
-  async fn fetch(&self, packages: Vec<Package>) -> Result<Vec<(Package, Tree)>> {
+  async fn fetch(&self, packages: Vec<Package>) -> Result<Vec<(Package, DependencyTree)>> {
     let package_amount = packages.len();
-    let trees: Vec<(Package, Tree)> = Vec::with_capacity(package_amount);
+    let trees: Vec<(Package, DependencyTree)> = Vec::with_capacity(package_amount);
     let trees = Arc::new(Mutex::new(trees));
 
     let mut set: JoinSet<Result<()>> = JoinSet::new();
@@ -182,7 +182,7 @@ impl Update {
     Ok(trees)
   }
 
-  fn filter_dependencies(&self, tree: &mut Tree) {
+  fn filter_dependencies(&self, tree: &mut DependencyTree) {
     let release = RELEASE.get().unwrap();
     let chosen_deps = self.dependency.as_deref().unwrap_or_default();
 
@@ -204,12 +204,12 @@ impl Update {
   }
 }
 
-async fn update_all(trees: Vec<(Package, Tree)>) -> Result<()> {
+async fn update_all(trees: Vec<(Package, DependencyTree)>) -> Result<()> {
   let release = RELEASE.get().unwrap();
-  let agents: HashSet<Agent> = HashSet::from_iter(trees.iter().map(|(package, _)| package.agent()));
+  let agents: HashSet<Agent> = trees.iter().map(|(package, _)| package.agent()).collect();
 
   for (package, tree) in trees {
-    package.update(tree, release).await?;
+    package.update(tree, release)?;
   }
 
   if agents.contains(&Agent::Cargo) {
@@ -222,7 +222,7 @@ async fn update_all(trees: Vec<(Package, Tree)>) -> Result<()> {
     let lockfile = cwd.join(lockfile);
 
     if let Ok(true) = lockfile.try_exists() {
-      let program = agent.to_string();
+      let program = agent.to_string().to_lowercase();
       win_cmd!(&program).arg("install").spawn()?.wait().await?;
     }
   }
@@ -230,7 +230,7 @@ async fn update_all(trees: Vec<(Package, Tree)>) -> Result<()> {
   Ok(())
 }
 
-async fn prompt(mut trees: Vec<(Package, Tree)>) -> Result<bool> {
+async fn prompt(mut trees: Vec<(Package, DependencyTree)>) -> Result<bool> {
   let options = Choice::iter().collect_vec();
   let choice = Select::new("Update dependencies?", options).prompt()?;
 
@@ -274,7 +274,7 @@ async fn prompt(mut trees: Vec<(Package, Tree)>) -> Result<bool> {
   }
 }
 
-fn preview(trees: &[(Package, Tree)]) {
+fn preview(trees: &[(Package, DependencyTree)]) {
   use tabled::builder::Builder;
   use tabled::settings::object::Segment;
   use tabled::settings::{Alignment, Modify, Panel, Style};

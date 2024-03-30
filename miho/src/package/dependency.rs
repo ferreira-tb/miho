@@ -15,7 +15,7 @@ const NPM_REGISTRY: &str = "https://registry.npmjs.org";
 pub struct Dependency {
   pub name: String,
   pub comparator: Comparator,
-  pub kind: Kind,
+  pub kind: DependencyKind,
   versions: Vec<Version>,
 }
 
@@ -84,12 +84,12 @@ impl Ord for Dependency {
 }
 
 #[derive(Debug)]
-pub struct Tree {
+pub struct DependencyTree {
   pub agent: Agent,
   pub dependencies: Vec<Dependency>,
 }
 
-impl Tree {
+impl DependencyTree {
   #[must_use]
   pub fn new(agent: Agent) -> Self {
     Self {
@@ -99,7 +99,7 @@ impl Tree {
   }
 
   /// Adds dependencies to the tree.
-  pub fn add<K, V>(&mut self, dependencies: &HashMap<K, V>, kind: Kind) -> &mut Self
+  pub fn add<K, V>(&mut self, dependencies: &HashMap<K, V>, kind: DependencyKind) -> &mut Self
   where
     K: AsRef<str>,
     V: AsRef<str>,
@@ -202,7 +202,7 @@ impl Tree {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, AsRefStr, Display, EnumIs, EnumString)]
 #[strum(serialize_all = "snake_case")]
-pub enum Kind {
+pub enum DependencyKind {
   Build,
   #[strum(to_string = "dev")]
   Development,
@@ -211,7 +211,7 @@ pub enum Kind {
   Peer,
 }
 
-impl Kind {
+impl DependencyKind {
   fn precedence(self) -> u8 {
     match self {
       Self::Normal => 0,
@@ -222,13 +222,13 @@ impl Kind {
   }
 }
 
-impl PartialOrd for Kind {
+impl PartialOrd for DependencyKind {
   fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
     Some(self.cmp(other))
   }
 }
 
-impl Ord for Kind {
+impl Ord for DependencyKind {
   fn cmp(&self, other: &Self) -> Ordering {
     self.precedence().cmp(&other.precedence())
   }

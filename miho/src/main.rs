@@ -1,3 +1,5 @@
+#![allow(clippy::module_name_repetitions)]
+
 mod command;
 pub(crate) mod git;
 mod macros;

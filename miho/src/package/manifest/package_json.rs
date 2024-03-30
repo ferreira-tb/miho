@@ -1,9 +1,8 @@
-use crate::package::dependency;
+use crate::package::dependency::{self, DependencyKind, DependencyTree};
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::{Agent, Package};
 use crate::prelude::*;
 use serde_json::Value;
-use std::fs;
 
 #[derive(Deserialize)]
 #[serde(rename_all(deserialize = "camelCase"))]
@@ -53,13 +52,13 @@ impl Handler for PackageJson {
     Ok(())
   }
 
-  fn dependency_tree(&self) -> dependency::Tree {
-    let mut tree = dependency::Tree::new(self.agent());
+  fn dependency_tree(&self) -> DependencyTree {
+    let mut tree = DependencyTree::new(self.agent());
 
     macro_rules! add {
       ($deps:expr, $kind:ident) => {
         if let Some(deps) = $deps {
-          tree.add(deps, dependency::Kind::$kind);
+          tree.add(deps, DependencyKind::$kind);
         }
       };
     }
@@ -84,10 +83,10 @@ impl Handler for PackageJson {
 
     for target in batch {
       let key = match target.dependency.kind {
-        dependency::Kind::Normal => "dependencies",
-        dependency::Kind::Development => "devDependencies",
-        dependency::Kind::Peer => "peerDependencies",
-        dependency::Kind::Build => continue,
+        DependencyKind::Normal => "dependencies",
+        DependencyKind::Development => "devDependencies",
+        DependencyKind::Peer => "peerDependencies",
+        DependencyKind::Build => continue,
       };
 
       if let Some(deps) = manifest.get_mut(key).and_then(Value::as_object_mut) {

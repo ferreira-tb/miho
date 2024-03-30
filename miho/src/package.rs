@@ -7,21 +7,22 @@ use crate::release::Release;
 use crate::return_if_ne;
 use crate::version::VersionExt;
 pub use agent::Agent;
-use dependency::Tree;
+use dependency::DependencyTree;
 use ignore::{DirEntry, WalkBuilder};
+use manifest::{ManifestBox, ManifestKind};
 
 pub struct Package {
   pub name: String,
   pub version: Version,
   pub path: PathBuf,
-  manifest: manifest::ManifestBox,
+  manifest: ManifestBox,
 }
 
 impl Package {
   /// Creates a representation of the package based on the manifest at `path`.
   pub fn new<P: AsRef<Path>>(path: P) -> Result<Self> {
     let path = path.as_ref();
-    let kind = manifest::Kind::try_from(path)?;
+    let kind = ManifestKind::try_from(path)?;
     let manifest = kind.read(path)?;
 
     let package = Self {
@@ -34,9 +35,13 @@ impl Package {
     Ok(package)
   }
 
-  pub fn search<P: AsRef<Path>>(path: &[P]) -> Result<Vec<Self>> {
+  pub fn search<P, S>(path: &[P], only: Option<&[S]>) -> Result<Vec<Self>>
+  where
+    P: AsRef<Path>,
+    S: AsRef<str>,
+  {
     let Some((first, other)) = path.split_first() else {
-      return Ok(Vec::default());
+      return Ok(Vec::new());
     };
 
     let mut walker = WalkBuilder::new(first);
@@ -45,7 +50,7 @@ impl Package {
       walker.add(path);
     }
 
-    let glob = build_globset();
+    let glob = build_globset()?;
     let mut packages = Vec::new();
 
     for entry in walker.build() {
@@ -57,6 +62,14 @@ impl Package {
           packages.push(package.unwrap());
         }
       }
+    }
+
+    if matches!(only, Some(o) if !o.is_empty()) {
+      let only = only.unwrap().iter().map(AsRef::as_ref).collect_vec();
+      packages = packages
+        .into_iter()
+        .filter(|package| only.contains(&package.name.as_str()))
+        .collect_vec();
     }
 
     packages.sort_unstable();
@@ -75,11 +88,11 @@ impl Package {
   }
 
   #[must_use]
-  pub fn dependency_tree(&self) -> dependency::Tree {
+  pub fn dependency_tree(&self) -> DependencyTree {
     self.manifest.dependency_tree()
   }
 
-  pub async fn update(self, tree: Tree, release: &Option<Release>) -> Result<()> {
+  pub fn update(self, tree: DependencyTree, release: &Option<Release>) -> Result<()> {
     let targets = tree
       .dependencies
       .into_iter()
@@ -114,13 +127,13 @@ impl Ord for Package {
   }
 }
 
-fn build_globset() -> GlobSet {
+fn build_globset() -> Result<GlobSet> {
   let mut builder = GlobSetBuilder::new();
 
   macro_rules! add {
     ($kind:ident) => {
-      let glob = manifest::Kind::$kind.glob();
-      builder.add(Glob::new(glob).expect("hardcoded glob should always be valid"));
+      let glob = ManifestKind::$kind.glob();
+      builder.add(Glob::new(glob)?);
     };
   }
 
@@ -128,7 +141,7 @@ fn build_globset() -> GlobSet {
   add!(PackageJson);
   add!(TauriConfJson);
 
-  builder.build().unwrap()
+  builder.build().map_err(Into::into)
 }
 
 fn is_match(glob: &GlobSet, entry: &DirEntry) -> bool {

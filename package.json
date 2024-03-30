@@ -1,0 +1,12 @@
+{
+  "name": "miho",
+  "version": "4.3.2",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@8.15.5",
+  "scripts": {
+    "mock:bump": "cargo run -- bump -t -p mocks",
+    "mock:update": "cargo run -- update -t -p mocks",
+    "pedantic": "cargo clippy -- -W clippy::pedantic"
+  }
+}

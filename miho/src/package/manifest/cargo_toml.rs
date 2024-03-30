@@ -1,8 +1,8 @@
-use crate::package::dependency;
+use crate::package::dependency::{self, DependencyKind, DependencyTree};
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::{Agent, Package};
 use crate::prelude::*;
-use std::fs;
+use taplo::formatter;
 use toml::Value;
 
 #[derive(Deserialize)]
@@ -50,20 +50,20 @@ impl Handler for CargoToml {
     let mut manifest = CargoToml::read_as_value(&package.path)?;
     manifest["package"]["version"] = Value::String(version.to_string());
 
-    let contents = toml::to_string_pretty(&manifest)?;
+    let contents = format(&manifest)?;
     fs::write(&package.path, contents)?;
 
     Ok(())
   }
 
-  fn dependency_tree(&self) -> dependency::Tree {
-    let mut tree = dependency::Tree::new(self.agent());
+  fn dependency_tree(&self) -> DependencyTree {
+    let mut tree = DependencyTree::new(self.agent());
 
     macro_rules! add {
       ($dependencies:expr, $kind:ident) => {
         if let Some(deps) = $dependencies {
           let dependencies = parse_dependencies(deps);
-          tree.add(&dependencies, dependency::Kind::$kind);
+          tree.add(&dependencies, DependencyKind::$kind);
         }
       };
     }
@@ -88,10 +88,10 @@ impl Handler for CargoToml {
 
     for target in batch {
       let key = match target.dependency.kind {
-        dependency::Kind::Normal => "dependencies",
-        dependency::Kind::Development => "dev-dependencies",
-        dependency::Kind::Build => "build-dependencies",
-        dependency::Kind::Peer => continue,
+        DependencyKind::Normal => "dependencies",
+        DependencyKind::Development => "dev-dependencies",
+        DependencyKind::Build => "build-dependencies",
+        DependencyKind::Peer => continue,
       };
 
       let version = manifest
@@ -113,7 +113,7 @@ impl Handler for CargoToml {
       }
     }
 
-    let contents = toml::to_string_pretty(&manifest)?;
+    let contents = format(&manifest)?;
     fs::write(&package.path, contents)?;
 
     Ok(())
@@ -122,6 +122,14 @@ impl Handler for CargoToml {
   fn version(&self) -> Result<Version> {
     Version::parse(&self.package.version).map_err(Into::into)
   }
+}
+
+fn format(value: &Value) -> Result<String> {
+  let contents = toml::to_string(value)?;
+  let options = formatter::Options::default();
+
+  let contents = formatter::format(&contents, options);
+  Ok(contents)
 }
 
 fn parse_dependencies(deps: &HashMap<String, Value>) -> HashMap<String, String> {
@@ -147,7 +155,7 @@ fn parse_version(value: &Value) -> Option<&String> {
 
     let path = value.get("path");
     let git = value.get("git");
-    
+
     if path.is_none() && git.is_none() {
       return Some(version);
     }

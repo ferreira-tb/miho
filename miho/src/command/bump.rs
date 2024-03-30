@@ -2,16 +2,14 @@ use super::{Choice, Commit};
 use crate::package::Package;
 use crate::prelude::*;
 use crate::release::Release;
-use crate::search_packages;
 use crate::version::VersionExt;
 use clap::Args;
 use colored::Colorize;
 use inquire::{Confirm, MultiSelect, Select};
-use std::fmt;
-use strum::IntoEnumIterator;
 
 static RELEASE: OnceLock<Release> = OnceLock::new();
 
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Args, miho_derive::Commit)]
 pub struct Bump {
   /// Type of the release.
@@ -62,7 +60,7 @@ pub struct Bump {
 impl super::Command for Bump {
   async fn execute(mut self) -> Result<()> {
     let path = self.path.as_deref().unwrap();
-    let packages = search_packages!(path, self.package.as_deref())?;
+    let packages = Package::search(path, self.package.as_deref())?;
 
     if packages.is_empty() {
       bail!("{}", "no valid package found".bold().red());
@@ -151,7 +149,7 @@ fn prompt_many(packages: Vec<Package>) -> Result<bool> {
 
       impl fmt::Display for Wrapper {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-          let agent = self.0.agent().to_string().to_uppercase();
+          let agent = self.0.agent().to_string();
           write!(f, "{agent}: {}", self.0.name)
         }
       }
@@ -181,14 +179,8 @@ fn preview(packages: &[Package]) {
   let mut builder = Builder::with_capacity(packages.len(), 5);
 
   for package in packages {
+    let agent = package.agent().to_string().bright_magenta().bold();
     let new_version = package.version.with_release(release);
-
-    let agent = package
-      .agent()
-      .to_string()
-      .to_uppercase()
-      .bright_magenta()
-      .bold();
 
     let record = [
       agent.to_string(),
