@@ -1,13 +1,9 @@
 use crate::package::dependency;
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::{Agent, Package};
-use crate::version::Version;
-use anyhow::Result;
-use serde::Deserialize;
+use crate::prelude::*;
 use serde_json::Value;
-use std::collections::HashMap;
 use std::fs;
-use std::path::Path;
 
 #[derive(Deserialize)]
 #[serde(rename_all(deserialize = "camelCase"))]

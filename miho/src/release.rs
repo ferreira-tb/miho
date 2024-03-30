@@ -1,5 +1,4 @@
-use crate::version::{BuildMetadata, Prerelease, Version};
-use anyhow::Result;
+use crate::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Release {
@@ -17,16 +16,6 @@ impl Release {
   #[must_use]
   pub fn parser() -> Parser {
     Parser::new()
-  }
-
-  #[must_use]
-  pub fn is_literal(&self) -> bool {
-    matches!(self, Release::Literal(_))
-  }
-
-  #[must_use]
-  pub fn is_prerelease(&self) -> bool {
-    !self.is_stable() && !self.is_literal()
   }
 
   #[must_use]

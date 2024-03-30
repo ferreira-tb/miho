@@ -4,19 +4,13 @@ mod tauri_conf_json;
 
 use super::dependency::{self, Target};
 use super::{Agent, Package};
-use crate::version::Version;
-use anyhow::{anyhow, Result};
+use crate::prelude::*;
 use cargo_toml::CargoToml;
-use globset::Glob;
 use package_json::PackageJson;
-use std::path::Path;
+use strum::{EnumIter, IntoEnumIterator};
 use tauri_conf_json::TauriConfJson;
 
 pub(super) type ManifestBox = Box<dyn Handler + Send + Sync>;
-
-const GLOB_CARGO_TOML: &str = "**/Cargo.toml";
-const GLOB_PACKAGE_JSON: &str = "**/package.json";
-const GLOB_TAURI_CONF_JSON: &str = "**/tauri.conf.json";
 
 trait Manifest {
   type Value;
@@ -40,7 +34,7 @@ pub trait Handler {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, EnumIter)]
 pub enum Kind {
   CargoToml,
   PackageJson,
@@ -48,6 +42,10 @@ pub enum Kind {
 }
 
 impl Kind {
+  const GLOB_CARGO_TOML: &'static str = "**/Cargo.toml";
+  const GLOB_PACKAGE_JSON: &'static str = "**/package.json";
+  const GLOB_TAURI_CONF_JSON: &'static str = "**/tauri.conf.json";
+
   pub(crate) fn read<P: AsRef<Path>>(&self, path: P) -> Result<ManifestBox> {
     match self {
       Kind::CargoToml => CargoToml::read(path),
@@ -58,9 +56,9 @@ impl Kind {
 
   pub(crate) fn glob(&self) -> &str {
     match self {
-      Kind::CargoToml => GLOB_CARGO_TOML,
-      Kind::PackageJson => GLOB_PACKAGE_JSON,
-      Kind::TauriConfJson => GLOB_TAURI_CONF_JSON,
+      Kind::CargoToml => Self::GLOB_CARGO_TOML,
+      Kind::PackageJson => Self::GLOB_PACKAGE_JSON,
+      Kind::TauriConfJson => Self::GLOB_TAURI_CONF_JSON,
     }
   }
 }
@@ -69,15 +67,13 @@ impl TryFrom<&Path> for Kind {
   type Error = anyhow::Error;
 
   fn try_from(path: &Path) -> Result<Self> {
-    let variants = [Kind::CargoToml, Kind::PackageJson, Kind::TauriConfJson];
-
-    for variant in variants {
-      let glob = Glob::new(variant.glob())
+    for kind in Kind::iter() {
+      let glob = Glob::new(kind.glob())
         .expect("hardcoded glob should always be valid")
         .compile_matcher();
 
       if glob.is_match(path) {
-        return Ok(variant);
+        return Ok(kind);
       }
     }
 

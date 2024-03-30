@@ -1,12 +1,8 @@
 use crate::package::dependency;
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::{Agent, Package};
-use crate::version::Version;
-use anyhow::Result;
-use serde::Deserialize;
-use std::collections::HashMap;
+use crate::prelude::*;
 use std::fs;
-use std::path::Path;
 use toml::Value;
 
 #[derive(Deserialize)]

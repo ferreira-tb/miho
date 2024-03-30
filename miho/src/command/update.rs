@@ -1,21 +1,16 @@
 use super::{Choice, Commit};
-use anyhow::{bail, Result};
+use crate::package::dependency::{Dependency, Tree};
+use crate::package::{Agent, Package};
+use crate::prelude::*;
+use crate::release::Release;
+use crate::version::ComparatorExt;
+use crate::{search_packages, win_cmd};
 use clap::Args;
 use colored::Colorize;
 use crossterm::{cursor, terminal, ExecutableCommand};
 use inquire::{MultiSelect, Select};
-use miho::package::dependency::{Dependency, Tree};
-use miho::package::{Agent, Package};
-use miho::release::Release;
-use miho::version::{Comparator, ComparatorExt};
-use miho::{search_packages, win_cmd};
-use std::collections::HashSet;
 use std::io::{self, Write};
-use std::path::PathBuf;
-use std::sync::{Arc, Mutex, OnceLock};
-use std::{env, fmt, mem};
-use tokio::process::Command;
-use tokio::task::JoinSet;
+use strum::IntoEnumIterator;
 
 static RELEASE: OnceLock<Option<Release>> = OnceLock::new();
 
@@ -181,7 +176,7 @@ impl Update {
         }
       });
 
-    let mut trees: Vec<(Package, Tree)> = trees.collect();
+    let mut trees = trees.collect_vec();
     trees.sort_unstable_by(|(a, _), (b, _)| a.cmp(b));
 
     Ok(trees)
@@ -196,11 +191,11 @@ impl Update {
         return false;
       }
 
-      if self.peer && !dependency.is_peer() {
+      if self.peer && !dependency.kind.is_peer() {
         return false;
       }
 
-      if !self.peer && dependency.is_peer() {
+      if !self.peer && dependency.kind.is_peer() {
         return false;
       }
 
@@ -221,14 +216,14 @@ async fn update_all(trees: Vec<(Package, Tree)>) -> Result<()> {
     Command::new("cargo").arg("update").spawn()?.wait().await?;
   }
 
-  if let Some(agent) = agents.iter().find(|a| a.is_node()) {
+  if let Some(agent) = agents.iter().find(|a| a.is_npm() || a.is_pnpm()) {
     let cwd = env::current_dir()?;
     let lockfile = agent.lockfile().unwrap();
     let lockfile = cwd.join(lockfile);
 
     if let Ok(true) = lockfile.try_exists() {
-      let program: &str = agent.clone().into();
-      win_cmd!(program).arg("install").spawn()?.wait().await?;
+      let program = agent.to_string();
+      win_cmd!(&program).arg("install").spawn()?.wait().await?;
     }
   }
 
@@ -236,7 +231,7 @@ async fn update_all(trees: Vec<(Package, Tree)>) -> Result<()> {
 }
 
 async fn prompt(mut trees: Vec<(Package, Tree)>) -> Result<bool> {
-  let options = vec![Choice::All, Choice::Some, Choice::None];
+  let options = Choice::iter().collect_vec();
   let choice = Select::new("Update dependencies?", options).prompt()?;
 
   match choice {
@@ -256,7 +251,7 @@ async fn prompt(mut trees: Vec<(Package, Tree)>) -> Result<bool> {
       for (package, tree) in &mut trees {
         let message = display_package(package);
         let dependencies = mem::take(&mut tree.dependencies);
-        let dependencies: Vec<Wrapper> = dependencies.into_iter().map(Wrapper).collect();
+        let dependencies = dependencies.into_iter().map(Wrapper).collect_vec();
 
         let dependencies = MultiSelect::new(&message, dependencies)
           .with_all_selected_by_default()
@@ -297,7 +292,7 @@ fn preview(trees: &[(Package, Tree)]) {
 
         let mut record = vec![
           dependency.name.clone(),
-          dependency.kind.to_string().bright_cyan().to_string(),
+          dependency.kind.as_ref().bright_cyan().to_string(),
           comparator.to_string().bright_blue().to_string(),
           "=>".to_string(),
           target_cmp.to_string().bright_green().to_string(),

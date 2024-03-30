@@ -8,10 +8,5 @@
   },
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
-  },
-  "[lua]": {
-    "editor.defaultFormatter": "sumneko.lua"
-  },
-  "Lua.diagnostics.disable": ["lowercase-global"],
-  "Lua.diagnostics.globals": ["miho"]
+  }
 }

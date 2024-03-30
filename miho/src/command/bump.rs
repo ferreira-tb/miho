@@ -1,15 +1,14 @@
 use super::{Choice, Commit};
-use anyhow::{bail, Result};
+use crate::package::Package;
+use crate::prelude::*;
+use crate::release::Release;
+use crate::search_packages;
+use crate::version::VersionExt;
 use clap::Args;
 use colored::Colorize;
 use inquire::{Confirm, MultiSelect, Select};
-use miho::package::Package;
-use miho::release::Release;
-use miho::search_packages;
-use miho::version::VersionExt;
 use std::fmt;
-use std::path::PathBuf;
-use std::sync::OnceLock;
+use strum::IntoEnumIterator;
 
 static RELEASE: OnceLock<Release> = OnceLock::new();
 
@@ -139,7 +138,7 @@ fn prompt_single(package: Package) -> Result<bool> {
 }
 
 fn prompt_many(packages: Vec<Package>) -> Result<bool> {
-  let options = vec![Choice::All, Choice::Some, Choice::None];
+  let options = Choice::iter().collect_vec();
   let choice = Select::new("Bump packages?", options).prompt()?;
 
   match choice {
@@ -158,7 +157,7 @@ fn prompt_many(packages: Vec<Package>) -> Result<bool> {
       }
 
       let message = "Select the packages to bump.";
-      let packages: Vec<Wrapper> = packages.into_iter().map(Wrapper).collect();
+      let packages = packages.into_iter().map(Wrapper).collect_vec();
       let packages = MultiSelect::new(message, packages).prompt()?;
 
       if packages.is_empty() {

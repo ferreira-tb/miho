@@ -1,5 +1,3 @@
-/// Returns the [`std::cmp::Ordering`] if it is not [`std::cmp::Ordering::Equal`].
-#[doc(hidden)]
 #[macro_export]
 macro_rules! return_if_ne {
   ($ord:expr) => {
@@ -10,7 +8,6 @@ macro_rules! return_if_ne {
   };
 }
 
-#[doc(hidden)]
 #[macro_export]
 macro_rules! search_packages {
   ($path:expr) => {{
@@ -30,9 +27,6 @@ macro_rules! search_packages {
   }};
 }
 
-/// Wrap [`tokio::process::Command`], executing `cmd` as the program if the current OS is Windows.
-///
-/// This is only useful in some very specific cases.
 #[macro_export]
 macro_rules! win_cmd {
   ($program:expr) => {{

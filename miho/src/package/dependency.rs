@@ -1,15 +1,12 @@
 use crate::package::agent::Agent;
+use crate::prelude::*;
 use crate::release::Release;
 use crate::return_if_ne;
-use crate::version::{Comparator, ComparatorExt, Version, VersionExt, VersionReq, VersionReqExt};
-use anyhow::{bail, Result};
+use crate::version::{ComparatorExt, VersionExt, VersionReqExt};
 use reqwest::header::ACCEPT;
 use reqwest::Client;
 use serde_json::Value;
-use std::cmp::Ordering;
-use std::collections::HashMap;
-use std::fmt;
-use tokio::task::JoinSet;
+use strum::{AsRefStr, Display, EnumIs, EnumString};
 
 const CARGO_REGISTRY: &str = "https://crates.io/api/v1/crates";
 const NPM_REGISTRY: &str = "https://registry.npmjs.org";
@@ -23,10 +20,6 @@ pub struct Dependency {
 }
 
 impl Dependency {
-  pub fn is_peer(&self) -> bool {
-    self.kind == Kind::Peer
-  }
-
   #[must_use]
   pub fn latest(&self) -> Option<&Version> {
     self
@@ -133,7 +126,7 @@ impl Tree {
   /// Updates the dependency tree, fetching metadata from the registry.
   pub async fn fetch(&mut self) -> Result<()> {
     let client = Client::builder()
-      .user_agent("Miho/4.3")
+      .user_agent("Miho/5.0")
       .brotli(true)
       .gzip(true)
       .build()?;
@@ -207,10 +200,13 @@ impl Tree {
   }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, AsRefStr, Display, EnumIs, EnumString)]
+#[strum(serialize_all = "snake_case")]
 pub enum Kind {
   Build,
+  #[strum(to_string = "dev")]
   Development,
+  #[strum(to_string = "")]
   Normal,
   Peer,
 }
@@ -222,17 +218,6 @@ impl Kind {
       Self::Development => 1,
       Self::Build => 2,
       Self::Peer => 3,
-    }
-  }
-}
-
-impl fmt::Display for Kind {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    match self {
-      Self::Build => write!(f, "build"),
-      Self::Development => write!(f, "dev"),
-      Self::Normal => write!(f, ""),
-      Self::Peer => write!(f, "peer"),
     }
   }
 }

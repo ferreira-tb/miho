@@ -8,10 +8,10 @@ pub fn impl_commit(ast: &DeriveInput) -> TokenStream {
   let gen = quote! {
     impl crate::command::Commit for #name {
       async fn commit(&mut self, default_message: &str) -> anyhow::Result<()> {
-        use miho::git::Git;
+        use crate::git::Git;
 
         if let Some(pathspec) = &self.add {
-          miho::git::Add::new(pathspec).spawn().await?;
+          crate::git::Add::new(pathspec).spawn().await?;
         }
 
         let message = if !self.no_ask && self.commit_message.is_none() {
@@ -25,7 +25,7 @@ pub fn impl_commit(ast: &DeriveInput) -> TokenStream {
           _ => default_message,
         };
 
-        let mut commit = miho::git::Commit::new(message);
+        let mut commit = crate::git::Commit::new(message);
         commit.all();
 
         if self.no_verify {
@@ -35,7 +35,7 @@ pub fn impl_commit(ast: &DeriveInput) -> TokenStream {
         commit.spawn().await?;
 
         if !self.no_push {
-          miho::git::Push::new().spawn().await?;
+          crate::git::Push::new().spawn().await?;
         }
 
         Ok(())
