@@ -4,7 +4,6 @@ use crate::prelude::*;
 use crate::release::Release;
 use crate::version::VersionExt;
 use clap::Args;
-use colored::Colorize;
 use inquire::{Confirm, MultiSelect, Select};
 
 static RELEASE: OnceLock<Release> = OnceLock::new();
@@ -61,10 +60,6 @@ impl super::Command for Bump {
   async fn execute(mut self) -> Result<()> {
     let path = self.path.as_deref().unwrap();
     let packages = Package::search(path, self.package.as_deref())?;
-
-    if packages.is_empty() {
-      bail!("{}", "no valid package found".bold().red());
-    }
 
     self.set_release()?;
     preview(&packages);

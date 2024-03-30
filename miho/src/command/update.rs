@@ -6,7 +6,6 @@ use crate::release::Release;
 use crate::version::ComparatorExt;
 use crate::win_cmd;
 use clap::Args;
-use colored::Colorize;
 use crossterm::{cursor, terminal, ExecutableCommand};
 use inquire::{MultiSelect, Select};
 use std::io::{self, Write};
@@ -65,10 +64,6 @@ impl super::Command for Update {
     let path = self.path.as_deref().unwrap();
     let packages = Package::search(path, self.package.as_deref())?;
 
-    if packages.is_empty() {
-      bail!("{}", "no valid package found".bold().red());
-    }
-
     self.set_release();
     let trees = self.fetch(packages).await?;
 
@@ -107,47 +102,27 @@ impl Update {
   }
 
   async fn fetch(&self, packages: Vec<Package>) -> Result<Vec<(Package, DependencyTree)>> {
-    let package_amount = packages.len();
-    let trees: Vec<(Package, DependencyTree)> = Vec::with_capacity(package_amount);
+    let total = packages.len();
+    let trees: Vec<(Package, DependencyTree)> = Vec::with_capacity(total);
     let trees = Arc::new(Mutex::new(trees));
 
+    update_fetch_progress(0, total)?;
+
     let mut set: JoinSet<Result<()>> = JoinSet::new();
-    let mut stdout = io::stdout();
-
-    macro_rules! update_progress {
-      ($stdout:expr, $amount:expr) => {
-        let progress = format!("({}/{})", $amount, package_amount);
-        writeln!(
-          $stdout,
-          "{} {}",
-          "fetching dependencies...".bright_cyan(),
-          progress.truecolor(105, 105, 105)
-        )?;
-
-        $stdout.flush()?;
-      };
-    }
-
-    update_progress!(&mut stdout, 0);
-
-    let stdout = Arc::new(Mutex::new(stdout));
+    let cache = Arc::new(Mutex::new(HashSet::new()));
 
     for package in packages {
       let trees = Arc::clone(&trees);
-      let stdout = Arc::clone(&stdout);
-
+      let cache = Arc::clone(&cache);
       set.spawn(async move {
         let mut tree = package.dependency_tree();
-        tree.fetch().await?;
+        tree.fetch(cache).await?;
 
         let mut trees = trees.lock().unwrap();
         trees.push((package, tree));
 
-        let mut stdout = stdout.lock().unwrap();
-        stdout.execute(cursor::MoveUp(1))?;
-        stdout.execute(terminal::Clear(terminal::ClearType::FromCursorDown))?;
-
-        update_progress!(&mut stdout, trees.len());
+        clear_line()?;
+        update_fetch_progress(trees.len(), total)?;
 
         Ok(())
       });
@@ -157,9 +132,7 @@ impl Update {
       result??;
     }
 
-    let mut stdout = stdout.lock().unwrap();
-    stdout.execute(cursor::MoveUp(1))?;
-    stdout.execute(terminal::Clear(terminal::ClearType::FromCursorDown))?;
+    clear_line()?;
 
     let trees = Arc::into_inner(trees)
       .unwrap()
@@ -206,17 +179,17 @@ impl Update {
 
 async fn update_all(trees: Vec<(Package, DependencyTree)>) -> Result<()> {
   let release = RELEASE.get().unwrap();
-  let agents: HashSet<Agent> = trees.iter().map(|(package, _)| package.agent()).collect();
+  let agents = trees
+    .iter()
+    .map(|(package, _)| package.agent())
+    .unique()
+    .collect_vec();
 
   for (package, tree) in trees {
     package.update(tree, release)?;
   }
 
-  if agents.contains(&Agent::Cargo) {
-    Command::new("cargo").arg("update").spawn()?.wait().await?;
-  }
-
-  if let Some(agent) = agents.iter().find(|a| a.is_npm() || a.is_pnpm()) {
+  if let Some(agent) = agents.iter().find(|a| a.is_node()) {
     let cwd = env::current_dir()?;
     let lockfile = agent.lockfile().unwrap();
     let lockfile = cwd.join(lockfile);
@@ -225,6 +198,10 @@ async fn update_all(trees: Vec<(Package, DependencyTree)>) -> Result<()> {
       let program = agent.to_string().to_lowercase();
       win_cmd!(&program).arg("install").spawn()?.wait().await?;
     }
+  }
+
+  if agents.contains(&Agent::Cargo) {
+    Command::new("cargo").arg("update").spawn()?.wait().await?;
   }
 
   Ok(())
@@ -249,7 +226,7 @@ async fn prompt(mut trees: Vec<(Package, DependencyTree)>) -> Result<bool> {
       }
 
       for (package, tree) in &mut trees {
-        let message = display_package(package);
+        let message = package.display();
         let dependencies = mem::take(&mut tree.dependencies);
         let dependencies = dependencies.into_iter().map(Wrapper).collect_vec();
 
@@ -315,7 +292,7 @@ fn preview(trees: &[(Package, DependencyTree)]) {
     }
 
     let mut table = builder.build();
-    let header = display_package(package);
+    let header = package.display();
     table.with(Style::blank()).with(Panel::header(header));
 
     let version_col = Segment::new(.., 2..3);
@@ -339,15 +316,27 @@ fn preview(trees: &[(Package, DependencyTree)]) {
   }
 }
 
-fn display_package(package: &Package) -> String {
-  format!(
-    "[ {} ] {}",
-    package
-      .agent()
-      .to_string()
-      .to_uppercase()
-      .bright_magenta()
-      .bold(),
-    package.name.bright_yellow().bold()
-  )
+fn update_fetch_progress(current: usize, total: usize) -> Result<()> {
+  let progress = format!("({current}/{total})");
+  let mut stdout = io::stdout().lock();
+
+  writeln!(
+    stdout,
+    "{} {}",
+    "fetching dependencies...".bright_cyan(),
+    progress.truecolor(105, 105, 105)
+  )?;
+
+  stdout.flush()?;
+
+  Ok(())
+}
+
+fn clear_line() -> Result<()> {
+  let mut stdout = io::stdout().lock();
+  stdout.execute(cursor::MoveUp(1))?;
+  stdout.execute(terminal::Clear(terminal::ClearType::FromCursorDown))?;
+  stdout.flush()?;
+
+  Ok(())
 }

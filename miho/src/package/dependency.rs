@@ -6,10 +6,13 @@ use crate::version::{ComparatorExt, VersionExt, VersionReqExt};
 use reqwest::header::ACCEPT;
 use reqwest::Client;
 use serde_json::Value;
+use std::hash::{Hash, Hasher};
 use strum::{AsRefStr, Display, EnumIs, EnumString};
 
 const CARGO_REGISTRY: &str = "https://crates.io/api/v1/crates";
 const NPM_REGISTRY: &str = "https://registry.npmjs.org";
+
+pub type Cache = HashSet<DependencyCache>;
 
 #[derive(Debug)]
 pub struct Dependency {
@@ -84,6 +87,28 @@ impl Ord for Dependency {
 }
 
 #[derive(Debug)]
+pub struct DependencyCache {
+  pub agent: Agent,
+  pub name: String,
+  pub versions: Vec<Version>,
+}
+
+impl PartialEq for DependencyCache {
+  fn eq(&self, other: &Self) -> bool {
+    self.name == other.name && self.agent == other.agent
+  }
+}
+
+impl Eq for DependencyCache {}
+
+impl Hash for DependencyCache {
+  fn hash<H: Hasher>(&self, state: &mut H) {
+    self.name.hash(state);
+    self.agent.hash(state);
+  }
+}
+
+#[derive(Debug)]
 pub struct DependencyTree {
   pub agent: Agent,
   pub dependencies: Vec<Dependency>,
@@ -98,10 +123,11 @@ impl DependencyTree {
     }
   }
 
-  /// Adds dependencies to the tree.
-  pub fn add<K, V>(&mut self, dependencies: &HashMap<K, V>, kind: DependencyKind) -> &mut Self
+  /// Add dependencies to the tree.
+  pub fn add<I, N, V>(&mut self, dependencies: I, kind: DependencyKind) -> &mut Self
   where
-    K: AsRef<str>,
+    I: IntoIterator<Item = (N, V)>,
+    N: AsRef<str>,
     V: AsRef<str>,
   {
     for (name, version) in dependencies {
@@ -123,8 +149,8 @@ impl DependencyTree {
     self
   }
 
-  /// Updates the dependency tree, fetching metadata from the registry.
-  pub async fn fetch(&mut self) -> Result<()> {
+  /// Update the dependency tree, fetching metadata from the registry.
+  pub async fn fetch(&mut self, cache: Arc<Mutex<Cache>>) -> Result<()> {
     let client = Client::builder()
       .user_agent("Miho/5.0")
       .brotli(true)
@@ -133,9 +159,23 @@ impl DependencyTree {
 
     let mut set = JoinSet::new();
 
-    for mut dependency in &mut self.dependencies.drain(..) {
-      let agent = self.agent.clone();
+    let dependencies = mem::take(&mut self.dependencies);
+    self.dependencies.reserve(dependencies.len());
+
+    for mut dependency in dependencies {
+      let agent = self.agent;
       let client = client.clone();
+
+      let cache = Arc::clone(&cache);
+      let cache_mutex = cache.lock().unwrap();
+
+      if let Some(cached) = Self::find_cached(&cache_mutex, &dependency.name, agent) {
+        dependency.versions = cached.versions.clone();
+        self.dependencies.push(dependency);
+        continue;
+      }
+
+      drop(cache_mutex);
 
       set.spawn(async move {
         dependency.versions = match agent {
@@ -149,13 +189,18 @@ impl DependencyTree {
               bail!("no versions found for {}", dependency.name);
             };
 
-            versions
+            let versions = versions
               .iter()
               .filter_map(|v| {
                 let version = v.get("num").and_then(Value::as_str);
                 version.and_then(|v| Version::parse(v).ok())
               })
-              .collect()
+              .collect_vec();
+
+            let mut cache = cache.lock().unwrap();
+            Self::add_to_cache(&mut cache, &dependency.name, agent, &versions);
+
+            versions
           }
 
           // https://github.com/npm/registry/blob/master/docs/responses/package-metadata.md
@@ -172,10 +217,15 @@ impl DependencyTree {
               bail!("no versions found for {}", dependency.name);
             };
 
-            versions
+            let versions = versions
               .keys()
               .filter_map(|v| Version::parse(v).ok())
-              .collect()
+              .collect_vec();
+
+            let mut cache = cache.lock().unwrap();
+            Self::add_to_cache(&mut cache, &dependency.name, agent, &versions);
+
+            versions
           }
 
           Agent::Tauri => bail!("tauri is not a package manager"),
@@ -197,6 +247,22 @@ impl DependencyTree {
     self.dependencies.shrink_to_fit();
 
     Ok(())
+  }
+
+  fn add_to_cache(cache: &mut Cache, name: &str, agent: Agent, versions: &[Version]) {
+    if Self::find_cached(cache, name, agent).is_none() {
+      let dependency = DependencyCache {
+        agent,
+        name: name.to_owned(),
+        versions: versions.to_vec(),
+      };
+
+      cache.insert(dependency);
+    }
+  }
+
+  fn find_cached<'a>(cache: &'a Cache, name: &str, agent: Agent) -> Option<&'a DependencyCache> {
+    cache.iter().find(|c| c.name == name && c.agent == agent)
   }
 }
 

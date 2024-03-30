@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use strum::{AsRefStr, Display, EnumIs, EnumString};
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, AsRefStr, Display, EnumString, EnumIs)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, AsRefStr, Display, EnumString, EnumIs)]
 #[strum(serialize_all = "UPPERCASE")]
 pub enum Agent {
   Cargo,
@@ -11,6 +11,10 @@ pub enum Agent {
 }
 
 impl Agent {
+  pub fn is_node(self) -> bool {
+    self.is_npm() || self.is_pnpm()
+  }
+
   pub fn lockfile(&self) -> Option<&str> {
     match self {
       Self::Cargo => Some("Cargo.lock"),

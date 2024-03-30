@@ -72,6 +72,10 @@ impl Package {
         .collect_vec();
     }
 
+    if packages.is_empty() {
+      bail!("{}", "no valid package found".bright_red());
+    }
+
     packages.sort_unstable();
 
     Ok(packages)
@@ -90,6 +94,13 @@ impl Package {
   #[must_use]
   pub fn dependency_tree(&self) -> DependencyTree {
     self.manifest.dependency_tree()
+  }
+
+  pub fn display(&self) -> String {
+    let agent = self.agent().to_string().bright_magenta().bold();
+    let name = self.name.bright_yellow().bold();
+
+    format!("[ {agent} ] {name}")
   }
 
   pub fn update(self, tree: DependencyTree, release: &Option<Release>) -> Result<()> {
