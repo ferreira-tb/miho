@@ -7,7 +7,6 @@
     "github.vscode-pull-request-github",
     "rust-lang.rust-analyzer",
     "vscode-icons-team.vscode-icons",
-    "redhat.vscode-yaml",
-    "sumneko.lua"
+    "redhat.vscode-yaml"
   ]
 }

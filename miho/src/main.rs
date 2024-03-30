@@ -1,8 +1,16 @@
-mod command;
+#![allow(clippy::module_name_repetitions)]
 
-use anyhow::Result;
+mod command;
+pub(crate) mod git;
+mod macros;
+pub(crate) mod package;
+pub(crate) mod prelude;
+pub(crate) mod release;
+pub(crate) mod version;
+
 use clap::Parser;
-use command::{Bump, Command, Run, Update};
+use command::{Bump, Command, Update};
+use prelude::*;
 
 #[derive(Debug, Parser)]
 #[command(name = "miho")]
@@ -10,8 +18,6 @@ use command::{Bump, Command, Run, Update};
 enum Cli {
   /// Bump your packages version.
   Bump(Bump),
-  /// Run scripts defined in your miho.lua.
-  Run(Run),
   /// Update your dependencies.
   Update(Update),
 }
@@ -22,7 +28,6 @@ async fn main() -> Result<()> {
 
   match cli {
     Cli::Bump(cmd) => cmd.execute().await,
-    Cli::Run(cmd) => cmd.execute().await,
     Cli::Update(cmd) => cmd.execute().await,
   }
 }

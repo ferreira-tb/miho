@@ -4,19 +4,14 @@ mod tauri_conf_json;
 
 use super::dependency::{self, Target};
 use super::{Agent, Package};
-use crate::version::Version;
-use anyhow::{anyhow, Result};
+use crate::prelude::*;
 use cargo_toml::CargoToml;
-use globset::Glob;
+use dependency::DependencyTree;
 use package_json::PackageJson;
-use std::path::Path;
+use strum::EnumIter;
 use tauri_conf_json::TauriConfJson;
 
 pub(super) type ManifestBox = Box<dyn Handler + Send + Sync>;
-
-const GLOB_CARGO_TOML: &str = "**/Cargo.toml";
-const GLOB_PACKAGE_JSON: &str = "**/package.json";
-const GLOB_TAURI_CONF_JSON: &str = "**/tauri.conf.json";
 
 trait Manifest {
   type Value;
@@ -35,49 +30,44 @@ pub trait Handler {
   fn update(&self, package: &Package, batch: &[Target]) -> Result<()>;
   fn version(&self) -> Result<Version>;
 
-  fn dependency_tree(&self) -> dependency::Tree {
-    dependency::Tree::new(self.agent())
+  fn dependency_tree(&self) -> DependencyTree {
+    DependencyTree::new(self.agent())
   }
 }
 
-#[derive(Debug)]
-pub enum Kind {
+#[derive(Debug, EnumIter)]
+pub enum ManifestKind {
   CargoToml,
   PackageJson,
   TauriConfJson,
 }
 
-impl Kind {
+impl ManifestKind {
   pub(crate) fn read<P: AsRef<Path>>(&self, path: P) -> Result<ManifestBox> {
     match self {
-      Kind::CargoToml => CargoToml::read(path),
-      Kind::PackageJson => PackageJson::read(path),
-      Kind::TauriConfJson => TauriConfJson::read(path),
+      ManifestKind::CargoToml => CargoToml::read(path),
+      ManifestKind::PackageJson => PackageJson::read(path),
+      ManifestKind::TauriConfJson => TauriConfJson::read(path),
     }
   }
 
   pub(crate) fn glob(&self) -> &str {
     match self {
-      Kind::CargoToml => GLOB_CARGO_TOML,
-      Kind::PackageJson => GLOB_PACKAGE_JSON,
-      Kind::TauriConfJson => GLOB_TAURI_CONF_JSON,
+      ManifestKind::CargoToml => "**/Cargo.toml",
+      ManifestKind::PackageJson => "**/package.json",
+      ManifestKind::TauriConfJson => "**/tauri.conf.json",
     }
   }
 }
 
-impl TryFrom<&Path> for Kind {
+impl TryFrom<&Path> for ManifestKind {
   type Error = anyhow::Error;
 
   fn try_from(path: &Path) -> Result<Self> {
-    let variants = [Kind::CargoToml, Kind::PackageJson, Kind::TauriConfJson];
-
-    for variant in variants {
-      let glob = Glob::new(variant.glob())
-        .expect("hardcoded glob should always be valid")
-        .compile_matcher();
-
+    for kind in ManifestKind::iter() {
+      let glob = Glob::new(kind.glob())?.compile_matcher();
       if glob.is_match(path) {
-        return Ok(variant);
+        return Ok(kind);
       }
     }
 

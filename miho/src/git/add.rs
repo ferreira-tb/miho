@@ -1,5 +1,5 @@
 use super::Git;
-use tokio::process::Command;
+use crate::prelude::*;
 
 /// <https://git-scm.com/docs/git-add>
 #[derive(miho_derive::Git)]
