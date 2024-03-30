@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "4.3.2"
+version = "5.0.0"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -9,7 +9,10 @@ license = "MIT"
 readme = "../README.md"
 edition = "2021"
 rust-version = "1.76"
-keywords = ["miho", "repository"]
+keywords = [
+    "miho",
+    "repository",
+]
 categories = ["development-tools"]
 
 [dependencies]
@@ -31,11 +34,19 @@ features = ["ansi"]
 
 [dependencies.reqwest]
 version = "0.12.0"
-features = ["brotli", "gzip", "json"]
+features = [
+    "brotli",
+    "gzip",
+    "json",
+]
 
 [dependencies.tokio]
 version = "1.36.0"
-features = ["macros", "process", "rt-multi-thread"]
+features = [
+    "macros",
+    "process",
+    "rt-multi-thread",
+]
 
 [dependencies.clap]
 version = "4.5.3"
