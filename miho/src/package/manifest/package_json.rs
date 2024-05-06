@@ -70,10 +70,6 @@ impl Handler for PackageJson {
     tree
   }
 
-  fn filename(&self) -> &str {
-    Self::FILENAME
-  }
-
   fn name(&self) -> &str {
     self.name.as_str()
   }

@@ -58,7 +58,7 @@ impl Package {
       if is_match(&glob, &entry) {
         let path = entry.path().canonicalize()?;
         let package = Self::new(path);
-        if matches!(package, Ok(ref p) if !packages.contains(p)) {
+        if matches!(package, Ok(ref it) if !packages.contains(it)) {
           packages.push(package.unwrap());
         }
       }
@@ -68,7 +68,7 @@ impl Package {
       let only = only.unwrap().iter().map(AsRef::as_ref).collect_vec();
       packages = packages
         .into_iter()
-        .filter(|package| only.contains(&package.name.as_str()))
+        .filter(|it| only.contains(&it.name.as_str()))
         .collect_vec();
     }
 
@@ -107,7 +107,7 @@ impl Package {
     let targets = tree
       .dependencies
       .into_iter()
-      .filter_map(|dep| dep.into_target(release))
+      .filter_map(|it| it.into_target(release))
       .collect_vec();
 
     self.manifest.update(&self, &targets)
@@ -160,5 +160,5 @@ fn is_match(glob: &GlobSet, entry: &DirEntry) -> bool {
     return false;
   }
 
-  matches!(entry.file_type(), Some(t) if t.is_file())
+  matches!(entry.file_type(), Some(it) if !it.is_dir())
 }

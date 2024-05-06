@@ -170,7 +170,7 @@ impl DependencyTree {
       let cache_mutex = cache.lock().unwrap();
 
       if let Some(cached) = Self::find_cached(&cache_mutex, &dependency.name, agent) {
-        dependency.versions = cached.versions.clone();
+        dependency.versions.clone_from(&cached.versions);
         self.dependencies.push(dependency);
         continue;
       }

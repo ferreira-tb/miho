@@ -157,7 +157,7 @@ fn prompt_many(packages: Vec<Package>) -> Result<bool> {
         println!("{}", "no package selected".truecolor(105, 105, 105));
         Ok(false)
       } else {
-        bump_all(packages.into_iter().map(|p| p.0).collect())?;
+        bump_all(packages.into_iter().map(|it| it.0).collect())?;
         Ok(true)
       }
     }

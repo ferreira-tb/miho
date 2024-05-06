@@ -25,7 +25,6 @@ trait Manifest {
 pub trait Handler {
   fn agent(&self) -> Agent;
   fn bump(&self, package: &Package, new_version: Version) -> Result<()>;
-  fn filename(&self) -> &str;
   fn name(&self) -> &str;
   fn update(&self, package: &Package, batch: &[Target]) -> Result<()>;
   fn version(&self) -> Result<Version>;

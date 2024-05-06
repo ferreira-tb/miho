@@ -43,10 +43,6 @@ impl Handler for TauriConfJson {
     Ok(())
   }
 
-  fn filename(&self) -> &str {
-    Self::FILENAME
-  }
-
   fn name(&self) -> &str {
     self.product_name.as_str()
   }

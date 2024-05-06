@@ -75,10 +75,6 @@ impl Handler for CargoToml {
     tree
   }
 
-  fn filename(&self) -> &str {
-    Self::FILENAME
-  }
-
   fn name(&self) -> &str {
     self.package.name.as_str()
   }

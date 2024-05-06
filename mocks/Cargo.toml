@@ -1,6 +1,6 @@
 [package]
 name = "cargo-toml"
-version = "3.0.2"
+version = "3.0.3"
 keywords = ["test", "test2", "test3", "test4", "test5"]
 
 [dependencies]

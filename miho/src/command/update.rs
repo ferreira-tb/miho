@@ -93,8 +93,8 @@ impl super::Command for Update {
 
 impl Update {
   fn set_release(&self) {
-    let release = self.release.as_deref().and_then(|release| {
-      let release = Release::parser().parse(release).ok();
+    let release = self.release.as_deref().and_then(|it| {
+      let release = Release::parser().parse(it).ok();
       release.filter(Release::is_stable)
     });
 
