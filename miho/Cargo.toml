@@ -24,9 +24,9 @@ globset = "0.4.14"
 ignore = "0.4.22"
 inquire = "0.7.5"
 itertools = "0.12.1"
-semver = "1.0.22"
+semver = "1.0.23"
 taplo = "0.13.0"
-thiserror = "1.0.59"
+thiserror = "1.0.60"
 
 [dependencies.hashbrown]
 version = "0.14.5"
