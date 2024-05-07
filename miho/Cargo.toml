@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "5.0.4"
+version = "5.0.5"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -38,7 +38,7 @@ features = ["ansi"]
 
 [dependencies.reqwest]
 version = "0.12.4"
-features = ["brotli", "gzip", "json"]
+features = ["brotli", "gzip", "json", "rustls-tls"]
 
 [dependencies.tokio]
 version = "1.37.0"
