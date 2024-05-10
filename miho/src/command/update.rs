@@ -12,7 +12,6 @@ use std::io::{self, Write};
 
 static RELEASE: OnceLock<Option<Release>> = OnceLock::new();
 
-#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Args, miho_derive::Commit)]
 pub struct Update {
   /// Type of the release.
@@ -189,7 +188,7 @@ async fn update_all(trees: Vec<(Package, DependencyTree)>) -> Result<()> {
     package.update(tree, release)?;
   }
 
-  if let Some(agent) = agents.iter().find(|a| a.is_node()) {
+  if let Some(agent) = agents.iter().find(|it| it.is_node()) {
     let cwd = env::current_dir()?;
     let lockfile = agent.lockfile().unwrap();
     let lockfile = cwd.join(lockfile);
@@ -208,7 +207,7 @@ async fn update_all(trees: Vec<(Package, DependencyTree)>) -> Result<()> {
 }
 
 async fn prompt(mut trees: Vec<(Package, DependencyTree)>) -> Result<bool> {
-  let options = Choice::iter().collect_vec();
+  let options = Choice::iter().collect();
   let choice = Select::new("Update dependencies?", options).prompt()?;
 
   match choice {
@@ -228,7 +227,7 @@ async fn prompt(mut trees: Vec<(Package, DependencyTree)>) -> Result<bool> {
       for (package, tree) in &mut trees {
         let message = package.display();
         let dependencies = mem::take(&mut tree.dependencies);
-        let dependencies = dependencies.into_iter().map(Wrapper).collect_vec();
+        let dependencies = dependencies.into_iter().map(Wrapper).collect();
 
         let dependencies = MultiSelect::new(&message, dependencies)
           .with_all_selected_by_default()

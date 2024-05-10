@@ -987,7 +987,7 @@ dependencies = [
 
 [[package]]
 name = "miho"
-version = "5.0.5"
+version = "5.0.6"
 dependencies = [
  "anyhow",
  "clap",
@@ -1000,6 +1000,7 @@ dependencies = [
  "inquire",
  "itertools 0.12.1",
  "miho_derive",
+ "rayon",
  "reqwest",
  "semver",
  "serde",
@@ -1014,7 +1015,7 @@ dependencies = [
 
 [[package]]
 name = "miho_derive"
-version = "5.0.5"
+version = "5.0.6"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1292,6 +1293,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fa76aaf39101c457836aec0ce2316dbdc3ab723cdda1c6bd4e6ad4208acaca7"
 dependencies = [
  "proc-macro2",
+]
+
+[[package]]
+name = "rayon"
+version = "1.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b418a60154510ca1a002a752ca9714984e21e4241e804d32555251faf8b78ffa"
+dependencies = [
+ "either",
+ "rayon-core",
+]
+
+[[package]]
+name = "rayon-core"
+version = "1.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1465873a3dfdaa8ae7cb14b4383657caab0b3e8a0aa9ae8e04b044854c8dfce2"
+dependencies = [
+ "crossbeam-deque",
+ "crossbeam-utils",
 ]
 
 [[package]]

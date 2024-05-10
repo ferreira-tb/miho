@@ -53,8 +53,7 @@ impl Package {
     let glob = build_globset()?;
     let mut packages = Vec::new();
 
-    for entry in walker.build() {
-      let entry = entry?;
+    for entry in walker.build().flatten() {
       if is_match(&glob, &entry) {
         let path = entry.path().canonicalize()?;
         let package = Self::new(path);
@@ -64,12 +63,17 @@ impl Package {
       }
     }
 
-    if matches!(only, Some(o) if !o.is_empty()) {
-      let only = only.unwrap().iter().map(AsRef::as_ref).collect_vec();
-      packages = packages
-        .into_iter()
-        .filter(|it| only.contains(&it.name.as_str()))
+    if matches!(only, Some(it) if !it.is_empty()) {
+      let only = only
+        .unwrap_or_default()
+        .iter()
+        .map(AsRef::as_ref)
         .collect_vec();
+
+      packages = packages
+        .into_par_iter()
+        .filter(|it| only.contains(&it.name.as_str()))
+        .collect();
     }
 
     if packages.is_empty() {
@@ -91,7 +95,6 @@ impl Package {
     self.manifest.bump(&self, version)
   }
 
-  #[must_use]
   pub fn dependency_tree(&self) -> DependencyTree {
     self.manifest.dependency_tree()
   }
@@ -106,9 +109,9 @@ impl Package {
   pub fn update(self, tree: DependencyTree, release: &Option<Release>) -> Result<()> {
     let targets = tree
       .dependencies
-      .into_iter()
+      .into_par_iter()
       .filter_map(|it| it.into_target(release))
-      .collect_vec();
+      .collect::<Vec<_>>();
 
     self.manifest.update(&self, &targets)
   }

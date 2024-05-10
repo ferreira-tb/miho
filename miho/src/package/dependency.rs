@@ -23,42 +23,38 @@ pub struct Dependency {
 }
 
 impl Dependency {
-  #[must_use]
   pub fn latest(&self) -> Option<&Version> {
     self
       .versions
-      .iter()
+      .par_iter()
       .max_by(|a, b| Version::cmp_precedence(a, b))
   }
 
-  #[must_use]
   pub fn latest_with_req(&self, requirement: &VersionReq) -> Option<&Version> {
     self
       .versions
-      .iter()
+      .par_iter()
       .filter(|v| requirement.matches_any(v))
       .max_by(|a, b| Version::cmp_precedence(a, b))
   }
 
-  #[must_use]
   pub fn target_cmp(&self, release: &Option<Release>) -> Option<Comparator> {
     let comparator = &self.comparator;
-    let requirement = if let Some(r) = release {
-      comparator.with_release(r).as_version_req()
+    let requirement = if let Some(it) = release {
+      comparator.with_release(it).as_version_req()
     } else {
       comparator.as_version_req()
     };
 
-    self.latest_with_req(&requirement).and_then(|target| {
-      let target_cmp = target.as_comparator(comparator.op);
+    self.latest_with_req(&requirement).and_then(|version| {
+      let target_cmp = version.as_comparator(comparator.op);
       (target_cmp != *comparator).then_some(target_cmp)
     })
   }
 
-  #[must_use]
   pub fn into_target(self, release: &Option<Release>) -> Option<Target> {
     let comparator = self.target_cmp(release);
-    matches!(comparator, Some(ref t) if *t != self.comparator).then(|| Target {
+    matches!(comparator, Some(ref it) if *it != self.comparator).then(|| Target {
       dependency: self,
       comparator: comparator.unwrap(),
     })
@@ -115,7 +111,6 @@ pub struct DependencyTree {
 }
 
 impl DependencyTree {
-  #[must_use]
   pub fn new(agent: Agent) -> Self {
     Self {
       agent,
@@ -152,6 +147,7 @@ impl DependencyTree {
   /// Update the dependency tree, fetching metadata from the registry.
   pub async fn fetch(&mut self, cache: Arc<Mutex<Cache>>) -> Result<()> {
     let client = Client::builder()
+      .use_rustls_tls()
       .user_agent("Miho/5.0")
       .brotli(true)
       .gzip(true)
@@ -190,12 +186,14 @@ impl DependencyTree {
             };
 
             let versions = versions
-              .iter()
-              .filter_map(|v| {
-                let version = v.get("num").and_then(Value::as_str);
-                version.and_then(|v| Version::parse(v).ok())
+              .par_iter()
+              .filter_map(|version| {
+                version
+                  .get("num")
+                  .and_then(Value::as_str)
+                  .and_then(|it| Version::parse(it).ok())
               })
-              .collect_vec();
+              .collect::<Vec<_>>();
 
             let mut cache = cache.lock().unwrap();
             Self::add_to_cache(&mut cache, &dependency.name, agent, &versions);

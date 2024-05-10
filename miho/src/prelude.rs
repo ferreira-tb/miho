@@ -3,6 +3,7 @@ pub use colored::Colorize;
 pub use globset::{Glob, GlobSet, GlobSetBuilder};
 pub use hashbrown::{HashMap, HashSet};
 pub use itertools::Itertools;
+pub use rayon::prelude::*;
 pub use semver::{BuildMetadata, Comparator, Op, Prerelease, Version, VersionReq};
 pub use serde::Deserialize;
 pub use std::cmp::Ordering;

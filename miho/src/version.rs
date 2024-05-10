@@ -5,7 +5,6 @@ pub trait VersionExt {
   fn as_comparator(&self, op: Op) -> Comparator;
   fn with_release(&self, release: &Release) -> Version;
 
-  #[must_use]
   fn major(version: &Version) -> Version {
     Version {
       major: version.major + 1,
@@ -16,7 +15,6 @@ pub trait VersionExt {
     }
   }
 
-  #[must_use]
   fn minor(version: &Version) -> Version {
     Version {
       major: version.major,
@@ -27,7 +25,6 @@ pub trait VersionExt {
     }
   }
 
-  #[must_use]
   fn patch(version: &Version) -> Version {
     Version {
       major: version.major,
@@ -40,12 +37,10 @@ pub trait VersionExt {
 }
 
 impl VersionExt for Version {
-  #[must_use]
   fn as_comparator(&self, op: Op) -> Comparator {
     Comparator::from_version(self, op)
   }
 
-  #[must_use]
   fn with_release(&self, release: &Release) -> Version {
     macro_rules! build {
       ($build:expr, $version:expr) => {{
@@ -81,7 +76,6 @@ pub trait ComparatorExt {
   fn as_version_req(&self) -> VersionReq;
   fn with_release(&self, release: &Release) -> Comparator;
 
-  #[must_use]
   fn from_version(version: &Version, op: Op) -> Comparator {
     Comparator {
       op,
@@ -94,12 +88,10 @@ pub trait ComparatorExt {
 }
 
 impl ComparatorExt for Comparator {
-  #[must_use]
   fn as_version_req(&self) -> VersionReq {
     VersionReq::from_comparator(self)
   }
 
-  #[must_use]
   fn with_release(&self, release: &Release) -> Comparator {
     let mut comparator = self.clone();
 
@@ -135,6 +127,6 @@ impl VersionReqExt for VersionReq {
 
   /// Evaluates if the version matches any of the comparators.
   fn matches_any(&self, version: &Version) -> bool {
-    self.comparators.iter().any(|c| c.matches(version))
+    self.comparators.par_iter().any(|c| c.matches(version))
   }
 }

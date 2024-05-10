@@ -1,10 +1,11 @@
 {
   "name": "miho",
-  "version": "5.0.4",
+  "version": "5.0.5",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@8.15.5",
+  "packageManager": "pnpm@9.1.0",
   "scripts": {
+    "clippy": "cargo clippy",
     "mock:bump": "cargo run -- bump -t -p mocks",
     "mock:update": "cargo run -- update -t -p mocks"
   }

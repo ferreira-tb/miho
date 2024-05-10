@@ -17,6 +17,7 @@ rc_buffer = "deny"
 rc_mutex = "deny"
 rest_pat_in_fully_bound_structs = "deny"
 similar_names = "allow"
+struct_excessive_bools = "allow"
 
 [workspace.lints.clippy.pedantic]
 level = "deny"

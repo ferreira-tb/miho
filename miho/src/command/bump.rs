@@ -8,7 +8,6 @@ use inquire::{Confirm, MultiSelect, Select};
 
 static RELEASE: OnceLock<Release> = OnceLock::new();
 
-#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Args, miho_derive::Commit)]
 pub struct Bump {
   /// Type of the release.
@@ -150,7 +149,7 @@ fn prompt_many(packages: Vec<Package>) -> Result<bool> {
       }
 
       let message = "Select the packages to bump.";
-      let packages = packages.into_iter().map(Wrapper).collect_vec();
+      let packages = packages.into_iter().map(Wrapper).collect();
       let packages = MultiSelect::new(message, packages).prompt()?;
 
       if packages.is_empty() {
