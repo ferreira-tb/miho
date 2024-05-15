@@ -42,7 +42,7 @@ version = "0.12.4"
 features = ["brotli", "gzip", "json", "rustls-tls"]
 
 [dependencies.serde]
-version = "1.0.201"
+version = "1.0.202"
 features = ["derive"]
 
 [dependencies.serde_json]
