@@ -62,7 +62,7 @@ version = "1.37.0"
 features = ["full"]
 
 [dependencies.toml]
-version = "0.8.12"
+version = "0.8.13"
 features = ["preserve_order"]
 
 [dependencies.miho_derive]
