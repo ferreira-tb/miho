@@ -16,21 +16,21 @@ categories = ["development-tools"]
 workspace = true
 
 [dependencies]
-anyhow = "1.0.83"
+anyhow = "1.0.86"
 colored = "2.1.0"
 crossterm = "0.27.0"
 futures = "0.3.30"
 globset = "0.4.14"
 ignore = "0.4.22"
 inquire = "0.7.5"
-itertools = "0.12.1"
+itertools = "0.13.0"
 rayon = "1.10.0"
 semver = "1.0.23"
 taplo = "0.13.0"
-thiserror = "1.0.60"
+thiserror = "1.0.61"
 
 [dependencies.clap]
-version = "4.5.4"
+version = "4.5.6"
 features = ["derive"]
 
 [dependencies.hashbrown]
@@ -42,7 +42,7 @@ version = "0.12.4"
 features = ["brotli", "gzip", "json", "rustls-tls"]
 
 [dependencies.serde]
-version = "1.0.202"
+version = "1.0.203"
 features = ["derive"]
 
 [dependencies.serde_json]
@@ -58,11 +58,11 @@ version = "0.15.0"
 features = ["ansi"]
 
 [dependencies.tokio]
-version = "1.37.0"
+version = "1.38.0"
 features = ["full"]
 
 [dependencies.toml]
-version = "0.8.12"
+version = "0.8.14"
 features = ["preserve_order"]
 
 [dependencies.miho_derive]
