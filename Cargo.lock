@@ -987,7 +987,7 @@ dependencies = [
 
 [[package]]
 name = "miho"
-version = "5.0.6"
+version = "5.0.7"
 dependencies = [
  "anyhow",
  "clap",
@@ -1015,7 +1015,7 @@ dependencies = [
 
 [[package]]
 name = "miho_derive"
-version = "5.0.6"
+version = "5.0.7"
 dependencies = [
  "proc-macro2",
  "quote",
