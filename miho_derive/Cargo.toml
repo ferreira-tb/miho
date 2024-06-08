@@ -1,6 +1,6 @@
 [package]
 name = "miho_derive"
-version = "5.0.6"
+version = "5.0.7"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -20,5 +20,5 @@ workspace = true
 
 [dependencies]
 quote = "1.0.36"
-syn = "2.0.63"
-proc-macro2 = "1.0.82"
+syn = "2.0.66"
+proc-macro2 = "1.0.85"
