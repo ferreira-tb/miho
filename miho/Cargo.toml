@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "5.0.8"
+version = "5.0.9"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -30,7 +30,7 @@ taplo = "0.13.0"
 thiserror = "1.0.61"
 
 [dependencies.clap]
-version = "4.5.6"
+version = "4.5.7"
 features = ["derive"]
 
 [dependencies.hashbrown]
