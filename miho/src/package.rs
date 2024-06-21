@@ -85,7 +85,6 @@ impl Package {
     Ok(packages)
   }
 
-  #[must_use]
   pub fn agent(&self) -> Agent {
     self.manifest.agent()
   }

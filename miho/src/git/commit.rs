@@ -10,7 +10,6 @@ pub struct Commit {
 }
 
 impl Commit {
-  #[must_use]
   pub fn new<T: AsRef<str>>(message: T) -> Self {
     let message = message.as_ref();
     Self {

@@ -1,3 +1,4 @@
+#![feature(try_blocks)]
 #![allow(clippy::module_name_repetitions)]
 
 mod command;

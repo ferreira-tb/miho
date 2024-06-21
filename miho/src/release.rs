@@ -15,12 +15,10 @@ pub enum Release {
 }
 
 impl Release {
-  #[must_use]
   pub fn parser() -> Parser {
     Parser::new()
   }
 
-  #[must_use]
   pub fn is_stable(&self) -> bool {
     self.is_major() || self.is_minor() || self.is_patch()
   }
@@ -33,7 +31,6 @@ pub struct Parser {
 }
 
 impl Parser {
-  #[must_use]
   fn new() -> Self {
     Self {
       prerelease: Prerelease::EMPTY,

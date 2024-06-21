@@ -9,7 +9,6 @@ pub struct Push {
 }
 
 impl Push {
-  #[must_use]
   pub fn new() -> Self {
     Self {
       command: Command::new("git"),
