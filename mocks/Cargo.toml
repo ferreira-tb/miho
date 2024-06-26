@@ -2,6 +2,7 @@
 name = "cargo-toml"
 version = "3.0.12"
 keywords = ["test", "test2", "test3", "test4", "test5"]
+publish.workspace = false
 
 [dependencies]
 semver = "1.0.22"

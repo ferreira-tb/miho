@@ -122,7 +122,10 @@ impl Handler for CargoToml {
 
 fn format(value: &Value) -> Result<String> {
   let contents = toml::to_string(value)?;
-  let options = formatter::Options::default();
+  let options = formatter::Options {
+    column_width: 120,
+    ..Default::default()
+  };
 
   let contents = formatter::format(&contents, options);
   Ok(contents)
