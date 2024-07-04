@@ -27,3 +27,4 @@ dist/
 .eslintcache
 .temp
 config.json
+mocks
