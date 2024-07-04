@@ -1,14 +1,18 @@
 use super::{Choice, Commit};
+use crate::command;
 use crate::package::dependency::{Dependency, DependencyTree};
 use crate::package::{Agent, Package};
 use crate::prelude::*;
 use crate::release::Release;
 use crate::version::ComparatorExt;
-use crate::win_cmd;
+use ahash::{HashSet, HashSetExt};
 use clap::Args;
 use crossterm::{cursor, terminal, ExecutableCommand};
 use inquire::{MultiSelect, Select};
 use std::io::{self, Write};
+use strum::IntoEnumIterator;
+use tokio::process::Command;
+use tokio::task::JoinSet;
 
 static RELEASE: OnceLock<Option<Release>> = OnceLock::new();
 
@@ -195,12 +199,20 @@ async fn update_all(trees: Vec<(Package, DependencyTree)>) -> Result<()> {
 
     if let Ok(true) = lockfile.try_exists() {
       let program = agent.to_string().to_lowercase();
-      win_cmd!(&program).arg("install").spawn()?.wait().await?;
+      command!(&program)
+        .arg("install")
+        .spawn()?
+        .wait()
+        .await?;
     }
   }
 
   if agents.contains(&Agent::Cargo) {
-    Command::new("cargo").arg("update").spawn()?.wait().await?;
+    Command::new("cargo")
+      .arg("update")
+      .spawn()?
+      .wait()
+      .await?;
   }
 
   Ok(())
@@ -292,7 +304,9 @@ fn preview(trees: &[(Package, DependencyTree)]) {
 
     let mut table = builder.build();
     let header = package.display();
-    table.with(Style::blank()).with(Panel::header(header));
+    table
+      .with(Style::blank())
+      .with(Panel::header(header));
 
     let version_col = Segment::new(.., 2..3);
     table.with(Modify::new(version_col).with(Alignment::right()));

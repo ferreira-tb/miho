@@ -9,18 +9,16 @@ macro_rules! return_if_ne {
 }
 
 #[macro_export]
-macro_rules! win_cmd {
+macro_rules! command {
   ($program:expr) => {{
-    let mut cmd = if cfg!(windows) {
-      tokio::process::Command::new("cmd")
-    } else {
-      tokio::process::Command::new($program)
-    };
+    #[cfg(target_os = "windows")]
+    {
+      let mut cmd = tokio::process::Command::new("cmd");
+      cmd.args(&["/C", $program]);
+      cmd
+    }
 
-    if cfg!(windows) {
-      cmd.arg("/C").arg($program);
-    };
-
-    cmd
+    #[cfg(not(target_os = "windows"))]
+    tokio::process::Command::new($program)
   }};
 }

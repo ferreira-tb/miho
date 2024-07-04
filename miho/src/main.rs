@@ -1,13 +1,12 @@
-#![feature(try_blocks)]
-#![allow(clippy::module_name_repetitions)]
+#![feature(let_chains, try_blocks)]
 
 mod command;
-pub(crate) mod git;
+mod git;
 mod macros;
-pub(crate) mod package;
-pub(crate) mod prelude;
-pub(crate) mod release;
-pub(crate) mod version;
+mod package;
+mod prelude;
+mod release;
+mod version;
 
 use clap::Parser;
 use command::{Bump, Command, Update};

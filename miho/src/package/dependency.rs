@@ -3,11 +3,14 @@ use crate::prelude::*;
 use crate::release::Release;
 use crate::return_if_ne;
 use crate::version::{ComparatorExt, VersionExt, VersionReqExt};
+use ahash::HashSet;
 use reqwest::header::ACCEPT;
 use reqwest::Client;
 use serde_json::Value;
+use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 use strum::{AsRefStr, Display, EnumIs, EnumString};
+use tokio::task::JoinSet;
 
 const CARGO_REGISTRY: &str = "https://crates.io/api/v1/crates";
 const NPM_REGISTRY: &str = "https://registry.npmjs.org";
@@ -26,14 +29,14 @@ impl Dependency {
   pub fn latest(&self) -> Option<&Version> {
     self
       .versions
-      .par_iter()
+      .iter()
       .max_by(|a, b| Version::cmp_precedence(a, b))
   }
 
   pub fn latest_with_req(&self, requirement: &VersionReq) -> Option<&Version> {
     self
       .versions
-      .par_iter()
+      .iter()
       .filter(|v| requirement.matches_any(v))
       .max_by(|a, b| Version::cmp_precedence(a, b))
   }
@@ -46,10 +49,12 @@ impl Dependency {
       comparator.as_version_req()
     };
 
-    self.latest_with_req(&requirement).and_then(|version| {
-      let target_cmp = version.as_comparator(comparator.op);
-      (target_cmp != *comparator).then_some(target_cmp)
-    })
+    self
+      .latest_with_req(&requirement)
+      .and_then(|version| {
+        let target_cmp = version.as_comparator(comparator.op);
+        (target_cmp != *comparator).then_some(target_cmp)
+      })
   }
 
   pub fn into_target(self, release: &Option<Release>) -> Option<Target> {
@@ -112,10 +117,7 @@ pub struct DependencyTree {
 
 impl DependencyTree {
   pub fn new(agent: Agent) -> Self {
-    Self {
-      agent,
-      dependencies: Vec::default(),
-    }
+    Self { agent, dependencies: Vec::default() }
   }
 
   /// Add dependencies to the tree.
@@ -186,14 +188,14 @@ impl DependencyTree {
             };
 
             let versions = versions
-              .par_iter()
+              .iter()
               .filter_map(|version| {
                 version
                   .get("num")
                   .and_then(Value::as_str)
                   .and_then(|it| Version::parse(it).ok())
               })
-              .collect::<Vec<_>>();
+              .collect_vec();
 
             let mut cache = cache.lock().unwrap();
             Self::add_to_cache(&mut cache, &dependency.name, agent, &versions);
@@ -260,7 +262,9 @@ impl DependencyTree {
   }
 
   fn find_cached<'a>(cache: &'a Cache, name: &str, agent: Agent) -> Option<&'a DependencyCache> {
-    cache.iter().find(|c| c.name == name && c.agent == agent)
+    cache
+      .iter()
+      .find(|c| c.name == name && c.agent == agent)
   }
 }
 

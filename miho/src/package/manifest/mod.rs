@@ -7,8 +7,9 @@ use super::{Agent, Package};
 use crate::prelude::*;
 use cargo_toml::CargoToml;
 use dependency::DependencyTree;
+use globset::Glob;
 use package_json::PackageJson;
-use strum::EnumIter;
+use strum::{EnumIter, IntoEnumIterator};
 use tauri_conf_json::TauriConfJson;
 
 pub(super) type ManifestBox = Box<dyn Handler + Send + Sync>;

@@ -5,6 +5,7 @@ use crate::release::Release;
 use crate::version::VersionExt;
 use clap::Args;
 use inquire::{Confirm, MultiSelect, Select};
+use strum::IntoEnumIterator;
 
 static RELEASE: OnceLock<Release> = OnceLock::new();
 
@@ -118,7 +119,9 @@ fn prompt(mut packages: Vec<Package>) -> Result<bool> {
 
 fn prompt_single(package: Package) -> Result<bool> {
   let message = format!("Bump {}?", package.name);
-  let should_bump = Confirm::new(&message).with_default(true).prompt()?;
+  let should_bump = Confirm::new(&message)
+    .with_default(true)
+    .prompt()?;
 
   if should_bump {
     let release = RELEASE.get().unwrap();
@@ -173,13 +176,21 @@ fn preview(packages: &[Package]) {
   let mut builder = Builder::with_capacity(packages.len(), 5);
 
   for package in packages {
-    let agent = package.agent().to_string().bright_magenta().bold();
+    let agent = package
+      .agent()
+      .to_string()
+      .bright_magenta()
+      .bold();
     let new_version = package.version.with_release(release);
 
     let record = [
       agent.to_string(),
       package.name.bold().to_string(),
-      package.version.to_string().bright_blue().to_string(),
+      package
+        .version
+        .to_string()
+        .bright_blue()
+        .to_string(),
       "=>".to_string(),
       new_version.to_string().bright_green().to_string(),
     ];

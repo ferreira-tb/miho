@@ -2,6 +2,7 @@ use crate::package::dependency::{self, DependencyKind, DependencyTree};
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::{Agent, Package};
 use crate::prelude::*;
+use ahash::{HashMap, HashMapExt};
 use taplo::formatter;
 use toml::Value;
 

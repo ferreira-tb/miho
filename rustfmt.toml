@@ -1,4 +1,9 @@
+chain_width = 50
 edition = "2021"
+group_imports = "One"
+imports_granularity = "Module"
 max_width = 100
-tab_spaces = 2
 newline_style = "Unix"
+struct_lit_width = 36
+tab_spaces = 2
+use_field_init_shorthand = true

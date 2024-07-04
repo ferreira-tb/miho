@@ -2,6 +2,7 @@ use crate::package::dependency::{self, DependencyKind, DependencyTree};
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::{Agent, Package};
 use crate::prelude::*;
+use ahash::HashMap;
 use serde_json::Value;
 
 #[derive(Deserialize)]
@@ -85,7 +86,10 @@ impl Handler for PackageJson {
         DependencyKind::Build => continue,
       };
 
-      if let Some(deps) = manifest.get_mut(key).and_then(Value::as_object_mut) {
+      if let Some(deps) = manifest
+        .get_mut(key)
+        .and_then(Value::as_object_mut)
+      {
         let comparator = Value::String(target.comparator.to_string());
         deps.insert(target.dependency.name.clone(), comparator);
       }

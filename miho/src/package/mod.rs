@@ -8,8 +8,10 @@ use crate::return_if_ne;
 use crate::version::VersionExt;
 pub use agent::Agent;
 use dependency::DependencyTree;
+use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
 use manifest::{ManifestBox, ManifestKind};
+use std::cmp::Ordering;
 
 pub struct Package {
   pub name: String,
@@ -71,7 +73,7 @@ impl Package {
         .collect_vec();
 
       packages = packages
-        .into_par_iter()
+        .into_iter()
         .filter(|it| only.contains(&it.name.as_str()))
         .collect();
     }
@@ -108,9 +110,9 @@ impl Package {
   pub fn update(self, tree: DependencyTree, release: &Option<Release>) -> Result<()> {
     let targets = tree
       .dependencies
-      .into_par_iter()
+      .into_iter()
       .filter_map(|it| it.into_target(release))
-      .collect::<Vec<_>>();
+      .collect_vec();
 
     self.manifest.update(&self, &targets)
   }

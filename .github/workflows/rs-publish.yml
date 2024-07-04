@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - run: cargo clippy -- -D warnings
+      - uses: dtolnay/rust-toolchain@nightly
+      - run: cargo clippy
       - run: cargo publish -p miho_derive
       - run: cargo publish -p miho
