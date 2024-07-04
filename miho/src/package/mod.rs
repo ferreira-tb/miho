@@ -39,9 +39,10 @@ impl Package {
 
   pub fn search<P, S>(path: &[P], only: Option<&[S]>) -> Result<Vec<Self>>
   where
-    P: AsRef<Path>,
+    P: AsRef<Path> + fmt::Debug,
     S: AsRef<str>,
   {
+    info!("searching packages in: {path:?}");
     let Some((first, other)) = path.split_first() else {
       return Ok(Vec::new());
     };
@@ -58,9 +59,11 @@ impl Package {
     for entry in walker.build().flatten() {
       if is_match(&glob, &entry) {
         let path = entry.path().canonicalize()?;
-        let package = Self::new(path);
+        let package = Package::new(path);
         if matches!(package, Ok(ref it) if !packages.contains(it)) {
-          packages.push(package.unwrap());
+          let package = package.unwrap();
+          info!("found: {:?}", package.path.display());
+          packages.push(package);
         }
       }
     }
@@ -72,10 +75,8 @@ impl Package {
         .map(AsRef::as_ref)
         .collect_vec();
 
-      packages = packages
-        .into_iter()
-        .filter(|it| only.contains(&it.name.as_str()))
-        .collect();
+      info!("filtering: {only:?}");
+      packages.retain(|it| only.contains(&it.name.as_str()));
     }
 
     if packages.is_empty() {
@@ -115,6 +116,17 @@ impl Package {
       .collect_vec();
 
     self.manifest.update(&self, &targets)
+  }
+}
+
+impl fmt::Debug for Package {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    f.debug_struct("Package")
+      .field("name", &self.name)
+      .field("version", &self.version)
+      .field("path", &self.path)
+      .field("manifest", &self.manifest.name())
+      .finish()
   }
 }
 

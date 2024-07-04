@@ -16,8 +16,13 @@ pub trait Commit: Command {
 
 #[derive(Display, EnumIter, EnumString)]
 #[strum(serialize_all = "title_case")]
-pub enum Choice {
+enum Choice {
   All,
   Some,
   None,
+}
+
+enum PromptResult {
+  Continue,
+  Abort,
 }

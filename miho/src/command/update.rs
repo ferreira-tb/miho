@@ -1,4 +1,4 @@
-use super::{Choice, Commit};
+use super::{Choice, Commit, PromptResult};
 use crate::command;
 use crate::package::dependency::{Dependency, DependencyTree};
 use crate::package::{Agent, Package};
@@ -8,6 +8,7 @@ use crate::version::ComparatorExt;
 use ahash::{HashSet, HashSetExt};
 use clap::Args;
 use crossterm::{cursor, terminal, ExecutableCommand};
+use future_iter::join_set::IntoJoinSetBy;
 use inquire::{MultiSelect, Select};
 use std::io::{self, Write};
 use strum::IntoEnumIterator;
@@ -64,8 +65,14 @@ pub struct Update {
 
 impl super::Command for Update {
   async fn execute(mut self) -> Result<()> {
-    let path = self.path.as_deref().unwrap();
-    let packages = Package::search(path, self.package.as_deref())?;
+    trace!(command = ?self);
+    let path = self
+      .path
+      .as_deref()
+      .expect("should have `.` as the default value");
+
+    let only = self.package.as_deref();
+    let packages = Package::search(path, only)?;
 
     self.set_release();
     let trees = self.fetch(packages).await?;
@@ -79,11 +86,8 @@ impl super::Command for Update {
 
     if self.no_ask {
       update_all(trees).await?;
-    } else {
-      let should_continue = prompt(trees).await?;
-      if !should_continue {
-        return Ok(());
-      }
+    } else if let PromptResult::Abort = prompt(trees).await? {
+      return Ok(());
     }
 
     if !self.no_commit {
@@ -105,19 +109,17 @@ impl Update {
   }
 
   async fn fetch(&self, packages: Vec<Package>) -> Result<Vec<(Package, DependencyTree)>> {
-    let total = packages.len();
-    let trees: Vec<(Package, DependencyTree)> = Vec::with_capacity(total);
+    let total_amount = packages.len();
+    let trees: Vec<(Package, DependencyTree)> = Vec::with_capacity(total_amount);
     let trees = Arc::new(Mutex::new(trees));
 
-    update_fetch_progress(0, total)?;
+    update_fetch_progress(0, total_amount)?;
 
-    let mut set: JoinSet<Result<()>> = JoinSet::new();
     let cache = Arc::new(Mutex::new(HashSet::new()));
-
-    for package in packages {
+    let mut set: JoinSet<Result<()>> = packages.into_join_set_by(|package| {
       let trees = Arc::clone(&trees);
       let cache = Arc::clone(&cache);
-      set.spawn(async move {
+      async move {
         let mut tree = package.dependency_tree();
         tree.fetch(cache).await?;
 
@@ -125,11 +127,11 @@ impl Update {
         trees.push((package, tree));
 
         clear_line()?;
-        update_fetch_progress(trees.len(), total)?;
+        update_fetch_progress(trees.len(), total_amount)?;
 
         Ok(())
-      });
-    }
+      }
+    });
 
     while let Some(result) = set.join_next().await {
       result??;
@@ -218,14 +220,14 @@ async fn update_all(trees: Vec<(Package, DependencyTree)>) -> Result<()> {
   Ok(())
 }
 
-async fn prompt(mut trees: Vec<(Package, DependencyTree)>) -> Result<bool> {
+async fn prompt(mut trees: Vec<(Package, DependencyTree)>) -> Result<PromptResult> {
   let options = Choice::iter().collect();
   let choice = Select::new("Update dependencies?", options).prompt()?;
 
   match choice {
     Choice::All => {
       update_all(trees).await?;
-      Ok(true)
+      Ok(PromptResult::Continue)
     }
     Choice::Some => {
       struct Wrapper(Dependency);
@@ -252,13 +254,13 @@ async fn prompt(mut trees: Vec<(Package, DependencyTree)>) -> Result<bool> {
 
       if trees.is_empty() {
         println!("{}", "no dependencies selected".truecolor(105, 105, 105));
-        Ok(false)
+        Ok(PromptResult::Abort)
       } else {
         update_all(trees).await?;
-        Ok(true)
+        Ok(PromptResult::Continue)
       }
     }
-    Choice::None => Ok(false),
+    Choice::None => Ok(PromptResult::Abort),
   }
 }
 

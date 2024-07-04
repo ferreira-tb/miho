@@ -1,5 +1,4 @@
-use super::Flag;
-use super::Git;
+use super::{Flag, Git};
 use tokio::process::Command;
 
 /// <https://git-scm.com/docs/git-commit>

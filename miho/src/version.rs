@@ -127,6 +127,9 @@ impl VersionReqExt for VersionReq {
 
   /// Evaluates if the version matches any of the comparators.
   fn matches_any(&self, version: &Version) -> bool {
-    self.comparators.iter().any(|c| c.matches(version))
+    self
+      .comparators
+      .iter()
+      .any(|c| c.matches(version))
   }
 }

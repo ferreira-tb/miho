@@ -6,7 +6,7 @@ Easily bump your packages and update your dependencies.
 cargo install miho
 ```
 
-## CLI
+## Commands
 
 ### Bump
 

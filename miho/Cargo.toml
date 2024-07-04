@@ -19,6 +19,7 @@ workspace = true
 anyhow = "1.0.86"
 colored = "2.1.0"
 crossterm = "0.27.0"
+future-iter = "0.1.3"
 futures = "0.3.30"
 globset = "0.4.14"
 ignore = "0.4.22"
@@ -55,6 +56,14 @@ features = ["derive"]
 [dependencies.tabled]
 version = "0.15.0"
 features = ["ansi"]
+
+[dependencies.tracing]
+version = "0.1.40"
+features = ["release_max_level_off"]
+
+[dependencies.tracing-subscriber]
+version = "0.3.18"
+features = ["chrono", "env-filter", "fmt", "parking_lot", "registry"]
 
 [dependencies.tokio]
 version = "1.38.0"
