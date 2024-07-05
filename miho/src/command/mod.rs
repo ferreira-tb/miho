@@ -10,7 +10,7 @@ pub trait Command {
   async fn execute(self) -> Result<()>;
 }
 
-pub trait Commit: Command {
+trait Commit: Command {
   async fn commit(&mut self, default_message: &str) -> Result<()>;
 }
 

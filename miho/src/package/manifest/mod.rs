@@ -2,13 +2,16 @@ mod cargo_toml;
 mod package_json;
 mod tauri_conf_json;
 
-use super::dependency::{self, Target};
-use super::{Agent, Package};
+use super::Package;
+use crate::agent::Agent;
+use crate::dependency::{self, Target};
 use crate::prelude::*;
 use cargo_toml::CargoToml;
 use dependency::DependencyTree;
 use globset::Glob;
 use package_json::PackageJson;
+use semver::Version;
+use std::path::Path;
 use strum::{EnumIter, IntoEnumIterator};
 use tauri_conf_json::TauriConfJson;
 
@@ -27,7 +30,7 @@ pub trait Handler {
   fn agent(&self) -> Agent;
   fn bump(&self, package: &Package, new_version: Version) -> Result<()>;
   fn name(&self) -> &str;
-  fn update(&self, package: &Package, batch: &[Target]) -> Result<()>;
+  fn update(&self, package: &Package, targets: &[Target]) -> Result<()>;
   fn version(&self) -> Result<Version>;
 
   fn dependency_tree(&self) -> DependencyTree {

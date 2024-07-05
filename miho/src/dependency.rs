@@ -1,4 +1,4 @@
-use crate::package::agent::Agent;
+use crate::agent::Agent;
 use crate::prelude::*;
 use crate::release::Release;
 use crate::return_if_ne;
@@ -6,9 +6,12 @@ use crate::version::{ComparatorExt, VersionExt, VersionReqExt};
 use ahash::HashSet;
 use reqwest::header::ACCEPT;
 use reqwest::Client;
+use semver::{Comparator, Version, VersionReq};
 use serde_json::Value;
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
+use std::mem;
+use std::sync::{Arc, Mutex};
 use strum::{AsRefStr, Display, EnumIs, EnumString};
 use tokio::task::JoinSet;
 

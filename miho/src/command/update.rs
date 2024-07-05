@@ -1,7 +1,8 @@
 use super::{Choice, Commit, PromptResult};
+use crate::agent::Agent;
 use crate::command;
-use crate::package::dependency::{Dependency, DependencyTree};
-use crate::package::{Agent, Package};
+use crate::dependency::{Dependency, DependencyTree};
+use crate::package::{GlobalPackage, Package, PackageDependencyTree, PackageDisplay};
 use crate::prelude::*;
 use crate::release::Release;
 use crate::version::ComparatorExt;
@@ -10,10 +11,16 @@ use clap::Args;
 use crossterm::{cursor, terminal, ExecutableCommand};
 use future_iter::join_set::IntoJoinSetBy;
 use inquire::{MultiSelect, Select};
+use semver::Comparator;
 use std::io::{self, Write};
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex, OnceLock};
+use std::{env, fmt, mem};
 use strum::IntoEnumIterator;
 use tokio::process::Command;
 use tokio::task::JoinSet;
+
+type TreeTuple<T> = (T, DependencyTree);
 
 static RELEASE: OnceLock<Option<Release>> = OnceLock::new();
 
@@ -33,6 +40,10 @@ pub struct Update {
   /// Dependencies to update.
   #[arg(short = 'D', long, value_name = "DEPENDENCY")]
   dependency: Option<Vec<String>>,
+
+  /// Update global dependencies.
+  #[arg(short = 'g', long)]
+  global: bool,
 
   /// Do not ask for consent before updating.
   #[arg(short = 'k', long)]
@@ -66,32 +77,15 @@ pub struct Update {
 impl super::Command for Update {
   async fn execute(mut self) -> Result<()> {
     trace!(command = ?self);
-    let path = self
-      .path
-      .as_deref()
-      .expect("should have `.` as the default value");
-
-    let only = self.package.as_deref();
-    let packages = Package::search(path, only)?;
-
     self.set_release();
-    let trees = self.fetch(packages).await?;
 
-    if trees.is_empty() {
-      println!("{}", "all dependencies are up to date".bright_green());
-      return Ok(());
-    }
-
-    preview(&trees);
-
-    if self.no_ask {
-      update_all(trees).await?;
-    } else if let PromptResult::Abort = prompt(trees).await? {
-      return Ok(());
-    }
-
-    if !self.no_commit {
-      self.commit("chore: bump dependencies").await?;
+    if self.global {
+      self.execute_global().await?;
+    } else {
+      self.execute_local().await?;
+      if !self.no_commit {
+        self.commit("chore: bump dependencies").await?;
+      }
     }
 
     Ok(())
@@ -108,9 +102,60 @@ impl Update {
     RELEASE.set(release).unwrap();
   }
 
-  async fn fetch(&self, packages: Vec<Package>) -> Result<Vec<(Package, DependencyTree)>> {
+  async fn execute_local(&self) -> Result<()> {
+    let path = self
+      .path
+      .as_deref()
+      .expect("should have `.` as the default value");
+
+    let only = self.package.as_deref();
+    let packages = Package::search(path, only)?;
+    let mut trees = self.fetch(packages).await?;
+
+    if trees.is_empty() {
+      println!("{}", "all dependencies are up to date".bright_green());
+      return Ok(());
+    }
+
+    preview(&trees);
+
+    if self.no_ask {
+      update_local(trees).await
+    } else {
+      match prompt(&mut trees).await? {
+        PromptResult::Abort => Ok(()),
+        PromptResult::Continue => update_local(trees).await,
+      }
+    }
+  }
+
+  async fn execute_global(&self) -> Result<()> {
+    let packages = GlobalPackage::get().await?;
+    let mut trees = self.fetch(packages).await?;
+
+    if trees.is_empty() {
+      println!("{}", "all dependencies are up to date".bright_green());
+      return Ok(());
+    }
+
+    preview(&trees);
+
+    if self.no_ask {
+      update_global(trees).await
+    } else {
+      match prompt(&mut trees).await? {
+        PromptResult::Abort => Ok(()),
+        PromptResult::Continue => update_global(trees).await,
+      }
+    }
+  }
+
+  async fn fetch<T>(&self, packages: Vec<T>) -> Result<Vec<TreeTuple<T>>>
+  where
+    T: PackageDependencyTree + PackageDisplay + Ord + Send + Sync + 'static,
+  {
     let total_amount = packages.len();
-    let trees: Vec<(Package, DependencyTree)> = Vec::with_capacity(total_amount);
+    let trees: Vec<TreeTuple<T>> = Vec::with_capacity(total_amount);
     let trees = Arc::new(Mutex::new(trees));
 
     update_fetch_progress(0, total_amount)?;
@@ -182,7 +227,7 @@ impl Update {
   }
 }
 
-async fn update_all(trees: Vec<(Package, DependencyTree)>) -> Result<()> {
+async fn update_local(trees: Vec<TreeTuple<Package>>) -> Result<()> {
   let release = RELEASE.get().unwrap();
   let agents = trees
     .iter()
@@ -220,15 +265,22 @@ async fn update_all(trees: Vec<(Package, DependencyTree)>) -> Result<()> {
   Ok(())
 }
 
-async fn prompt(mut trees: Vec<(Package, DependencyTree)>) -> Result<PromptResult> {
+async fn update_global(trees: Vec<TreeTuple<GlobalPackage>>) -> Result<()> {
+  let release = RELEASE.get().unwrap();
+  for (package, tree) in trees {
+    package.update(tree, release).await?;
+  }
+
+  Ok(())
+}
+
+async fn prompt(trees: &mut Vec<(impl PackageDisplay, DependencyTree)>) -> Result<PromptResult> {
   let options = Choice::iter().collect();
   let choice = Select::new("Update dependencies?", options).prompt()?;
 
   match choice {
-    Choice::All => {
-      update_all(trees).await?;
-      Ok(PromptResult::Continue)
-    }
+    Choice::All => Ok(PromptResult::Continue),
+    Choice::None => Ok(PromptResult::Abort),
     Choice::Some => {
       struct Wrapper(Dependency);
 
@@ -238,7 +290,7 @@ async fn prompt(mut trees: Vec<(Package, DependencyTree)>) -> Result<PromptResul
         }
       }
 
-      for (package, tree) in &mut trees {
+      for (package, tree) in trees.iter_mut() {
         let message = package.display();
         let dependencies = mem::take(&mut tree.dependencies);
         let dependencies = dependencies.into_iter().map(Wrapper).collect();
@@ -256,15 +308,13 @@ async fn prompt(mut trees: Vec<(Package, DependencyTree)>) -> Result<PromptResul
         println!("{}", "no dependencies selected".truecolor(105, 105, 105));
         Ok(PromptResult::Abort)
       } else {
-        update_all(trees).await?;
         Ok(PromptResult::Continue)
       }
     }
-    Choice::None => Ok(PromptResult::Abort),
   }
 }
 
-fn preview(trees: &[(Package, DependencyTree)]) {
+fn preview(trees: &[(impl PackageDisplay, DependencyTree)]) {
   use tabled::builder::Builder;
   use tabled::settings::object::Segment;
   use tabled::settings::{Alignment, Modify, Panel, Style};
