@@ -2,6 +2,7 @@ use crate::package::dependency::{self, DependencyKind, DependencyTree};
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::{Agent, Package};
 use crate::prelude::*;
+use crate::version::ComparatorExt;
 use ahash::HashMap;
 use serde_json::Value;
 
@@ -59,7 +60,7 @@ impl Handler for PackageJson {
     macro_rules! add {
       ($deps:expr, $kind:ident) => {
         if let Some(deps) = $deps {
-          tree.add(deps, DependencyKind::$kind);
+          tree.add_many(deps, DependencyKind::$kind);
         }
       };
     }
@@ -67,6 +68,13 @@ impl Handler for PackageJson {
     add!(&self.dependencies, Normal);
     add!(&self.dev_dependencies, Development);
     add!(&self.peer_dependencies, Peer);
+
+    if let Some(pm) = &self.package_manager
+      && let Some((name, version)) = pm.split('@').next_tuple()
+      && let Ok(comparator) = Comparator::parse(version)
+    {
+      tree.add(name, comparator, DependencyKind::PackageManager);
+    }
 
     tree
   }
@@ -83,10 +91,15 @@ impl Handler for PackageJson {
         DependencyKind::Normal => "dependencies",
         DependencyKind::Development => "devDependencies",
         DependencyKind::Peer => "peerDependencies",
+        DependencyKind::PackageManager => "packageManager",
         DependencyKind::Build => continue,
       };
 
-      if let Some(deps) = manifest
+      if target.dependency.kind.is_package_manager() {
+        let agent = package.agent().to_string().to_lowercase();
+        let version = target.comparator.as_version()?;
+        manifest[key] = Value::String(format!("{agent}@{version}"));
+      } else if let Some(deps) = manifest
         .get_mut(key)
         .and_then(Value::as_object_mut)
       {

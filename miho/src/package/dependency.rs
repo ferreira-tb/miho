@@ -117,11 +117,22 @@ pub struct DependencyTree {
 
 impl DependencyTree {
   pub fn new(agent: Agent) -> Self {
-    Self { agent, dependencies: Vec::default() }
+    Self { agent, dependencies: Vec::new() }
+  }
+
+  pub fn add(&mut self, name: impl AsRef<str>, comparator: Comparator, kind: DependencyKind) {
+    let dependency = Dependency {
+      name: name.as_ref().to_owned(),
+      comparator,
+      kind,
+      versions: Vec::default(),
+    };
+
+    self.dependencies.push(dependency);
   }
 
   /// Add dependencies to the tree.
-  pub fn add<I, N, V>(&mut self, dependencies: I, kind: DependencyKind) -> &mut Self
+  pub fn add_many<I, N, V>(&mut self, dependencies: I, kind: DependencyKind)
   where
     I: IntoIterator<Item = (N, V)>,
     N: AsRef<str>,
@@ -129,21 +140,10 @@ impl DependencyTree {
   {
     for (name, version) in dependencies {
       let version = version.as_ref();
-      let Ok(comparator) = Comparator::parse(version) else {
-        continue;
-      };
-
-      let dependency = Dependency {
-        name: name.as_ref().to_owned(),
-        comparator,
-        kind,
-        versions: Vec::default(),
-      };
-
-      self.dependencies.push(dependency);
+      if let Ok(comparator) = Comparator::parse(version) {
+        self.add(name, comparator, kind);
+      }
     }
-
-    self
   }
 
   /// Update the dependency tree, fetching metadata from the registry.
@@ -163,17 +163,16 @@ impl DependencyTree {
     for mut dependency in dependencies {
       let agent = self.agent;
       let client = client.clone();
-
       let cache = Arc::clone(&cache);
-      let cache_mutex = cache.lock().unwrap();
 
-      if let Some(cached) = Self::find_cached(&cache_mutex, &dependency.name, agent) {
-        dependency.versions.clone_from(&cached.versions);
-        self.dependencies.push(dependency);
-        continue;
+      {
+        let cache = cache.lock().unwrap();
+        if let Some(cached) = Self::find_cached(&cache, &dependency.name, agent) {
+          dependency.versions.clone_from(&cached.versions);
+          self.dependencies.push(dependency);
+          continue;
+        }
       }
-
-      drop(cache_mutex);
 
       set.spawn(async move {
         dependency.versions = match agent {
@@ -269,7 +268,7 @@ impl DependencyTree {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, AsRefStr, Display, EnumIs, EnumString)]
-#[strum(serialize_all = "snake_case")]
+#[strum(serialize_all = "kebab-case")]
 pub enum DependencyKind {
   Build,
   #[strum(to_string = "dev")]
@@ -277,15 +276,17 @@ pub enum DependencyKind {
   #[strum(to_string = "")]
   Normal,
   Peer,
+  PackageManager,
 }
 
 impl DependencyKind {
   fn precedence(self) -> u8 {
     match self {
-      Self::Normal => 0,
-      Self::Development => 1,
-      Self::Build => 2,
-      Self::Peer => 3,
+      DependencyKind::Normal => 0,
+      DependencyKind::Development => 1,
+      DependencyKind::Build => 2,
+      DependencyKind::Peer => 3,
+      DependencyKind::PackageManager => 4,
     }
   }
 }

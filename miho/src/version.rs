@@ -73,6 +73,7 @@ impl VersionExt for Version {
 }
 
 pub trait ComparatorExt {
+  fn as_version(&self) -> Result<Version>;
   fn as_version_req(&self) -> VersionReq;
   fn with_release(&self, release: &Release) -> Comparator;
 
@@ -88,6 +89,17 @@ pub trait ComparatorExt {
 }
 
 impl ComparatorExt for Comparator {
+  fn as_version(&self) -> Result<Version> {
+    let (Some(minor), Some(patch)) = (self.minor, self.patch) else {
+      bail!("comparator {self} cannot be made into a version");
+    };
+
+    let mut version = Version::new(self.major, minor, patch);
+    version.pre = self.pre.clone();
+
+    Ok(version)
+  }
+
   fn as_version_req(&self) -> VersionReq {
     VersionReq::from_comparator(self)
   }

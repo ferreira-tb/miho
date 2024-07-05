@@ -1,11 +1,12 @@
 use super::{Choice, Commit, PromptResult};
-use crate::package::Package;
+use crate::package::{Agent, Package};
 use crate::prelude::*;
 use crate::release::Release;
 use crate::version::VersionExt;
 use clap::Args;
 use inquire::{Confirm, MultiSelect, Select};
 use strum::IntoEnumIterator;
+use tokio::process::Command;
 
 static RELEASE: OnceLock<Release> = OnceLock::new();
 
@@ -71,8 +72,8 @@ impl super::Command for Bump {
     preview(&packages);
 
     if self.no_ask {
-      bump_all(packages)?;
-    } else if let PromptResult::Abort = prompt(packages)? {
+      bump_all(packages).await?;
+    } else if let PromptResult::Abort = prompt(packages).await? {
       return Ok(());
     }
 
@@ -112,19 +113,36 @@ impl Bump {
   }
 }
 
-fn bump_all(packages: Vec<Package>) -> Result<()> {
+async fn bump_all(packages: Vec<Package>) -> Result<()> {
   let release = RELEASE.get().unwrap();
+  let agents = packages
+    .iter()
+    .map(Package::agent)
+    .unique()
+    .collect_vec();
+
   packages
     .into_iter()
-    .try_for_each(|package| package.bump(release))
+    .try_for_each(|package| package.bump(release))?;
+
+  // https://doc.rust-lang.org/cargo/commands/cargo-update.html#update-options
+  if agents.contains(&Agent::Cargo) {
+    Command::new("cargo")
+      .args(["update", "--workspace"])
+      .spawn()?
+      .wait()
+      .await?;
+  }
+
+  Ok(())
 }
 
-fn prompt(mut packages: Vec<Package>) -> Result<PromptResult> {
+async fn prompt(mut packages: Vec<Package>) -> Result<PromptResult> {
   if packages.len() == 1 {
     let package = packages.swap_remove(0);
     prompt_one(package)
   } else {
-    prompt_many(packages)
+    prompt_many(packages).await
   }
 }
 
@@ -143,13 +161,13 @@ fn prompt_one(package: Package) -> Result<PromptResult> {
   }
 }
 
-fn prompt_many(packages: Vec<Package>) -> Result<PromptResult> {
+async fn prompt_many(packages: Vec<Package>) -> Result<PromptResult> {
   let options = Choice::iter().collect_vec();
   let choice = Select::new("Bump packages?", options).prompt()?;
 
   match choice {
     Choice::All => {
-      bump_all(packages)?;
+      bump_all(packages).await?;
       Ok(PromptResult::Continue)
     }
     Choice::Some => {
@@ -170,7 +188,8 @@ fn prompt_many(packages: Vec<Package>) -> Result<PromptResult> {
         println!("{}", "no package selected".truecolor(105, 105, 105));
         Ok(PromptResult::Abort)
       } else {
-        bump_all(packages.into_iter().map(|it| it.0).collect())?;
+        let packages = packages.into_iter().map(|it| it.0).collect();
+        bump_all(packages).await?;
         Ok(PromptResult::Continue)
       }
     }

@@ -64,7 +64,7 @@ impl Handler for CargoToml {
       ($dependencies:expr, $kind:ident) => {
         if let Some(deps) = $dependencies {
           let dependencies = parse_dependencies(deps);
-          tree.add(&dependencies, DependencyKind::$kind);
+          tree.add_many(&dependencies, DependencyKind::$kind);
         }
       };
     }
@@ -88,7 +88,7 @@ impl Handler for CargoToml {
         DependencyKind::Normal => "dependencies",
         DependencyKind::Development => "dev-dependencies",
         DependencyKind::Build => "build-dependencies",
-        DependencyKind::Peer => continue,
+        DependencyKind::Peer | DependencyKind::PackageManager => continue,
       };
 
       let version = manifest
