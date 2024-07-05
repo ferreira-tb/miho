@@ -1,10 +1,12 @@
-use super::{Choice, Commit};
-use crate::package::Package;
+use super::{Choice, Commit, PromptResult};
+use crate::package::{Agent, Package};
 use crate::prelude::*;
 use crate::release::Release;
 use crate::version::VersionExt;
 use clap::Args;
 use inquire::{Confirm, MultiSelect, Select};
+use strum::IntoEnumIterator;
+use tokio::process::Command;
 
 static RELEASE: OnceLock<Release> = OnceLock::new();
 
@@ -57,19 +59,22 @@ pub struct Bump {
 
 impl super::Command for Bump {
   async fn execute(mut self) -> Result<()> {
-    let path = self.path.as_deref().unwrap();
-    let packages = Package::search(path, self.package.as_deref())?;
+    trace!(command = ?self);
+    let path = self
+      .path
+      .as_deref()
+      .expect("should have `.` as the default value");
+
+    let only = self.package.as_deref();
+    let packages = Package::search(path, only)?;
 
     self.set_release()?;
     preview(&packages);
 
     if self.no_ask {
-      bump_all(packages)?;
-    } else {
-      let should_continue = prompt(packages)?;
-      if !should_continue {
-        return Ok(());
-      }
+      bump_all(packages).await?;
+    } else if let PromptResult::Abort = prompt(packages).await? {
+      return Ok(());
     }
 
     if !self.no_commit {
@@ -85,58 +90,85 @@ impl Bump {
     let mut parser = Release::parser();
 
     if let Some(pre) = self.pre.as_deref() {
+      debug!(prerelease = ?pre);
       parser.prerelease(pre)?;
     }
 
     if let Some(build) = self.build.as_deref() {
+      debug!(?build);
       parser.metadata(build)?;
     }
 
-    let release = self.release.as_deref().unwrap();
+    let release = self
+      .release
+      .as_deref()
+      .expect("should have `patch` as the default value");
+
     let release = parser.parse(release)?;
+
+    debug!(?release);
     RELEASE.set(release).unwrap();
 
     Ok(())
   }
 }
 
-fn bump_all(packages: Vec<Package>) -> Result<()> {
+async fn bump_all(packages: Vec<Package>) -> Result<()> {
   let release = RELEASE.get().unwrap();
+  let agents = packages
+    .iter()
+    .map(Package::agent)
+    .unique()
+    .collect_vec();
+
   packages
     .into_iter()
-    .try_for_each(|package| package.bump(release))
+    .try_for_each(|package| package.bump(release))?;
+
+  // https://doc.rust-lang.org/cargo/commands/cargo-update.html#update-options
+  if agents.contains(&Agent::Cargo) {
+    Command::new("cargo")
+      .args(["update", "--workspace"])
+      .spawn()?
+      .wait()
+      .await?;
+  }
+
+  Ok(())
 }
 
-fn prompt(mut packages: Vec<Package>) -> Result<bool> {
+async fn prompt(mut packages: Vec<Package>) -> Result<PromptResult> {
   if packages.len() == 1 {
     let package = packages.swap_remove(0);
-    prompt_single(package)
+    prompt_one(package)
   } else {
-    prompt_many(packages)
+    prompt_many(packages).await
   }
 }
 
-fn prompt_single(package: Package) -> Result<bool> {
+fn prompt_one(package: Package) -> Result<PromptResult> {
   let message = format!("Bump {}?", package.name);
-  let should_bump = Confirm::new(&message).with_default(true).prompt()?;
+  let should_bump = Confirm::new(&message)
+    .with_default(true)
+    .prompt()?;
 
   if should_bump {
     let release = RELEASE.get().unwrap();
     package.bump(release)?;
-    Ok(true)
+    Ok(PromptResult::Continue)
   } else {
-    Ok(false)
+    Ok(PromptResult::Abort)
   }
 }
 
-fn prompt_many(packages: Vec<Package>) -> Result<bool> {
+async fn prompt_many(packages: Vec<Package>) -> Result<PromptResult> {
   let options = Choice::iter().collect_vec();
   let choice = Select::new("Bump packages?", options).prompt()?;
 
   match choice {
     Choice::All => {
-      bump_all(packages)?;
-      Ok(true)
+      bump_all(packages).await?;
+      Ok(PromptResult::Continue)
     }
     Choice::Some => {
       struct Wrapper(Package);
@@ -154,13 +186,14 @@ fn prompt_many(packages: Vec<Package>) -> Result<bool> {
 
       if packages.is_empty() {
         println!("{}", "no package selected".truecolor(105, 105, 105));
-        Ok(false)
+        Ok(PromptResult::Abort)
       } else {
-        bump_all(packages.into_iter().map(|it| it.0).collect())?;
-        Ok(true)
+        let packages = packages.into_iter().map(|it| it.0).collect();
+        bump_all(packages).await?;
+        Ok(PromptResult::Continue)
       }
     }
-    Choice::None => Ok(false),
+    Choice::None => Ok(PromptResult::Abort),
   }
 }
 
@@ -173,15 +206,31 @@ fn preview(packages: &[Package]) {
   let mut builder = Builder::with_capacity(packages.len(), 5);
 
   for package in packages {
-    let agent = package.agent().to_string().bright_magenta().bold();
-    let new_version = package.version.with_release(release);
+    let agent = package
+      .agent()
+      .to_string()
+      .bright_magenta()
+      .bold();
+
+    let version = package
+      .version
+      .to_string()
+      .bright_blue()
+      .to_string();
+
+    let new_version = package
+      .version
+      .with_release(release)
+      .to_string()
+      .bright_green()
+      .to_string();
 
     let record = [
       agent.to_string(),
       package.name.bold().to_string(),
-      package.version.to_string().bright_blue().to_string(),
+      version,
       "=>".to_string(),
-      new_version.to_string().bright_green().to_string(),
+      new_version,
     ];
 
     builder.push_record(record);

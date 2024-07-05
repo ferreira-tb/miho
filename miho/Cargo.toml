@@ -9,7 +9,7 @@ license = "MIT"
 readme = "../README.md"
 edition = "2021"
 rust-version = "1.78"
-keywords = ["miho", "repository"]
+keywords = ["miho", "repository", "git"]
 categories = ["development-tools"]
 
 [lints]
@@ -19,23 +19,23 @@ workspace = true
 anyhow = "1.0.86"
 colored = "2.1.0"
 crossterm = "0.27.0"
+future-iter = "0.1.3"
 futures = "0.3.30"
 globset = "0.4.14"
 ignore = "0.4.22"
 inquire = "0.7.5"
 itertools = "0.13.0"
-rayon = "1.10.0"
 semver = "1.0.23"
 taplo = "0.13.0"
 thiserror = "1.0.61"
 
+[dependencies.ahash]
+version = "0.8.11"
+features = ["serde"]
+
 [dependencies.clap]
 version = "4.5.8"
 features = ["derive"]
-
-[dependencies.hashbrown]
-version = "0.14.5"
-features = ["serde"]
 
 [dependencies.reqwest]
 version = "0.12.5"
@@ -56,6 +56,14 @@ features = ["derive"]
 [dependencies.tabled]
 version = "0.15.0"
 features = ["ansi"]
+
+[dependencies.tracing]
+version = "0.1.40"
+features = ["release_max_level_off"]
+
+[dependencies.tracing-subscriber]
+version = "0.3.18"
+features = ["chrono", "env-filter", "fmt", "parking_lot", "registry"]
 
 [dependencies.tokio]
 version = "1.38.0"

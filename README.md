@@ -1,12 +1,12 @@
 # Miho
 
-Easily bump your packages version and update your dependencies.
+Easily bump your packages and update your dependencies.
 
 ```sh
 cargo install miho
 ```
 
-## CLI
+## Commands
 
 ### Bump
 

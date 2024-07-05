@@ -1,13 +1,12 @@
-#![feature(try_blocks)]
-#![allow(clippy::module_name_repetitions)]
+#![feature(let_chains, try_blocks)]
 
 mod command;
-pub(crate) mod git;
+mod git;
 mod macros;
-pub(crate) mod package;
-pub(crate) mod prelude;
-pub(crate) mod release;
-pub(crate) mod version;
+mod package;
+mod prelude;
+mod release;
+mod version;
 
 use clap::Parser;
 use command::{Bump, Command, Update};
@@ -25,10 +24,40 @@ enum Cli {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+  #[cfg(debug_assertions)]
+  setup_tracing();
+
   let cli = Cli::parse();
 
   match cli {
     Cli::Bump(cmd) => cmd.execute().await,
     Cli::Update(cmd) => cmd.execute().await,
   }
+}
+
+#[cfg(debug_assertions)]
+fn setup_tracing() {
+  use tracing::subscriber::set_global_default;
+  use tracing_subscriber::fmt::time::ChronoLocal;
+  use tracing_subscriber::fmt::Layer;
+  use tracing_subscriber::layer::SubscriberExt;
+  use tracing_subscriber::{EnvFilter, Registry};
+
+  /// <https://docs.rs/chrono/latest/chrono/format/strftime/index.html>
+  const TIMESTAMP: &str = "%F %T%.3f %:z";
+
+  let filter = EnvFilter::builder()
+    .from_env()
+    .unwrap()
+    .add_directive("miho=trace".parse().unwrap());
+
+  let stderr = Layer::default()
+    .with_ansi(true)
+    .with_timer(ChronoLocal::new(TIMESTAMP.into()))
+    .with_writer(std::io::stderr)
+    .pretty();
+
+  let subscriber = Registry::default().with(stderr).with(filter);
+
+  set_global_default(subscriber).unwrap();
 }

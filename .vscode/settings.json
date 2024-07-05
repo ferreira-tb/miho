@@ -1,12 +1,16 @@
 {
-  "conventionalCommits.promptScopes": false,
-  "rust-analyzer.showUnlinkedFileNotification": false,
-  "rust-analyzer.files.excludeDirs": ["mocks"],
-  "editor.tabSize": 2,
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
-  "[rust]": {
-    "editor.defaultFormatter": "rust-lang.rust-analyzer"
-  }
+  "conventionalCommits.promptScopes": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "rust-analyzer.files.excludeDirs": ["mocks"],
+  "rust-analyzer.showUnlinkedFileNotification": false
 }

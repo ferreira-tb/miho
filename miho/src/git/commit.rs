@@ -1,6 +1,5 @@
-use super::Flag;
-use super::Git;
-use crate::prelude::*;
+use super::{Flag, Git};
+use tokio::process::Command;
 
 /// <https://git-scm.com/docs/git-commit>
 #[derive(miho_derive::Git)]

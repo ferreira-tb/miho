@@ -1,6 +1,5 @@
-use crate::package::dependency;
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
-use crate::package::{Agent, Package};
+use crate::package::{dependency, Agent, Package};
 use crate::prelude::*;
 
 #[derive(Debug, Deserialize)]

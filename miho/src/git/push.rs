@@ -1,5 +1,5 @@
 use super::Git;
-use crate::prelude::*;
+use tokio::process::Command;
 
 /// <https://git-scm.com/docs/git-push>
 #[derive(miho_derive::Git)]
