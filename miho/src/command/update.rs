@@ -122,7 +122,7 @@ impl Update {
     if self.no_ask {
       update_local(trees).await
     } else {
-      match prompt(&mut trees).await? {
+      match prompt(&mut trees)? {
         PromptResult::Abort => Ok(()),
         PromptResult::Continue => update_local(trees).await,
       }
@@ -143,7 +143,7 @@ impl Update {
     if self.no_ask {
       update_global(trees).await
     } else {
-      match prompt(&mut trees).await? {
+      match prompt(&mut trees)? {
         PromptResult::Abort => Ok(()),
         PromptResult::Continue => update_global(trees).await,
       }
@@ -274,7 +274,7 @@ async fn update_global(trees: Vec<TreeTuple<GlobalPackage>>) -> Result<()> {
   Ok(())
 }
 
-async fn prompt(trees: &mut Vec<(impl PackageDisplay, DependencyTree)>) -> Result<PromptResult> {
+fn prompt(trees: &mut Vec<(impl PackageDisplay, DependencyTree)>) -> Result<PromptResult> {
   let options = Choice::iter().collect();
   let choice = Select::new("Update dependencies?", options).prompt()?;
 
