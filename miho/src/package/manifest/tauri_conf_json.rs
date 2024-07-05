@@ -1,6 +1,12 @@
+use crate::agent::Agent;
+use crate::dependency;
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
-use crate::package::{dependency, Agent, Package};
+use crate::package::Package;
 use crate::prelude::*;
+use semver::Version;
+use serde::Deserialize;
+use std::fs;
+use std::path::Path;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "camelCase"))]

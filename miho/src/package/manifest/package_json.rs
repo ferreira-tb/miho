@@ -1,10 +1,15 @@
-use crate::package::dependency::{self, DependencyKind, DependencyTree};
+use crate::agent::Agent;
+use crate::dependency::{self, DependencyKind, DependencyTree};
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
-use crate::package::{Agent, Package};
+use crate::package::Package;
 use crate::prelude::*;
 use crate::version::ComparatorExt;
 use ahash::HashMap;
+use semver::{Comparator, Version};
+use serde::Deserialize;
 use serde_json::Value;
+use std::fs;
+use std::path::Path;
 
 #[derive(Deserialize)]
 #[serde(rename_all(deserialize = "camelCase"))]
@@ -83,10 +88,10 @@ impl Handler for PackageJson {
     self.name.as_str()
   }
 
-  fn update(&self, package: &Package, batch: &[dependency::Target]) -> Result<()> {
+  fn update(&self, package: &Package, targets: &[dependency::Target]) -> Result<()> {
     let mut manifest = PackageJson::read_as_value(&package.path)?;
 
-    for target in batch {
+    for target in targets {
       let key = match target.dependency.kind {
         DependencyKind::Normal => "dependencies",
         DependencyKind::Development => "devDependencies",

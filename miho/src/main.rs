@@ -1,6 +1,8 @@
 #![feature(let_chains, try_blocks)]
 
+mod agent;
 mod command;
+mod dependency;
 mod git;
 mod macros;
 mod package;

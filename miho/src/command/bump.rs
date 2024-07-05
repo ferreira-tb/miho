@@ -1,10 +1,14 @@
 use super::{Choice, Commit, PromptResult};
-use crate::package::{Agent, Package};
+use crate::agent::Agent;
+use crate::package::Package;
 use crate::prelude::*;
 use crate::release::Release;
 use crate::version::VersionExt;
 use clap::Args;
 use inquire::{Confirm, MultiSelect, Select};
+use std::fmt;
+use std::path::PathBuf;
+use std::sync::OnceLock;
 use strum::IntoEnumIterator;
 use tokio::process::Command;
 
@@ -60,6 +64,8 @@ pub struct Bump {
 impl super::Command for Bump {
   async fn execute(mut self) -> Result<()> {
     trace!(command = ?self);
+    self.set_release()?;
+
     let path = self
       .path
       .as_deref()
@@ -67,8 +73,6 @@ impl super::Command for Bump {
 
     let only = self.package.as_deref();
     let packages = Package::search(path, only)?;
-
-    self.set_release()?;
     preview(&packages);
 
     if self.no_ask {

@@ -38,6 +38,7 @@ miho update [OPTIONS] [RELEASE]
 |      `--add`       | `-a`  | Include untracked files with `git add <PATHSPEC>`. |
 | `--commit-message` | `-m`  | Message of the commit.                             |
 |   `--dependency`   | `-D`  | Dependencies to update.                            |
+|     `--global`     | `-g`  | Update global dependencies.                        |
 |     `--no-ask`     | `-k`  | Do not ask for consent before updating.            |
 |   `--no-commit`    | `-t`  | Do not commit the modified files.                  |
 |    `--no-push`     | none  | Do not push the commit.                            |

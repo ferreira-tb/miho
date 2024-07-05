@@ -1,8 +1,13 @@
-use crate::package::dependency::{self, DependencyKind, DependencyTree};
+use crate::agent::Agent;
+use crate::dependency::{self, DependencyKind, DependencyTree};
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
-use crate::package::{Agent, Package};
+use crate::package::Package;
 use crate::prelude::*;
 use ahash::{HashMap, HashMapExt};
+use semver::Version;
+use serde::Deserialize;
+use std::fs;
+use std::path::Path;
 use taplo::formatter;
 use toml::Value;
 
@@ -80,10 +85,10 @@ impl Handler for CargoToml {
     self.package.name.as_str()
   }
 
-  fn update(&self, package: &Package, batch: &[dependency::Target]) -> Result<()> {
+  fn update(&self, package: &Package, targets: &[dependency::Target]) -> Result<()> {
     let mut manifest = CargoToml::read_as_value(&package.path)?;
 
-    for target in batch {
+    for target in targets {
       let key = match target.dependency.kind {
         DependencyKind::Normal => "dependencies",
         DependencyKind::Development => "dev-dependencies",
