@@ -34,7 +34,7 @@ version = "0.8.11"
 features = ["serde"]
 
 [dependencies.clap]
-version = "4.5.8"
+version = "4.5.9"
 features = ["derive"]
 
 [dependencies.reqwest]
