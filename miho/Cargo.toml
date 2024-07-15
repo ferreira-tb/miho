@@ -27,7 +27,7 @@ inquire = "0.7.5"
 itertools = "0.13.0"
 semver = "1.0.23"
 taplo = "0.13.0"
-thiserror = "1.0.61"
+thiserror = "1.0.62"
 
 [dependencies.ahash]
 version = "0.8.11"
