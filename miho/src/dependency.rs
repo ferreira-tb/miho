@@ -18,6 +18,13 @@ use tokio::task::JoinSet;
 const CARGO_REGISTRY: &str = "https://crates.io/api/v1/crates";
 const NPM_REGISTRY: &str = "https://registry.npmjs.org";
 
+const USER_AGENT: &str = concat!(
+  env!("CARGO_PKG_NAME"),
+  "/",
+  env!("CARGO_PKG_VERSION"),
+  "(https://github.com/ferreira-tb/miho/)"
+);
+
 pub type Cache = HashSet<DependencyCache>;
 
 #[derive(Debug)]
@@ -153,7 +160,7 @@ impl DependencyTree {
   pub async fn fetch(&mut self, cache: Arc<Mutex<Cache>>) -> Result<()> {
     let client = Client::builder()
       .use_rustls_tls()
-      .user_agent("Miho/5.0")
+      .user_agent(USER_AGENT)
       .brotli(true)
       .gzip(true)
       .build()?;

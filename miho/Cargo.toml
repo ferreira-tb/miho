@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "5.1.0"
+version = "5.1.1"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -66,7 +66,7 @@ version = "0.3.18"
 features = ["chrono", "env-filter", "fmt", "parking_lot", "registry"]
 
 [dependencies.tokio]
-version = "1.38.0"
+version = "1.38.1"
 features = ["full"]
 
 [dependencies.toml]
