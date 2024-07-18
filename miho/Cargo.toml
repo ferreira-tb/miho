@@ -27,7 +27,7 @@ inquire = "0.7.5"
 itertools = "0.13.0"
 semver = "1.0.23"
 taplo = "0.13.0"
-thiserror = "1.0.62"
+thiserror = "1.0.63"
 
 [dependencies.ahash]
 version = "0.8.11"
@@ -70,7 +70,7 @@ version = "1.38.1"
 features = ["full"]
 
 [dependencies.toml]
-version = "0.8.14"
+version = "0.8.15"
 features = ["preserve_order"]
 
 [dependencies.miho_derive]
