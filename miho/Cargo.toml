@@ -34,7 +34,7 @@ version = "0.8.11"
 features = ["serde"]
 
 [dependencies.clap]
-version = "4.5.9"
+version = "4.5.11"
 features = ["derive"]
 
 [dependencies.reqwest]
@@ -66,11 +66,11 @@ version = "0.3.18"
 features = ["chrono", "env-filter", "fmt", "parking_lot", "registry"]
 
 [dependencies.tokio]
-version = "1.38.1"
+version = "1.39.1"
 features = ["full"]
 
 [dependencies.toml]
-version = "0.8.15"
+version = "0.8.16"
 features = ["preserve_order"]
 
 [dependencies.miho_derive]
