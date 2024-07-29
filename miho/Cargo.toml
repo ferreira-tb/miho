@@ -46,7 +46,7 @@ version = "1.0.204"
 features = ["derive"]
 
 [dependencies.serde_json]
-version = "1.0.120"
+version = "1.0.121"
 features = ["preserve_order"]
 
 [dependencies.strum]
@@ -66,7 +66,7 @@ version = "0.3.18"
 features = ["chrono", "env-filter", "fmt", "parking_lot", "registry"]
 
 [dependencies.tokio]
-version = "1.39.1"
+version = "1.39.2"
 features = ["full"]
 
 [dependencies.toml]
