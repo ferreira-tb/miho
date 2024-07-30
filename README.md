@@ -19,6 +19,7 @@ miho bump [OPTIONS] [RELEASE]
 |      `--add`       | `-a`  | Include untracked files with `git add <PATHSPEC>`. |
 |     `--build`      | none  | Build metadata.                                    |
 | `--commit-message` | `-m`  | Message of the commit.                             |
+|    `--dry-run`     | `-d`  | Show what would be bumped.                         |
 |     `--no-ask`     | `-k`  | Do not ask for consent before bumping.             |
 |   `--no-commit`    | `-t`  | Do not commit the modified files.                  |
 |    `--no-push`     | none  | Do not push the commit.                            |
@@ -38,6 +39,7 @@ miho update [OPTIONS] [RELEASE]
 |      `--add`       | `-a`  | Include untracked files with `git add <PATHSPEC>`. |
 | `--commit-message` | `-m`  | Message of the commit.                             |
 |   `--dependency`   | `-D`  | Dependencies to update.                            |
+|    `--dry-run`     | `-d`  | Show what would be updated.                        |
 |     `--global`     | `-g`  | Update global dependencies.                        |
 |     `--no-ask`     | `-k`  | Do not ask for consent before updating.            |
 |   `--no-commit`    | `-t`  | Do not commit the modified files.                  |

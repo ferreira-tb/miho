@@ -41,6 +41,10 @@ pub struct Update {
   #[arg(short = 'D', long, value_name = "DEPENDENCY")]
   dependency: Option<Vec<String>>,
 
+  /// Show preview and exit without updating.
+  #[arg(short = 'd', long)]
+  dry_run: bool,
+
   /// Update global dependencies.
   #[arg(short = 'g', long)]
   global: bool,
@@ -80,15 +84,10 @@ impl super::Command for Update {
     self.set_release();
 
     if self.global {
-      self.execute_global().await?;
+      self.execute_global().await
     } else {
-      self.execute_local().await?;
-      if !self.no_commit {
-        self.commit("chore: bump dependencies").await?;
-      }
+      self.execute_local().await
     }
-
-    Ok(())
   }
 }
 
@@ -102,7 +101,7 @@ impl Update {
     RELEASE.set(release).unwrap();
   }
 
-  async fn execute_local(&self) -> Result<()> {
+  async fn execute_local(&mut self) -> Result<()> {
     let path = self
       .path
       .as_deref()
@@ -119,14 +118,26 @@ impl Update {
 
     preview(&trees);
 
+    if self.dry_run {
+      return Ok(());
+    }
+
     if self.no_ask {
-      update_local(trees).await
+      update_local(trees).await?;
     } else {
       match prompt(&mut trees)? {
-        PromptResult::Abort => Ok(()),
-        PromptResult::Continue => update_local(trees).await,
+        PromptResult::Abort => return Ok(()),
+        PromptResult::Continue => {
+          update_local(trees).await?;
+        }
       }
     }
+
+    if !self.no_commit {
+      self.commit("chore: bump dependencies").await?;
+    }
+
+    Ok(())
   }
 
   async fn execute_global(&self) -> Result<()> {
@@ -139,6 +150,10 @@ impl Update {
     }
 
     preview(&trees);
+
+    if self.dry_run {
+      return Ok(());
+    }
 
     if self.no_ask {
       update_global(trees).await

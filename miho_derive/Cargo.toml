@@ -1,6 +1,6 @@
 [package]
 name = "miho_derive"
-version = "5.1.1"
+version = "5.2.0"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"

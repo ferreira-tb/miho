@@ -28,6 +28,10 @@ pub struct Bump {
   #[arg(long, value_name = "METADATA")]
   build: Option<String>,
 
+  /// Show preview and exit without bumping.
+  #[arg(short = 'd', long)]
+  dry_run: bool,
+
   /// Commit the modified packages.
   #[arg(short = 'm', long, value_name = "MESSAGE")]
   commit_message: Option<String>,
@@ -74,6 +78,10 @@ impl super::Command for Bump {
     let only = self.package.as_deref();
     let packages = Package::search(path, only)?;
     preview(&packages);
+
+    if self.dry_run {
+      return Ok(());
+    }
 
     if self.no_ask {
       bump_all(packages).await?;
