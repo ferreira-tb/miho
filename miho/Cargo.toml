@@ -74,5 +74,5 @@ version = "0.8.16"
 features = ["preserve_order"]
 
 [dependencies.miho_derive]
-version = "5.1"
+version = "5.2"
 path = "../miho_derive"
