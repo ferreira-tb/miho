@@ -80,7 +80,9 @@ pub struct Update {
 
 impl super::Command for Update {
   async fn execute(mut self) -> Result<()> {
+    #[cfg(feature = "tracing")]
     trace!(command = ?self);
+    
     self.set_release();
 
     if self.global {

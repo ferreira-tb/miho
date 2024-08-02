@@ -26,19 +26,17 @@ enum Cli {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-  #[cfg(debug_assertions)]
-  setup_tracing();
+  #[cfg(feature = "tracing")]
+  setup_tracing()?;
 
-  let cli = Cli::parse();
-
-  match cli {
+  match Cli::parse() {
     Cli::Bump(cmd) => cmd.execute().await,
     Cli::Update(cmd) => cmd.execute().await,
   }
 }
 
-#[cfg(debug_assertions)]
-fn setup_tracing() {
+#[cfg(feature = "tracing")]
+fn setup_tracing() -> Result<()> {
   use tracing::subscriber::set_global_default;
   use tracing_subscriber::fmt::time::ChronoLocal;
   use tracing_subscriber::fmt::Layer;
@@ -49,9 +47,8 @@ fn setup_tracing() {
   const TIMESTAMP: &str = "%F %T%.3f %:z";
 
   let filter = EnvFilter::builder()
-    .from_env()
-    .unwrap()
-    .add_directive("miho=trace".parse().unwrap());
+    .from_env()?
+    .add_directive("miho=trace".parse()?);
 
   let stderr = Layer::default()
     .with_ansi(true)
@@ -61,5 +58,5 @@ fn setup_tracing() {
 
   let subscriber = Registry::default().with(stderr).with(filter);
 
-  set_global_default(subscriber).unwrap();
+  set_global_default(subscriber).map_err(Into::into)
 }

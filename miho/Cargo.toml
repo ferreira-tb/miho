@@ -16,63 +16,68 @@ categories = ["development-tools"]
 workspace = true
 
 [dependencies]
-anyhow = "1.0.86"
-colored = "2.1.0"
-crossterm = "0.27.0"
-future-iter = "0.1.4"
-futures = "0.3.30"
-globset = "0.4.14"
-ignore = "0.4.22"
-inquire = "0.7.5"
-itertools = "0.13.0"
-semver = "1.0.23"
-taplo = "0.13.0"
-thiserror = "1.0.63"
+anyhow = "1.0"
+colored = "2.1"
+crossterm = "0.27"
+future-iter = "0.1"
+futures = "0.3"
+globset = "0.4"
+ignore = "0.4"
+inquire = "0.7"
+itertools = "0.13"
+semver = "1.0"
+taplo = "0.13"
 
 [dependencies.ahash]
-version = "0.8.11"
+version = "0.8"
 features = ["serde"]
 
 [dependencies.clap]
-version = "4.5.11"
+version = "4.5"
 features = ["derive"]
 
 [dependencies.reqwest]
-version = "0.12.5"
+version = "0.12"
 features = ["brotli", "gzip", "json", "rustls-tls"]
 
 [dependencies.serde]
-version = "1.0.204"
+version = "1.0"
 features = ["derive"]
 
 [dependencies.serde_json]
-version = "1.0.121"
+version = "1.0"
 features = ["preserve_order"]
 
 [dependencies.strum]
-version = "0.26.3"
+version = "0.26"
 features = ["derive"]
 
 [dependencies.tabled]
-version = "0.15.0"
+version = "0.15"
 features = ["ansi"]
 
 [dependencies.tracing]
-version = "0.1.40"
+version = "0.1"
+optional = true
 features = ["release_max_level_off"]
 
 [dependencies.tracing-subscriber]
-version = "0.3.18"
+version = "0.3"
+optional = true
 features = ["chrono", "env-filter", "fmt", "parking_lot", "registry"]
 
 [dependencies.tokio]
-version = "1.39.2"
+version = "1.39"
 features = ["full"]
 
 [dependencies.toml]
-version = "0.8.16"
+version = "0.8"
 features = ["preserve_order"]
 
 [dependencies.miho_derive]
 version = "5.2"
 path = "../miho_derive"
+
+[features]
+default = ["tracing"]
+tracing = ["dep:tracing", "dep:tracing-subscriber"]

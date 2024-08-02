@@ -39,12 +39,15 @@ impl Package {
     Ok(package)
   }
 
+  #[cfg_attr(feature = "tracing", instrument)]
   pub fn search<P, S>(path: &[P], only: Option<&[S]>) -> Result<Vec<Self>>
   where
     P: AsRef<Path> + fmt::Debug,
-    S: AsRef<str>,
+    S: AsRef<str> + fmt::Debug,
   {
+    #[cfg(feature = "tracing")]
     info!("searching packages in: {path:?}");
+
     let Some((first, other)) = path.split_first() else {
       return Ok(Vec::new());
     };
@@ -64,7 +67,10 @@ impl Package {
         let package = Package::new(path);
         if matches!(package, Ok(ref it) if !packages.contains(it)) {
           let package = package.unwrap();
+
+          #[cfg(feature = "tracing")]
           info!("found: {:?}", package.path.display());
+
           packages.push(package);
         }
       }
@@ -77,7 +83,9 @@ impl Package {
         .map(AsRef::as_ref)
         .collect_vec();
 
+        #[cfg(feature = "tracing")]
       info!("filtering: {only:?}");
+
       packages.retain(|it| only.contains(&it.name.as_str()));
     }
 
@@ -176,6 +184,8 @@ impl GlobalPackage {
     }
 
     let json: Value = serde_json::from_slice(&output.stdout)?;
+
+    #[cfg(feature = "tracing")]
     trace!(npm_list_output = ?json);
 
     let mut dependencies = Vec::new();
@@ -196,6 +206,7 @@ impl GlobalPackage {
       }
     }
 
+    #[cfg(feature = "tracing")]
     trace!(node_dependencies = ?dependencies);
 
     Ok(dependencies)

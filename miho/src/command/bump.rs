@@ -67,7 +67,9 @@ pub struct Bump {
 
 impl super::Command for Bump {
   async fn execute(mut self) -> Result<()> {
+    #[cfg(feature = "tracing")]
     trace!(command = ?self);
+
     self.set_release()?;
 
     let path = self
@@ -102,12 +104,16 @@ impl Bump {
     let mut parser = Release::parser();
 
     if let Some(pre) = self.pre.as_deref() {
+      #[cfg(feature = "tracing")]
       debug!(prerelease = ?pre);
+
       parser.prerelease(pre)?;
     }
 
     if let Some(build) = self.build.as_deref() {
+      #[cfg(feature = "tracing")]
       debug!(?build);
+
       parser.metadata(build)?;
     }
 
@@ -117,8 +123,10 @@ impl Bump {
       .expect("should have `patch` as the default value");
 
     let release = parser.parse(release)?;
-
+    
+    #[cfg(feature = "tracing")]
     debug!(?release);
+
     RELEASE.set(release).unwrap();
 
     Ok(())

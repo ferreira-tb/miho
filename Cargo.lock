@@ -1073,7 +1073,6 @@ dependencies = [
  "strum",
  "tabled",
  "taplo",
- "thiserror",
  "tokio",
  "toml",
  "tracing",

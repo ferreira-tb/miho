@@ -8,7 +8,7 @@ authors = ["Andrew Ferreira <andrew.shien2@gmail.com>"]
 license = "MIT"
 readme = "../README.md"
 edition = "2021"
-rust-version = "1.79"
+rust-version = "1.80"
 keywords = ["miho", "repository"]
 categories = ["development-tools"]
 
@@ -19,6 +19,6 @@ proc-macro = true
 workspace = true
 
 [dependencies]
-quote = "1.0.36"
-syn = "2.0.72"
-proc-macro2 = "1.0.86"
+quote = "1.0"
+syn = "2.0"
+proc-macro2 = "1.0"
