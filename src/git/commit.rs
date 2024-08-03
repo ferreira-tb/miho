@@ -1,11 +1,10 @@
-use super::{Flag, Git};
+use super::Flag;
 use tokio::process::Command;
 
 /// <https://git-scm.com/docs/git-commit>
-#[derive(miho_derive::Git)]
 pub struct Commit {
-  command: Command,
-  args: Vec<String>,
+  pub(super) command: Command,
+  pub(super) args: Vec<String>,
 }
 
 impl Commit {

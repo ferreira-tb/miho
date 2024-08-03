@@ -15,7 +15,7 @@ use tokio::process::Command;
 
 static RELEASE: OnceLock<Release> = OnceLock::new();
 
-#[derive(Debug, Args, miho_derive::Commit)]
+#[derive(Debug, Args)]
 pub struct Bump {
   /// Type of the release.
   #[arg(default_value = "patch")]
@@ -23,7 +23,7 @@ pub struct Bump {
 
   /// Include untracked files with `git add <PATHSPEC>`.
   #[arg(short = 'a', long, value_name = "PATHSPEC")]
-  add: Option<String>,
+  pub(super) add: Option<String>,
 
   /// Only bump packages with the specified agent.
   #[arg(short = 'A', long, value_name = "AGENT")]
@@ -39,11 +39,11 @@ pub struct Bump {
 
   /// Commit the modified packages.
   #[arg(short = 'm', long, value_name = "MESSAGE")]
-  commit_message: Option<String>,
+  pub(super) commit_message: Option<String>,
 
   /// Do not ask for consent before bumping.
   #[arg(short = 'k', long)]
-  no_ask: bool,
+  pub(super) no_ask: bool,
 
   /// Do not commit the modified packages.
   #[arg(short = 't', long)]
@@ -51,11 +51,11 @@ pub struct Bump {
 
   /// Do not push the commit.
   #[arg(long)]
-  no_push: bool,
+  pub(super) no_push: bool,
 
   /// Bypass `pre-commit` and `commit-msg` hooks.
   #[arg(short = 'n', long)]
-  no_verify: bool,
+  pub(super) no_verify: bool,
 
   /// Package to bump.
   #[arg(short = 'P', long, value_name = "PACKAGE")]
