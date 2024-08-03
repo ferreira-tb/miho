@@ -18,12 +18,7 @@ use tokio::task::JoinSet;
 const CARGO_REGISTRY: &str = "https://crates.io/api/v1/crates";
 const NPM_REGISTRY: &str = "https://registry.npmjs.org";
 
-const USER_AGENT: &str = concat!(
-  env!("CARGO_PKG_NAME"),
-  "/",
-  env!("CARGO_PKG_VERSION"),
-  "(https://github.com/ferreira-tb/miho/)"
-);
+const USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
 
 pub type Cache = HashSet<DependencyCache>;
 
