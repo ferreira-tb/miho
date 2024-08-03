@@ -3,6 +3,7 @@ use crate::agent::Agent;
 use crate::package::Package;
 use crate::prelude::*;
 use crate::release::Release;
+use crate::search_packages;
 use crate::version::VersionExt;
 use clap::Args;
 use inquire::{Confirm, MultiSelect, Select};
@@ -23,6 +24,10 @@ pub struct Bump {
   /// Include untracked files with `git add <PATHSPEC>`.
   #[arg(short = 'a', long, value_name = "PATHSPEC")]
   add: Option<String>,
+
+  /// Only bump packages with the specified agent.
+  #[arg(short = 'A', long, value_name = "AGENT")]
+  agent: Option<Vec<String>>,
 
   /// Build metadata.
   #[arg(long, value_name = "METADATA")]
@@ -72,13 +77,7 @@ impl super::Command for Bump {
 
     self.set_release()?;
 
-    let path = self
-      .path
-      .as_deref()
-      .expect("should have `.` as the default value");
-
-    let only = self.package.as_deref();
-    let packages = Package::search(path, only)?;
+    let packages = search_packages!(&self);
     preview(&packages);
 
     if self.dry_run {
@@ -104,16 +103,10 @@ impl Bump {
     let mut parser = Release::parser();
 
     if let Some(pre) = self.pre.as_deref() {
-      #[cfg(feature = "tracing")]
-      debug!(prerelease = ?pre);
-
       parser.prerelease(pre)?;
     }
 
     if let Some(build) = self.build.as_deref() {
-      #[cfg(feature = "tracing")]
-      debug!(?build);
-
       parser.metadata(build)?;
     }
 
@@ -123,7 +116,7 @@ impl Bump {
       .expect("should have `patch` as the default value");
 
     let release = parser.parse(release)?;
-    
+
     #[cfg(feature = "tracing")]
     debug!(?release);
 

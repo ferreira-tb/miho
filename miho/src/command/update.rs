@@ -1,11 +1,11 @@
 use super::{Choice, Commit, PromptResult};
 use crate::agent::Agent;
-use crate::command;
 use crate::dependency::{Dependency, DependencyTree};
 use crate::package::{GlobalPackage, Package, PackageDependencyTree, PackageDisplay};
 use crate::prelude::*;
 use crate::release::Release;
 use crate::version::ComparatorExt;
+use crate::{command, search_packages};
 use ahash::{HashSet, HashSetExt};
 use clap::Args;
 use crossterm::{cursor, terminal, ExecutableCommand};
@@ -32,6 +32,10 @@ pub struct Update {
   /// Include untracked files with `git add <PATHSPEC>`.
   #[arg(short = 'a', long, value_name = "PATHSPEC")]
   add: Option<String>,
+
+  /// Only update packages with the specified agent.
+  #[arg(short = 'A', long, value_name = "AGENT")]
+  agent: Option<Vec<String>>,
 
   /// Commit the modified packages.
   #[arg(short = 'm', long, value_name = "MESSAGE")]
@@ -82,7 +86,7 @@ impl super::Command for Update {
   async fn execute(mut self) -> Result<()> {
     #[cfg(feature = "tracing")]
     trace!(command = ?self);
-    
+
     self.set_release();
 
     if self.global {
@@ -100,17 +104,14 @@ impl Update {
       release.filter(Release::is_stable)
     });
 
+    #[cfg(feature = "tracing")]
+    debug!(?release);
+
     RELEASE.set(release).unwrap();
   }
 
   async fn execute_local(&mut self) -> Result<()> {
-    let path = self
-      .path
-      .as_deref()
-      .expect("should have `.` as the default value");
-
-    let only = self.package.as_deref();
-    let packages = Package::search(path, only)?;
+    let packages = search_packages!(&self);
     let mut trees = self.fetch(packages).await?;
 
     if trees.is_empty() {

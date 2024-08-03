@@ -17,6 +17,7 @@ miho bump [OPTIONS] [RELEASE]
 |      Options       | Alias | Description                                        |
 | :----------------: | :---- | :------------------------------------------------- |
 |      `--add`       | `-a`  | Include untracked files with `git add <PATHSPEC>`. |
+|     `--agent`      | `-A`  | Only bump packages with the specified agents.      |
 |     `--build`      | none  | Build metadata.                                    |
 | `--commit-message` | `-m`  | Message of the commit.                             |
 |    `--dry-run`     | `-d`  | Show what would be bumped.                         |
@@ -37,6 +38,7 @@ miho update [OPTIONS] [RELEASE]
 |      Options       | Alias | Description                                        |
 | :----------------: | :---- | :------------------------------------------------- |
 |      `--add`       | `-a`  | Include untracked files with `git add <PATHSPEC>`. |
+|     `--agent`      | `-A`  | Only update packages with the specified agents.    |
 | `--commit-message` | `-m`  | Message of the commit.                             |
 |   `--dependency`   | `-D`  | Dependencies to update.                            |
 |    `--dry-run`     | `-d`  | Show what would be updated.                        |
