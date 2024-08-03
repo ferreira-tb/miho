@@ -3,6 +3,7 @@ use crate::agent::Agent;
 use crate::package::Package;
 use crate::prelude::*;
 use crate::release::Release;
+use crate::search_packages;
 use crate::version::VersionExt;
 use clap::Args;
 use inquire::{Confirm, MultiSelect, Select};
@@ -14,7 +15,7 @@ use tokio::process::Command;
 
 static RELEASE: OnceLock<Release> = OnceLock::new();
 
-#[derive(Debug, Args, miho_derive::Commit)]
+#[derive(Debug, Args)]
 pub struct Bump {
   /// Type of the release.
   #[arg(default_value = "patch")]
@@ -22,7 +23,11 @@ pub struct Bump {
 
   /// Include untracked files with `git add <PATHSPEC>`.
   #[arg(short = 'a', long, value_name = "PATHSPEC")]
-  add: Option<String>,
+  pub(super) add: Option<String>,
+
+  /// Only bump packages with the specified agent.
+  #[arg(short = 'A', long, value_name = "AGENT")]
+  agent: Option<Vec<String>>,
 
   /// Build metadata.
   #[arg(long, value_name = "METADATA")]
@@ -34,11 +39,11 @@ pub struct Bump {
 
   /// Commit the modified packages.
   #[arg(short = 'm', long, value_name = "MESSAGE")]
-  commit_message: Option<String>,
+  pub(super) commit_message: Option<String>,
 
   /// Do not ask for consent before bumping.
   #[arg(short = 'k', long)]
-  no_ask: bool,
+  pub(super) no_ask: bool,
 
   /// Do not commit the modified packages.
   #[arg(short = 't', long)]
@@ -46,11 +51,11 @@ pub struct Bump {
 
   /// Do not push the commit.
   #[arg(long)]
-  no_push: bool,
+  pub(super) no_push: bool,
 
   /// Bypass `pre-commit` and `commit-msg` hooks.
   #[arg(short = 'n', long)]
-  no_verify: bool,
+  pub(super) no_verify: bool,
 
   /// Package to bump.
   #[arg(short = 'P', long, value_name = "PACKAGE")]
@@ -67,16 +72,12 @@ pub struct Bump {
 
 impl super::Command for Bump {
   async fn execute(mut self) -> Result<()> {
+    #[cfg(feature = "tracing")]
     trace!(command = ?self);
+
     self.set_release()?;
 
-    let path = self
-      .path
-      .as_deref()
-      .expect("should have `.` as the default value");
-
-    let only = self.package.as_deref();
-    let packages = Package::search(path, only)?;
+    let packages = search_packages!(&self);
     preview(&packages);
 
     if self.dry_run {
@@ -102,12 +103,10 @@ impl Bump {
     let mut parser = Release::parser();
 
     if let Some(pre) = self.pre.as_deref() {
-      debug!(prerelease = ?pre);
       parser.prerelease(pre)?;
     }
 
     if let Some(build) = self.build.as_deref() {
-      debug!(?build);
       parser.metadata(build)?;
     }
 
@@ -118,7 +117,9 @@ impl Bump {
 
     let release = parser.parse(release)?;
 
+    #[cfg(feature = "tracing")]
     debug!(?release);
+
     RELEASE.set(release).unwrap();
 
     Ok(())

@@ -1,11 +1,11 @@
 use super::{Choice, Commit, PromptResult};
 use crate::agent::Agent;
-use crate::command;
 use crate::dependency::{Dependency, DependencyTree};
 use crate::package::{GlobalPackage, Package, PackageDependencyTree, PackageDisplay};
 use crate::prelude::*;
 use crate::release::Release;
 use crate::version::ComparatorExt;
+use crate::{command, search_packages};
 use ahash::{HashSet, HashSetExt};
 use clap::Args;
 use crossterm::{cursor, terminal, ExecutableCommand};
@@ -24,18 +24,22 @@ type TreeTuple<T> = (T, DependencyTree);
 
 static RELEASE: OnceLock<Option<Release>> = OnceLock::new();
 
-#[derive(Debug, Args, miho_derive::Commit)]
+#[derive(Debug, Args)]
 pub struct Update {
   /// Type of the release.
   release: Option<String>,
 
   /// Include untracked files with `git add <PATHSPEC>`.
   #[arg(short = 'a', long, value_name = "PATHSPEC")]
-  add: Option<String>,
+  pub(super) add: Option<String>,
+
+  /// Only update packages with the specified agent.
+  #[arg(short = 'A', long, value_name = "AGENT")]
+  agent: Option<Vec<String>>,
 
   /// Commit the modified packages.
   #[arg(short = 'm', long, value_name = "MESSAGE")]
-  commit_message: Option<String>,
+  pub(super) commit_message: Option<String>,
 
   /// Dependencies to update.
   #[arg(short = 'D', long, value_name = "DEPENDENCY")]
@@ -51,7 +55,7 @@ pub struct Update {
 
   /// Do not ask for consent before updating.
   #[arg(short = 'k', long)]
-  no_ask: bool,
+  pub(super) no_ask: bool,
 
   /// Do not commit the modified packages.
   #[arg(short = 't', long)]
@@ -59,11 +63,11 @@ pub struct Update {
 
   /// Do not push the commit.
   #[arg(long)]
-  no_push: bool,
+  pub(super) no_push: bool,
 
   /// Bypass `pre-commit` and `commit-msg` hooks.
   #[arg(short = 'n', long)]
-  no_verify: bool,
+  pub(super) no_verify: bool,
 
   /// Package to update.
   #[arg(short = 'P', long, value_name = "PACKAGE")]
@@ -80,7 +84,9 @@ pub struct Update {
 
 impl super::Command for Update {
   async fn execute(mut self) -> Result<()> {
+    #[cfg(feature = "tracing")]
     trace!(command = ?self);
+
     self.set_release();
 
     if self.global {
@@ -98,17 +104,14 @@ impl Update {
       release.filter(Release::is_stable)
     });
 
+    #[cfg(feature = "tracing")]
+    debug!(?release);
+
     RELEASE.set(release).unwrap();
   }
 
   async fn execute_local(&mut self) -> Result<()> {
-    let path = self
-      .path
-      .as_deref()
-      .expect("should have `.` as the default value");
-
-    let only = self.package.as_deref();
-    let packages = Package::search(path, only)?;
+    let packages = search_packages!(&self);
     let mut trees = self.fetch(packages).await?;
 
     if trees.is_empty() {

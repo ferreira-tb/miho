@@ -1,4 +1,5 @@
 pub mod manifest;
+mod search;
 
 use crate::agent::Agent;
 use crate::dependency::{DependencyKind, DependencyTree};
@@ -6,9 +7,8 @@ use crate::prelude::*;
 use crate::release::Release;
 use crate::version::VersionExt;
 use crate::{command, return_if_ne};
-use globset::{Glob, GlobSet, GlobSetBuilder};
-use ignore::{DirEntry, WalkBuilder};
 use manifest::{ManifestBox, ManifestKind};
+pub use search::SearchBuilder;
 use semver::{Op, Version};
 use serde_json::Value;
 use std::cmp::Ordering;
@@ -37,57 +37,6 @@ impl Package {
     };
 
     Ok(package)
-  }
-
-  pub fn search<P, S>(path: &[P], only: Option<&[S]>) -> Result<Vec<Self>>
-  where
-    P: AsRef<Path> + fmt::Debug,
-    S: AsRef<str>,
-  {
-    info!("searching packages in: {path:?}");
-    let Some((first, other)) = path.split_first() else {
-      return Ok(Vec::new());
-    };
-
-    let mut walker = WalkBuilder::new(first);
-
-    for path in other {
-      walker.add(path);
-    }
-
-    let glob = build_globset()?;
-    let mut packages = Vec::new();
-
-    for entry in walker.build().flatten() {
-      if is_match(&glob, &entry) {
-        let path = entry.path().canonicalize()?;
-        let package = Package::new(path);
-        if matches!(package, Ok(ref it) if !packages.contains(it)) {
-          let package = package.unwrap();
-          info!("found: {:?}", package.path.display());
-          packages.push(package);
-        }
-      }
-    }
-
-    if matches!(only, Some(it) if !it.is_empty()) {
-      let only = only
-        .unwrap_or_default()
-        .iter()
-        .map(AsRef::as_ref)
-        .collect_vec();
-
-      info!("filtering: {only:?}");
-      packages.retain(|it| only.contains(&it.name.as_str()));
-    }
-
-    if packages.is_empty() {
-      bail!("no valid package found");
-    }
-
-    packages.sort_unstable();
-
-    Ok(packages)
   }
 
   pub fn agent(&self) -> Agent {
@@ -176,6 +125,8 @@ impl GlobalPackage {
     }
 
     let json: Value = serde_json::from_slice(&output.stdout)?;
+
+    #[cfg(feature = "tracing")]
     trace!(npm_list_output = ?json);
 
     let mut dependencies = Vec::new();
@@ -196,6 +147,7 @@ impl GlobalPackage {
       }
     }
 
+    #[cfg(feature = "tracing")]
     trace!(node_dependencies = ?dependencies);
 
     Ok(dependencies)
@@ -267,29 +219,4 @@ impl PackageDependencyTree for GlobalPackage {
 
     tree
   }
-}
-
-fn build_globset() -> Result<GlobSet> {
-  let mut builder = GlobSetBuilder::new();
-
-  macro_rules! add {
-    ($kind:ident) => {
-      let glob = ManifestKind::$kind.glob();
-      builder.add(Glob::new(glob)?);
-    };
-  }
-
-  add!(CargoToml);
-  add!(PackageJson);
-  add!(TauriConfJson);
-
-  builder.build().map_err(Into::into)
-}
-
-fn is_match(glob: &GlobSet, entry: &DirEntry) -> bool {
-  if !glob.is_match(entry.path()) {
-    return false;
-  }
-
-  matches!(entry.file_type(), Some(it) if !it.is_dir())
 }

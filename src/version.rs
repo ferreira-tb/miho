@@ -107,7 +107,6 @@ impl ComparatorExt for Comparator {
 
   fn with_release(&self, release: &Release) -> Comparator {
     let mut comparator = self.clone();
-
     match release {
       Release::Major(_) | Release::PreMajor(_, _) => {
         comparator.op = Op::GreaterEq;

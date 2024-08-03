@@ -1,11 +1,9 @@
-use super::Git;
 use tokio::process::Command;
 
 /// <https://git-scm.com/docs/git-add>
-#[derive(miho_derive::Git)]
 pub struct Add {
-  command: Command,
-  args: Vec<String>,
+  pub(super) command: Command,
+  pub(super) args: Vec<String>,
 }
 
 impl Add {
