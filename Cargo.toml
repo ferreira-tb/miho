@@ -36,7 +36,7 @@ priority = -1
 [dependencies]
 anyhow = "1.0"
 colored = "2.1"
-crossterm = "0.27"
+crossterm = "0.28"
 future-iter = "0.1"
 futures = "0.3"
 globset = "0.4"
@@ -71,7 +71,7 @@ version = "0.26"
 features = ["derive"]
 
 [dependencies.tabled]
-version = "0.15"
+version = "0.16"
 features = ["ansi"]
 
 [dependencies.tracing]
