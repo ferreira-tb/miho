@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "5.3.0"
+version = "5.3.1"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -8,12 +8,13 @@ authors = ["Andrew Ferreira <andrew.shien2@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 edition = "2021"
-rust-version = "1.80"
+rust-version = "1.81"
 keywords = ["miho", "repository", "git"]
 categories = ["development-tools"]
 
 [lints.rust]
 async_fn_in_trait = "allow"
+unfulfilled_lint_expectations = "deny"
 
 [lints.clippy]
 clone_on_ref_ptr = "deny"
@@ -36,7 +37,7 @@ priority = -1
 [dependencies]
 anyhow = "1.0"
 colored = "2.1"
-crossterm = "0.27"
+crossterm = "0.28"
 future-iter = "0.1"
 futures = "0.3"
 globset = "0.4"
@@ -85,7 +86,7 @@ optional = true
 features = ["chrono", "env-filter", "fmt", "parking_lot", "registry"]
 
 [dependencies.tokio]
-version = "1.39"
+version = "1.40"
 features = ["full"]
 
 [dependencies.toml]
