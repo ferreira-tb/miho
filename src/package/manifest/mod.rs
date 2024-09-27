@@ -11,7 +11,6 @@ use dependency::DependencyTree;
 use globset::Glob;
 use package_json::PackageJson;
 use semver::Version;
-use std::path::Path;
 use strum::{EnumIter, IntoEnumIterator};
 use tauri_conf_json::TauriConfJson;
 

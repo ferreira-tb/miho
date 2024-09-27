@@ -7,7 +7,6 @@ use ahash::{HashMap, HashMapExt};
 use semver::Version;
 use serde::Deserialize;
 use std::fs;
-use std::path::Path;
 use taplo::formatter;
 use toml::Value;
 

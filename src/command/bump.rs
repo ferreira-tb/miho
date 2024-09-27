@@ -8,8 +8,6 @@ use crate::version::VersionExt;
 use clap::Args;
 use inquire::{Confirm, MultiSelect, Select};
 use std::fmt;
-use std::path::PathBuf;
-use std::sync::OnceLock;
 use strum::IntoEnumIterator;
 use tokio::process::Command;
 
@@ -72,9 +70,6 @@ pub struct Bump {
 
 impl super::Command for Bump {
   async fn execute(mut self) -> Result<()> {
-    #[cfg(feature = "tracing")]
-    trace!(command = ?self);
-
     self.set_release()?;
 
     let packages = search_packages!(&self);
@@ -116,9 +111,6 @@ impl Bump {
       .expect("should have `patch` as the default value");
 
     let release = parser.parse(release)?;
-
-    #[cfg(feature = "tracing")]
-    debug!(?release);
 
     RELEASE.set(release).unwrap();
 

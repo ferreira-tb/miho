@@ -9,16 +9,12 @@ use crate::{command, search_packages};
 use ahash::{HashSet, HashSetExt};
 use clap::Args;
 use crossterm::{cursor, terminal, ExecutableCommand};
-use future_iter::join_set::IntoJoinSetBy;
 use inquire::{MultiSelect, Select};
 use semver::Comparator;
 use std::io::{self, Write};
-use std::path::PathBuf;
-use std::sync::{Arc, Mutex, OnceLock};
 use std::{env, fmt, mem};
 use strum::IntoEnumIterator;
 use tokio::process::Command;
-use tokio::task::JoinSet;
 
 type TreeTuple<T> = (T, DependencyTree);
 
@@ -84,9 +80,6 @@ pub struct Update {
 
 impl super::Command for Update {
   async fn execute(mut self) -> Result<()> {
-    #[cfg(feature = "tracing")]
-    trace!(command = ?self);
-
     self.set_release();
 
     if self.global {
@@ -103,9 +96,6 @@ impl Update {
       let release = Release::parser().parse(it).ok();
       release.filter(Release::is_stable)
     });
-
-    #[cfg(feature = "tracing")]
-    debug!(?release);
 
     RELEASE.set(release).unwrap();
   }
@@ -178,11 +168,13 @@ impl Update {
 
     update_fetch_progress(0, total_amount)?;
 
+    let mut set = JoinSet::new();
     let cache = Arc::new(Mutex::new(HashSet::new()));
-    let mut set: JoinSet<Result<()>> = packages.into_join_set_by(|package| {
+
+    for package in packages {
       let trees = Arc::clone(&trees);
       let cache = Arc::clone(&cache);
-      async move {
+      set.spawn(async move {
         let mut tree = package.dependency_tree();
         tree.fetch(cache).await?;
 
@@ -192,9 +184,9 @@ impl Update {
         clear_line()?;
         update_fetch_progress(trees.len(), total_amount)?;
 
-        Ok(())
-      }
-    });
+        Ok::<_, Error>(())
+      });
+    }
 
     while let Some(result) = set.join_next().await {
       result??;
@@ -203,24 +195,28 @@ impl Update {
     clear_line()?;
 
     let trees = Arc::into_inner(trees)
-      .unwrap()
+      .expect("arc has unexpected strong references")
       .into_inner()?
       .into_iter()
-      .filter_map(|(package, mut tree)| {
-        self.filter_dependencies(&mut tree);
-
-        if tree.dependencies.is_empty() {
-          None
-        } else {
-          tree.dependencies.sort_unstable();
-          Some((package, tree))
-        }
-      });
+      .filter_map(|(package, tree)| self.filter_tree(package, tree));
 
     let mut trees = trees.collect_vec();
     trees.sort_unstable_by(|(a, _), (b, _)| a.cmp(b));
 
     Ok(trees)
+  }
+
+  fn filter_tree<T>(&self, package: T, mut tree: DependencyTree) -> Option<TreeTuple<T>>
+  where
+    T: PackageDisplay,
+  {
+    self.filter_dependencies(&mut tree);
+    if tree.dependencies.is_empty() {
+      None
+    } else {
+      tree.dependencies.sort_unstable();
+      Some((package, tree))
+    }
   }
 
   fn filter_dependencies(&self, tree: &mut DependencyTree) {
@@ -240,7 +236,7 @@ impl Update {
         return false;
       }
 
-      dependency.target_cmp(release).is_some()
+      dependency.as_target(release).is_some()
     });
   }
 }
@@ -254,7 +250,7 @@ async fn update_local(trees: Vec<TreeTuple<Package>>) -> Result<()> {
     .collect_vec();
 
   for (package, tree) in trees {
-    package.update(tree, release)?;
+    package.update(&tree, release)?;
   }
 
   if let Some(agent) = agents.iter().find(|it| it.is_node()) {
@@ -345,20 +341,23 @@ fn preview(trees: &[(impl PackageDisplay, DependencyTree)]) {
     let mut builder = Builder::with_capacity(dep_amount, 6);
 
     for dependency in &tree.dependencies {
-      if let Some(target_cmp) = dependency.target_cmp(release) {
+      if let Some(mut target) = dependency.as_target(release) {
         let comparator = &dependency.comparator;
+        comparator.normalize(&mut target.comparator);
 
         let mut record = vec![
           dependency.name.clone(),
           dependency.kind.as_ref().bright_cyan().to_string(),
           comparator.to_string().bright_blue().to_string(),
           "=>".to_string(),
-          target_cmp.to_string().bright_green().to_string(),
+          target.to_string().bright_green().to_string(),
         ];
 
         if let Some(latest) = dependency.latest() {
-          let latest_cmp = Comparator::from_version(latest, comparator.op);
-          if latest_cmp.pre.is_empty() && latest_cmp != target_cmp {
+          let mut latest = Comparator::from_version(latest, comparator.op);
+          comparator.normalize(&mut latest);
+
+          if latest.pre.is_empty() && latest != target.comparator {
             let latest = format!("({latest} available)");
             record.push(latest.truecolor(105, 105, 105).to_string());
           }

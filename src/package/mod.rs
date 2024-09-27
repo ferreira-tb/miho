@@ -48,14 +48,14 @@ impl Package {
     self.manifest.bump(&self, version)
   }
 
-  pub fn update(self, tree: DependencyTree, release: &Option<Release>) -> Result<()> {
+  pub fn update(&self, tree: &DependencyTree, release: &Option<Release>) -> Result<()> {
     let targets = tree
       .dependencies
-      .into_iter()
-      .filter_map(|it| it.into_target(release))
+      .iter()
+      .filter_map(|it| it.as_target(release))
       .collect_vec();
 
-    self.manifest.update(&self, &targets)
+    self.manifest.update(self, &targets)
   }
 }
 
@@ -126,9 +126,6 @@ impl GlobalPackage {
 
     let json: Value = serde_json::from_slice(&output.stdout)?;
 
-    #[cfg(feature = "tracing")]
-    trace!(npm_list_output = ?json);
-
     let mut dependencies = Vec::new();
     if let Some(map) = json
       .get("dependencies")
@@ -147,17 +144,14 @@ impl GlobalPackage {
       }
     }
 
-    #[cfg(feature = "tracing")]
-    trace!(node_dependencies = ?dependencies);
-
     Ok(dependencies)
   }
 
-  pub async fn update(self, tree: DependencyTree, release: &Option<Release>) -> Result<()> {
+  pub async fn update(&self, tree: DependencyTree, release: &Option<Release>) -> Result<()> {
     let targets = tree
       .dependencies
-      .into_iter()
-      .filter_map(|it| it.into_target(release))
+      .iter()
+      .filter_map(|it| it.as_target(release))
       .collect_vec();
 
     for target in targets {

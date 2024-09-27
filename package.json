@@ -1,6 +1,6 @@
 {
   "name": "miho",
-  "version": "5.3.1",
+  "version": "5.4.0",
   "type": "module",
   "private": true,
   "packageManager": "pnpm@9.9.0",
@@ -8,7 +8,7 @@
     "clippy": "cargo clippy",
     "format": "cargo fmt --all",
     "mock:bump": "cargo run -- bump -t -p mocks",
-    "mock:update": "cargo run -- update -t -p mocks",
+    "mock:update": "cargo run -- update major -t -p mocks",
     "release": "pnpm run clippy && cargo publish"
   }
 }
