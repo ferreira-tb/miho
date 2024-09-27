@@ -220,7 +220,7 @@ impl DependencyTree {
 
     let versions = versions
       .iter()
-      .filter_map(Self::parse_crate_version)
+      .filter_map(Self::parse_cargo_version)
       .collect_vec();
 
     let mut cache = cache.lock().unwrap();
@@ -229,7 +229,7 @@ impl DependencyTree {
     Ok(versions)
   }
 
-  fn parse_crate_version(version: &Value) -> Option<Version> {
+  fn parse_cargo_version(version: &Value) -> Option<Version> {
     if version.get("yanked").and_then(Value::as_bool) == Some(true) {
       return None;
     }
@@ -259,14 +259,29 @@ impl DependencyTree {
     };
 
     let versions = versions
-      .keys()
-      .filter_map(|v| Version::parse(v).ok())
+      .values()
+      .filter_map(Self::parse_npm_version)
       .collect_vec();
 
     let mut cache = cache.lock().unwrap();
     Self::add_to_cache(&mut cache, &dependency.name, agent, &versions);
 
     Ok(versions)
+  }
+
+  fn parse_npm_version(version: &Value) -> Option<Version> {
+    if version
+      .get("deprecated")
+      .and_then(Value::as_str)
+      .is_some_and(|it| !it.is_empty())
+    {
+      return None;
+    }
+
+    version
+      .get("version")
+      .and_then(Value::as_str)
+      .and_then(|it| Version::parse(it).ok())
   }
 
   fn add_to_cache(cache: &mut Cache, name: &str, agent: Agent, versions: &[Version]) {
