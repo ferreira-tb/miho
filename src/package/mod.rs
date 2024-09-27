@@ -126,9 +126,6 @@ impl GlobalPackage {
 
     let json: Value = serde_json::from_slice(&output.stdout)?;
 
-    #[cfg(feature = "tracing")]
-    trace!(npm_list_output = ?json);
-
     let mut dependencies = Vec::new();
     if let Some(map) = json
       .get("dependencies")
@@ -146,9 +143,6 @@ impl GlobalPackage {
         }
       }
     }
-
-    #[cfg(feature = "tracing")]
-    trace!(node_dependencies = ?dependencies);
 
     Ok(dependencies)
   }

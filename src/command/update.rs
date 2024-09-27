@@ -9,7 +9,6 @@ use crate::{command, search_packages};
 use ahash::{HashSet, HashSetExt};
 use clap::Args;
 use crossterm::{cursor, terminal, ExecutableCommand};
-use future_iter::join_set::IntoJoinSetBy;
 use inquire::{MultiSelect, Select};
 use semver::Comparator;
 use std::io::{self, Write};
@@ -84,9 +83,6 @@ pub struct Update {
 
 impl super::Command for Update {
   async fn execute(mut self) -> Result<()> {
-    #[cfg(feature = "tracing")]
-    trace!(command = ?self);
-
     self.set_release();
 
     if self.global {
@@ -103,9 +99,6 @@ impl Update {
       let release = Release::parser().parse(it).ok();
       release.filter(Release::is_stable)
     });
-
-    #[cfg(feature = "tracing")]
-    debug!(?release);
 
     RELEASE.set(release).unwrap();
   }
@@ -178,11 +171,13 @@ impl Update {
 
     update_fetch_progress(0, total_amount)?;
 
+    let mut set = JoinSet::new();
     let cache = Arc::new(Mutex::new(HashSet::new()));
-    let mut set: JoinSet<Result<()>> = packages.into_join_set_by(|package| {
+
+    for package in packages {
       let trees = Arc::clone(&trees);
       let cache = Arc::clone(&cache);
-      async move {
+      set.spawn(async move {
         let mut tree = package.dependency_tree();
         tree.fetch(cache).await?;
 
@@ -192,9 +187,9 @@ impl Update {
         clear_line()?;
         update_fetch_progress(trees.len(), total_amount)?;
 
-        Ok(())
-      }
-    });
+        Ok::<_, Error>(())
+      });
+    }
 
     while let Some(result) = set.join_next().await {
       result??;

@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "5.3.1"
+version = "5.4.0"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -38,7 +38,6 @@ priority = -1
 anyhow = "1.0"
 colored = "2.1"
 crossterm = "0.28"
-future-iter = "0.1"
 futures = "0.3"
 globset = "0.4"
 ignore = "0.4"
@@ -75,16 +74,6 @@ features = ["derive"]
 version = "0.16"
 features = ["ansi"]
 
-[dependencies.tracing]
-version = "0.1"
-optional = true
-features = ["release_max_level_off"]
-
-[dependencies.tracing-subscriber]
-version = "0.3"
-optional = true
-features = ["chrono", "env-filter", "fmt", "parking_lot", "registry"]
-
 [dependencies.tokio]
 version = "1.40"
 features = ["full"]
@@ -92,7 +81,3 @@ features = ["full"]
 [dependencies.toml]
 version = "0.8"
 features = ["preserve_order"]
-
-[features]
-default = ["tracing"]
-tracing = ["dep:tracing", "dep:tracing-subscriber"]

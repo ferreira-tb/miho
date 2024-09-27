@@ -38,11 +38,7 @@ impl<'a> SearchBuilder<'a> {
     self
   }
 
-  #[cfg_attr(feature = "tracing", instrument)]
   pub fn search(self) -> Result<Vec<Package>> {
-    #[cfg(feature = "tracing")]
-    info!("searching packages in: {:?}", self.path);
-
     let Some((first, other)) = self.path.split_first() else {
       return Ok(Vec::new());
     };
@@ -62,25 +58,16 @@ impl<'a> SearchBuilder<'a> {
         if matches!(package, Ok(ref it) if !packages.contains(it)) {
           let package = package.unwrap();
 
-          #[cfg(feature = "tracing")]
-          info!("found: {:?}", package.path.display());
-
           packages.push(package);
         }
       }
     }
 
     if !self.packages.is_empty() {
-      #[cfg(feature = "tracing")]
-      info!("keeping packages with name: {:?}", self.packages);
-
       packages.retain(|it| self.packages.contains(&it.name.as_str()));
     }
 
     if !self.agents.is_empty() {
-      #[cfg(feature = "tracing")]
-      info!("keeping packages with agent: {:?}", self.agents);
-
       packages.retain(|it| self.agents.contains(&it.manifest.agent()));
     }
 

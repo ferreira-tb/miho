@@ -72,9 +72,6 @@ pub struct Bump {
 
 impl super::Command for Bump {
   async fn execute(mut self) -> Result<()> {
-    #[cfg(feature = "tracing")]
-    trace!(command = ?self);
-
     self.set_release()?;
 
     let packages = search_packages!(&self);
@@ -116,9 +113,6 @@ impl Bump {
       .expect("should have `patch` as the default value");
 
     let release = parser.parse(release)?;
-
-    #[cfg(feature = "tracing")]
-    debug!(?release);
 
     RELEASE.set(release).unwrap();
 
