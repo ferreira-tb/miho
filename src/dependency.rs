@@ -230,7 +230,11 @@ impl DependencyTree {
   }
 
   fn parse_cargo_version(version: &Value) -> Option<Version> {
-    if version.get("yanked").and_then(Value::as_bool) == Some(true) {
+    if version
+      .get("yanked")
+      .and_then(Value::as_bool)
+      .eq(&Some(true))
+    {
       return None;
     }
 
