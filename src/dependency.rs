@@ -11,16 +11,24 @@ use serde_json::Value;
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 use std::mem;
-use std::sync::{Arc, Mutex};
 use strum::{AsRefStr, Display, EnumIs, EnumString};
-use tokio::task::JoinSet;
+
+pub type Cache = HashSet<DependencyCache>;
 
 const CARGO_REGISTRY: &str = "https://crates.io/api/v1/crates";
 const NPM_REGISTRY: &str = "https://registry.npmjs.org";
 
 const USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
 
-pub type Cache = HashSet<DependencyCache>;
+static HTTP_CLIENT: LazyLock<Client> = LazyLock::new(|| {
+  Client::builder()
+    .use_rustls_tls()
+    .user_agent(USER_AGENT)
+    .brotli(true)
+    .gzip(true)
+    .build()
+    .expect("failed to create http client")
+});
 
 #[derive(Debug)]
 pub struct Dependency {
@@ -153,13 +161,6 @@ impl DependencyTree {
 
   /// Update the dependency tree, fetching metadata from the registry.
   pub async fn fetch(&mut self, cache: Arc<Mutex<Cache>>) -> Result<()> {
-    let client = Client::builder()
-      .use_rustls_tls()
-      .user_agent(USER_AGENT)
-      .brotli(true)
-      .gzip(true)
-      .build()?;
-
     let mut set = JoinSet::new();
 
     let dependencies = mem::take(&mut self.dependencies);
@@ -167,7 +168,6 @@ impl DependencyTree {
 
     for mut dependency in dependencies {
       let agent = self.agent;
-      let client = client.clone();
       let cache = Arc::clone(&cache);
 
       {
@@ -181,57 +181,8 @@ impl DependencyTree {
 
       set.spawn(async move {
         dependency.versions = match agent {
-          // https://doc.rust-lang.org/cargo/reference/registry-web-api.html
-          Agent::Cargo => {
-            let url = format!("{CARGO_REGISTRY}/{}/versions", dependency.name);
-            let response = client.get(&url).send().await?;
-
-            let json: Value = response.json().await?;
-            let Some(versions) = json.get("versions").and_then(Value::as_array) else {
-              bail!("no versions found for {}", dependency.name);
-            };
-
-            let versions = versions
-              .iter()
-              .filter_map(|version| {
-                version
-                  .get("num")
-                  .and_then(Value::as_str)
-                  .and_then(|it| Version::parse(it).ok())
-              })
-              .collect_vec();
-
-            let mut cache = cache.lock().unwrap();
-            Self::add_to_cache(&mut cache, &dependency.name, agent, &versions);
-
-            versions
-          }
-
-          // https://github.com/npm/registry/blob/master/docs/responses/package-metadata.md
-          Agent::Npm | Agent::Pnpm => {
-            let url = format!("{NPM_REGISTRY}/{}", dependency.name);
-            let response = client
-              .get(&url)
-              .header(ACCEPT, "application/vnd.npm.install-v1+json")
-              .send()
-              .await?;
-
-            let json: Value = response.json().await?;
-            let Some(versions) = json.get("versions").and_then(Value::as_object) else {
-              bail!("no versions found for {}", dependency.name);
-            };
-
-            let versions = versions
-              .keys()
-              .filter_map(|v| Version::parse(v).ok())
-              .collect_vec();
-
-            let mut cache = cache.lock().unwrap();
-            Self::add_to_cache(&mut cache, &dependency.name, agent, &versions);
-
-            versions
-          }
-
+          Agent::Cargo => Self::fetch_cargo(&dependency, agent, cache).await?,
+          Agent::Npm | Agent::Pnpm => Self::fetch_npm(&dependency, agent, cache).await?,
           Agent::Tauri => bail!("tauri is not a package manager"),
         };
 
@@ -251,6 +202,71 @@ impl DependencyTree {
     self.dependencies.shrink_to_fit();
 
     Ok(())
+  }
+
+  /// <https://doc.rust-lang.org/cargo/reference/registry-web-api.html>
+  async fn fetch_cargo(
+    dependency: &Dependency,
+    agent: Agent,
+    cache: Arc<Mutex<Cache>>,
+  ) -> Result<Vec<Version>> {
+    let url = format!("{CARGO_REGISTRY}/{}/versions", dependency.name);
+    let response = HTTP_CLIENT.get(&url).send().await?;
+
+    let json: Value = response.json().await?;
+    let Some(versions) = json.get("versions").and_then(Value::as_array) else {
+      bail!("no versions found for {}", dependency.name);
+    };
+
+    let versions = versions
+      .iter()
+      .filter_map(Self::parse_crate_version)
+      .collect_vec();
+
+    let mut cache = cache.lock().unwrap();
+    Self::add_to_cache(&mut cache, &dependency.name, agent, &versions);
+
+    Ok(versions)
+  }
+
+  fn parse_crate_version(version: &Value) -> Option<Version> {
+    if version.get("yanked").and_then(Value::as_bool) == Some(true) {
+      return None;
+    }
+
+    version
+      .get("num")
+      .and_then(Value::as_str)
+      .and_then(|it| Version::parse(it).ok())
+  }
+
+  /// <https://github.com/npm/registry/blob/master/docs/responses/package-metadata.md>
+  async fn fetch_npm(
+    dependency: &Dependency,
+    agent: Agent,
+    cache: Arc<Mutex<Cache>>,
+  ) -> Result<Vec<Version>> {
+    let url = format!("{NPM_REGISTRY}/{}", dependency.name);
+    let response = HTTP_CLIENT
+      .get(&url)
+      .header(ACCEPT, "application/vnd.npm.install-v1+json")
+      .send()
+      .await?;
+
+    let json: Value = response.json().await?;
+    let Some(versions) = json.get("versions").and_then(Value::as_object) else {
+      bail!("no versions found for {}", dependency.name);
+    };
+
+    let versions = versions
+      .keys()
+      .filter_map(|v| Version::parse(v).ok())
+      .collect_vec();
+
+    let mut cache = cache.lock().unwrap();
+    Self::add_to_cache(&mut cache, &dependency.name, agent, &versions);
+
+    Ok(versions)
   }
 
   fn add_to_cache(cache: &mut Cache, name: &str, agent: Agent, versions: &[Version]) {

@@ -8,8 +8,6 @@ use crate::version::VersionExt;
 use clap::Args;
 use inquire::{Confirm, MultiSelect, Select};
 use std::fmt;
-use std::path::PathBuf;
-use std::sync::OnceLock;
 use strum::IntoEnumIterator;
 use tokio::process::Command;
 

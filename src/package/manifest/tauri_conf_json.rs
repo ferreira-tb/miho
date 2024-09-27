@@ -6,7 +6,6 @@ use crate::prelude::*;
 use semver::Version;
 use serde::Deserialize;
 use std::fs;
-use std::path::Path;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "camelCase"))]

@@ -9,7 +9,6 @@ use semver::{Comparator, Version};
 use serde::Deserialize;
 use serde_json::Value;
 use std::fs;
-use std::path::Path;
 
 #[derive(Deserialize)]
 #[serde(rename_all(deserialize = "camelCase"))]

@@ -4,7 +4,6 @@ use crate::package::Package;
 use crate::prelude::*;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
-use std::path::Path;
 
 #[derive(Debug)]
 pub struct SearchBuilder<'a> {
@@ -56,9 +55,7 @@ impl<'a> SearchBuilder<'a> {
         let path = entry.path().canonicalize()?;
         let package = Package::new(path);
         if matches!(package, Ok(ref it) if !packages.contains(it)) {
-          let package = package.unwrap();
-
-          packages.push(package);
+          packages.push(package.unwrap());
         }
       }
     }

@@ -12,12 +12,9 @@ use crossterm::{cursor, terminal, ExecutableCommand};
 use inquire::{MultiSelect, Select};
 use semver::Comparator;
 use std::io::{self, Write};
-use std::path::PathBuf;
-use std::sync::{Arc, Mutex, OnceLock};
 use std::{env, fmt, mem};
 use strum::IntoEnumIterator;
 use tokio::process::Command;
-use tokio::task::JoinSet;
 
 type TreeTuple<T> = (T, DependencyTree);
 
