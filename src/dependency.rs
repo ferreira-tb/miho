@@ -71,10 +71,10 @@ impl Dependency {
 
     comparator.normalize(&mut target_cmp);
 
-    if target_cmp != *comparator {
-      Some(Target::new(self, target_cmp))
-    } else {
+    if target_cmp == *comparator {
       None
+    } else {
+      Some(Target::new(self, target_cmp))
     }
   }
 }
