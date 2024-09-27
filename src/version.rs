@@ -76,6 +76,7 @@ impl VersionExt for Version {
 pub trait ComparatorExt {
   fn as_version(&self) -> Result<Version>;
   fn as_version_req(&self) -> VersionReq;
+  fn normalize(&self, other: &mut Self);
   fn with_release(&self, release: &Release) -> Comparator;
 
   fn from_version(version: &Version, op: Op) -> Comparator {
@@ -103,6 +104,16 @@ impl ComparatorExt for Comparator {
 
   fn as_version_req(&self) -> VersionReq {
     VersionReq::from_comparator(self)
+  }
+
+  fn normalize(&self, other: &mut Self) {
+    if self.minor.is_none() {
+      other.minor = None;
+    }
+
+    if self.patch.is_none() {
+      other.patch = None;
+    }
   }
 
   fn with_release(&self, release: &Release) -> Comparator {

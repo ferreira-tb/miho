@@ -10,7 +10,7 @@ use semver::{Comparator, Version, VersionReq};
 use serde_json::Value;
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
-use std::mem;
+use std::{fmt, mem};
 use strum::{AsRefStr, Display, EnumIs, EnumString};
 
 pub type Cache = HashSet<DependencyCache>;
@@ -54,7 +54,7 @@ impl Dependency {
       .max_by(|a, b| Version::cmp_precedence(a, b))
   }
 
-  pub fn target_cmp(&self, release: &Option<Release>) -> Option<Comparator> {
+  pub fn as_target(&self, release: &Option<Release>) -> Option<Target> {
     let comparator = &self.comparator;
     let requirement = if let Some(it) = release {
       comparator.with_release(it).as_version_req()
@@ -62,20 +62,20 @@ impl Dependency {
       comparator.as_version_req()
     };
 
-    self
+    let mut target_cmp = self
       .latest_with_req(&requirement)
       .and_then(|version| {
         let target_cmp = version.as_comparator(comparator.op);
         (target_cmp != *comparator).then_some(target_cmp)
-      })
-  }
+      })?;
 
-  pub fn into_target(self, release: &Option<Release>) -> Option<Target> {
-    let comparator = self.target_cmp(release);
-    matches!(comparator, Some(ref it) if *it != self.comparator).then(|| Target {
-      dependency: self,
-      comparator: comparator.unwrap(),
-    })
+    comparator.normalize(&mut target_cmp);
+
+    if target_cmp != *comparator {
+      Some(Target::new(self, target_cmp))
+    } else {
+      None
+    }
   }
 }
 
@@ -138,7 +138,7 @@ impl DependencyTree {
       name: name.as_ref().to_owned(),
       comparator,
       kind,
-      versions: Vec::default(),
+      versions: Vec::new(),
     };
 
     self.dependencies.push(dependency);
@@ -344,7 +344,19 @@ impl Ord for DependencyKind {
 }
 
 #[derive(Debug)]
-pub struct Target {
-  pub dependency: Dependency,
+pub struct Target<'a> {
+  pub dependency: &'a Dependency,
   pub comparator: Comparator,
+}
+
+impl<'a> Target<'a> {
+  pub fn new(dependency: &'a Dependency, comparator: Comparator) -> Self {
+    Self { dependency, comparator }
+  }
+}
+
+impl fmt::Display for Target<'_> {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "{}", self.comparator)
+  }
 }

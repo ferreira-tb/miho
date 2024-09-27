@@ -8,7 +8,7 @@
     "clippy": "cargo clippy",
     "format": "cargo fmt --all",
     "mock:bump": "cargo run -- bump -t -p mocks",
-    "mock:update": "cargo run -- update -t -p mocks",
+    "mock:update": "cargo run -- update major -t -p mocks",
     "release": "pnpm run clippy && cargo publish"
   }
 }

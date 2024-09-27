@@ -195,24 +195,28 @@ impl Update {
     clear_line()?;
 
     let trees = Arc::into_inner(trees)
-      .unwrap()
+      .expect("arc has unexpected strong references")
       .into_inner()?
       .into_iter()
-      .filter_map(|(package, mut tree)| {
-        self.filter_dependencies(&mut tree);
-
-        if tree.dependencies.is_empty() {
-          None
-        } else {
-          tree.dependencies.sort_unstable();
-          Some((package, tree))
-        }
-      });
+      .filter_map(|(package, tree)| self.filter_tree(package, tree));
 
     let mut trees = trees.collect_vec();
     trees.sort_unstable_by(|(a, _), (b, _)| a.cmp(b));
 
     Ok(trees)
+  }
+
+  fn filter_tree<T>(&self, package: T, mut tree: DependencyTree) -> Option<TreeTuple<T>>
+  where
+    T: PackageDisplay,
+  {
+    self.filter_dependencies(&mut tree);
+    if tree.dependencies.is_empty() {
+      None
+    } else {
+      tree.dependencies.sort_unstable();
+      Some((package, tree))
+    }
   }
 
   fn filter_dependencies(&self, tree: &mut DependencyTree) {
@@ -232,7 +236,7 @@ impl Update {
         return false;
       }
 
-      dependency.target_cmp(release).is_some()
+      dependency.as_target(release).is_some()
     });
   }
 }
@@ -246,7 +250,7 @@ async fn update_local(trees: Vec<TreeTuple<Package>>) -> Result<()> {
     .collect_vec();
 
   for (package, tree) in trees {
-    package.update(tree, release)?;
+    package.update(&tree, release)?;
   }
 
   if let Some(agent) = agents.iter().find(|it| it.is_node()) {
@@ -337,20 +341,23 @@ fn preview(trees: &[(impl PackageDisplay, DependencyTree)]) {
     let mut builder = Builder::with_capacity(dep_amount, 6);
 
     for dependency in &tree.dependencies {
-      if let Some(target_cmp) = dependency.target_cmp(release) {
+      if let Some(mut target) = dependency.as_target(release) {
         let comparator = &dependency.comparator;
+        comparator.normalize(&mut target.comparator);
 
         let mut record = vec![
           dependency.name.clone(),
           dependency.kind.as_ref().bright_cyan().to_string(),
           comparator.to_string().bright_blue().to_string(),
           "=>".to_string(),
-          target_cmp.to_string().bright_green().to_string(),
+          target.to_string().bright_green().to_string(),
         ];
 
         if let Some(latest) = dependency.latest() {
-          let latest_cmp = Comparator::from_version(latest, comparator.op);
-          if latest_cmp.pre.is_empty() && latest_cmp != target_cmp {
+          let mut latest = Comparator::from_version(latest, comparator.op);
+          comparator.normalize(&mut latest);
+
+          if latest.pre.is_empty() && latest != target.comparator {
             let latest = format!("({latest} available)");
             record.push(latest.truecolor(105, 105, 105).to_string());
           }

@@ -48,14 +48,14 @@ impl Package {
     self.manifest.bump(&self, version)
   }
 
-  pub fn update(self, tree: DependencyTree, release: &Option<Release>) -> Result<()> {
+  pub fn update(&self, tree: &DependencyTree, release: &Option<Release>) -> Result<()> {
     let targets = tree
       .dependencies
-      .into_iter()
-      .filter_map(|it| it.into_target(release))
+      .iter()
+      .filter_map(|it| it.as_target(release))
       .collect_vec();
 
-    self.manifest.update(&self, &targets)
+    self.manifest.update(self, &targets)
   }
 }
 
@@ -147,11 +147,11 @@ impl GlobalPackage {
     Ok(dependencies)
   }
 
-  pub async fn update(self, tree: DependencyTree, release: &Option<Release>) -> Result<()> {
+  pub async fn update(&self, tree: DependencyTree, release: &Option<Release>) -> Result<()> {
     let targets = tree
       .dependencies
-      .into_iter()
-      .filter_map(|it| it.into_target(release))
+      .iter()
+      .filter_map(|it| it.as_target(release))
       .collect_vec();
 
     for target in targets {
