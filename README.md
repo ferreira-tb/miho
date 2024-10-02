@@ -1,5 +1,7 @@
 # Miho
 
+Easily bump your packages and update your dependencies.
+
 ```sh
 cargo install miho
 ```
