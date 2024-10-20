@@ -48,7 +48,7 @@ impl Package {
     self.manifest.bump(&self, version)
   }
 
-  pub fn update(&self, tree: &DependencyTree, release: &Option<Release>) -> Result<()> {
+  pub fn update(&self, tree: &DependencyTree, release: Option<&Release>) -> Result<()> {
     let targets = tree
       .dependencies
       .iter()
@@ -147,7 +147,7 @@ impl GlobalPackage {
     Ok(dependencies)
   }
 
-  pub async fn update(&self, tree: DependencyTree, release: &Option<Release>) -> Result<()> {
+  pub async fn update(&self, tree: DependencyTree, release: Option<&Release>) -> Result<()> {
     let targets = tree
       .dependencies
       .iter()

@@ -220,7 +220,7 @@ impl Update {
   }
 
   fn filter_dependencies(&self, tree: &mut DependencyTree) {
-    let release = RELEASE.get().unwrap();
+    let release = RELEASE.get().unwrap().as_ref();
     let chosen_deps = self.dependency.as_deref().unwrap_or_default();
 
     tree.dependencies.retain(|dependency| {
@@ -242,7 +242,7 @@ impl Update {
 }
 
 async fn update_local(trees: Vec<TreeTuple<Package>>) -> Result<()> {
-  let release = RELEASE.get().unwrap();
+  let release = RELEASE.get().unwrap().as_ref();
   let agents = trees
     .iter()
     .map(|(package, _)| package.agent())
@@ -280,7 +280,7 @@ async fn update_local(trees: Vec<TreeTuple<Package>>) -> Result<()> {
 }
 
 async fn update_global(trees: Vec<TreeTuple<GlobalPackage>>) -> Result<()> {
-  let release = RELEASE.get().unwrap();
+  let release = RELEASE.get().unwrap().as_ref();
   for (package, tree) in trees {
     package.update(tree, release).await?;
   }
@@ -333,7 +333,7 @@ fn preview(trees: &[(impl PackageDisplay, DependencyTree)]) {
   use tabled::settings::object::Segment;
   use tabled::settings::{Alignment, Modify, Panel, Style};
 
-  let release = RELEASE.get().unwrap();
+  let release = RELEASE.get().unwrap().as_ref();
   let mut tables = Vec::with_capacity(trees.len());
 
   for (package, tree) in trees {

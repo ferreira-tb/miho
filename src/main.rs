@@ -25,7 +25,6 @@ enum Cli {
 }
 
 #[tokio::main]
-#[expect(clippy::needless_return)]
 async fn main() -> Result<()> {
   match Cli::parse() {
     Cli::Bump(cmd) => cmd.execute().await,

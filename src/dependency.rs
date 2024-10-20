@@ -54,7 +54,7 @@ impl Dependency {
       .max_by(|a, b| Version::cmp_precedence(a, b))
   }
 
-  pub fn as_target(&self, release: &Option<Release>) -> Option<Target> {
+  pub fn as_target(&self, release: Option<&Release>) -> Option<Target> {
     let comparator = &self.comparator;
     let requirement = if let Some(it) = release {
       comparator.with_release(it).as_version_req()
