@@ -77,7 +77,7 @@ version = "0.16"
 features = ["ansi"]
 
 [dependencies.tokio]
-version = "1.40"
+version = "1.41"
 features = ["full"]
 
 [dependencies.toml]
