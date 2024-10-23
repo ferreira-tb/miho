@@ -3,6 +3,7 @@
 Easily bump your packages and update your dependencies.
 
 ```sh
+rustup toolchain install nightly
 cargo install miho
 ```
 
@@ -35,21 +36,22 @@ miho bump [OPTIONS] [RELEASE]
 miho update [OPTIONS] [RELEASE]
 ```
 
-|      Options       | Alias | Description                                        |
-| :----------------: | :---- | :------------------------------------------------- |
-|      `--add`       | `-a`  | Include untracked files with `git add <PATHSPEC>`. |
-|     `--agent`      | `-A`  | Only update packages with the specified agents.    |
-| `--commit-message` | `-m`  | Message of the commit.                             |
-|   `--dependency`   | `-D`  | Dependencies to update.                            |
-|    `--dry-run`     | `-d`  | Show what would be updated.                        |
-|     `--global`     | `-g`  | Update global dependencies.                        |
-|     `--no-ask`     | `-k`  | Do not ask for consent before updating.            |
-|   `--no-commit`    | `-t`  | Do not commit the modified files.                  |
-|    `--no-push`     | none  | Do not push the commit.                            |
-|   `--no-verify`    | `-n`  | Bypass `pre-commit` and `commit-msg` hooks.        |
-|    `--package`     | `-P`  | Packages to update.                                |
-|      `--path`      | `-p`  | Where to search for packages.                      |
-|      `--peer`      | none  | Whether to only update peer dependencies.          |
+|       Options       | Alias | Description                                        |
+| :-----------------: | :---- | :------------------------------------------------- |
+|       `--add`       | `-a`  | Include untracked files with `git add <PATHSPEC>`. |
+|      `--agent`      | `-A`  | Only update packages with the specified agents.    |
+| `--commit-message`  | `-m`  | Message of the commit.                             |
+|   `--dependency`    | `-D`  | Dependencies to update.                            |
+|     `--dry-run`     | `-d`  | Show what would be updated.                        |
+|     `--global`      | `-g`  | Update global dependencies.                        |
+|     `--no-ask`      | `-k`  | Do not ask for consent before updating.            |
+|    `--no-commit`    | `-t`  | Do not commit the modified files.                  |
+|     `--no-push`     | none  | Do not push the commit.                            |
+|    `--no-verify`    | `-n`  | Bypass `pre-commit` and `commit-msg` hooks.        |
+|     `--package`     | `-P`  | Packages to update.                                |
+|      `--path`       | `-p`  | Where to search for packages.                      |
+|      `--peer`       | none  | Whether to only update peer dependencies.          |
+| `--skip-dependency` | `-S`  | Skip updating dependencies.                        |
 
 ## License
 

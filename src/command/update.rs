@@ -5,8 +5,7 @@ use crate::package::{GlobalPackage, Package, PackageDependencyTree, PackageDispl
 use crate::prelude::*;
 use crate::release::Release;
 use crate::version::ComparatorExt;
-use crate::{command, search_packages};
-use ahash::{HashSet, HashSetExt};
+use crate::{command, impl_commit, search_packages};
 use clap::Args;
 use crossterm::{cursor, terminal, ExecutableCommand};
 use inquire::{MultiSelect, Select};
@@ -27,7 +26,7 @@ pub struct Update {
 
   /// Include untracked files with `git add <PATHSPEC>`.
   #[arg(short = 'a', long, value_name = "PATHSPEC")]
-  pub(super) add: Option<String>,
+  add: Option<String>,
 
   /// Only update packages with the specified agent.
   #[arg(short = 'A', long, value_name = "AGENT")]
@@ -35,7 +34,7 @@ pub struct Update {
 
   /// Commit the modified packages.
   #[arg(short = 'm', long, value_name = "MESSAGE")]
-  pub(super) commit_message: Option<String>,
+  commit_message: Option<String>,
 
   /// Dependencies to update.
   #[arg(short = 'D', long, value_name = "DEPENDENCY")]
@@ -51,7 +50,7 @@ pub struct Update {
 
   /// Do not ask for consent before updating.
   #[arg(short = 'k', long)]
-  pub(super) no_ask: bool,
+  no_ask: bool,
 
   /// Do not commit the modified packages.
   #[arg(short = 't', long)]
@@ -59,11 +58,11 @@ pub struct Update {
 
   /// Do not push the commit.
   #[arg(long)]
-  pub(super) no_push: bool,
+  no_push: bool,
 
   /// Bypass `pre-commit` and `commit-msg` hooks.
   #[arg(short = 'n', long)]
-  pub(super) no_verify: bool,
+  no_verify: bool,
 
   /// Package to update.
   #[arg(short = 'P', long, value_name = "PACKAGE")]
@@ -76,7 +75,13 @@ pub struct Update {
   /// Whether to only update peer dependencies.
   #[arg(long)]
   peer: bool,
+
+  /// Skip updating dependencies.
+  #[arg(short = 'S', long, value_name = "DEPENDENCY")]
+  skip_dependency: Option<Vec<String>>,
 }
+
+impl_commit!(Update);
 
 impl super::Command for Update {
   async fn execute(mut self) -> Result<()> {
@@ -169,7 +174,7 @@ impl Update {
     update_fetch_progress(0, total_amount)?;
 
     let mut set = JoinSet::new();
-    let cache = Arc::new(Mutex::new(HashSet::new()));
+    let cache = Arc::new(Mutex::default());
 
     for package in packages {
       let trees = Arc::clone(&trees);
@@ -194,13 +199,13 @@ impl Update {
 
     clear_line()?;
 
-    let trees = Arc::into_inner(trees)
+    let mut trees = Arc::into_inner(trees)
       .expect("arc has unexpected strong references")
       .into_inner()?
       .into_iter()
-      .filter_map(|(package, tree)| self.filter_tree(package, tree));
+      .filter_map(|(package, tree)| self.filter_tree(package, tree))
+      .collect_vec();
 
-    let mut trees = trees.collect_vec();
     trees.sort_unstable_by(|(a, _), (b, _)| a.cmp(b));
 
     Ok(trees)
@@ -222,8 +227,16 @@ impl Update {
   fn filter_dependencies(&self, tree: &mut DependencyTree) {
     let release = RELEASE.get().unwrap().as_ref();
     let chosen_deps = self.dependency.as_deref().unwrap_or_default();
+    let skip_deps = self
+      .skip_dependency
+      .as_deref()
+      .unwrap_or_default();
 
     tree.dependencies.retain(|dependency| {
+      if skip_deps.contains(&dependency.name) {
+        return false;
+      }
+
       if !chosen_deps.is_empty() && !chosen_deps.contains(&dependency.name) {
         return false;
       }
@@ -296,18 +309,13 @@ fn prompt(trees: &mut Vec<(impl PackageDisplay, DependencyTree)>) -> Result<Prom
     Choice::All => Ok(PromptResult::Continue),
     Choice::None => Ok(PromptResult::Abort),
     Choice::Some => {
-      struct Wrapper(Dependency);
-
-      impl fmt::Display for Wrapper {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-          write!(f, "{}", self.0.name)
-        }
-      }
-
       for (package, tree) in trees.iter_mut() {
         let message = package.display();
         let dependencies = mem::take(&mut tree.dependencies);
-        let dependencies = dependencies.into_iter().map(Wrapper).collect();
+        let dependencies = dependencies
+          .into_iter()
+          .map(ChoiceWrapper)
+          .collect();
 
         let dependencies = MultiSelect::new(&message, dependencies)
           .with_all_selected_by_default()
@@ -421,4 +429,12 @@ fn clear_line() -> Result<()> {
   stdout.flush()?;
 
   Ok(())
+}
+
+struct ChoiceWrapper(Dependency);
+
+impl fmt::Display for ChoiceWrapper {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "{}", self.0.name)
+  }
 }
