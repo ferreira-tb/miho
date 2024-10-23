@@ -3,8 +3,8 @@ use crate::agent::Agent;
 use crate::package::Package;
 use crate::prelude::*;
 use crate::release::Release;
-use crate::search_packages;
 use crate::version::VersionExt;
+use crate::{impl_commit, search_packages};
 use clap::Args;
 use inquire::{Confirm, MultiSelect, Select};
 use std::fmt;
@@ -21,7 +21,7 @@ pub struct Bump {
 
   /// Include untracked files with `git add <PATHSPEC>`.
   #[arg(short = 'a', long, value_name = "PATHSPEC")]
-  pub(super) add: Option<String>,
+  add: Option<String>,
 
   /// Only bump packages with the specified agent.
   #[arg(short = 'A', long, value_name = "AGENT")]
@@ -37,11 +37,11 @@ pub struct Bump {
 
   /// Commit the modified packages.
   #[arg(short = 'm', long, value_name = "MESSAGE")]
-  pub(super) commit_message: Option<String>,
+  commit_message: Option<String>,
 
   /// Do not ask for consent before bumping.
   #[arg(short = 'k', long)]
-  pub(super) no_ask: bool,
+  no_ask: bool,
 
   /// Do not commit the modified packages.
   #[arg(short = 't', long)]
@@ -49,11 +49,11 @@ pub struct Bump {
 
   /// Do not push the commit.
   #[arg(long)]
-  pub(super) no_push: bool,
+  no_push: bool,
 
   /// Bypass `pre-commit` and `commit-msg` hooks.
   #[arg(short = 'n', long)]
-  pub(super) no_verify: bool,
+  no_verify: bool,
 
   /// Package to bump.
   #[arg(short = 'P', long, value_name = "PACKAGE")]
@@ -67,6 +67,8 @@ pub struct Bump {
   #[arg(long, value_name = "IDENTIFIER")]
   pre: Option<String>,
 }
+
+impl_commit!(Bump);
 
 impl super::Command for Bump {
   async fn execute(mut self) -> Result<()> {
@@ -176,17 +178,8 @@ async fn prompt_many(packages: Vec<Package>) -> Result<PromptResult> {
       Ok(PromptResult::Continue)
     }
     Choice::Some => {
-      struct Wrapper(Package);
-
-      impl fmt::Display for Wrapper {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-          let agent = self.0.agent().to_string();
-          write!(f, "{agent}: {}", self.0.name)
-        }
-      }
-
       let message = "Select the packages to bump.";
-      let packages = packages.into_iter().map(Wrapper).collect();
+      let packages = packages.into_iter().map(ChoiceWrapper).collect();
       let packages = MultiSelect::new(message, packages).prompt()?;
 
       if packages.is_empty() {
@@ -251,4 +244,13 @@ fn preview(packages: &[Package]) {
   table.with(Modify::new(new_version_col).with(Alignment::right()));
 
   println!("{table}");
+}
+
+struct ChoiceWrapper(Package);
+
+impl fmt::Display for ChoiceWrapper {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let agent = self.0.agent().to_string();
+    write!(f, "{agent}: {}", self.0.name)
+  }
 }
