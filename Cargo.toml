@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "5.5.0"
+version = "5.5.1"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -11,6 +11,15 @@ edition = "2021"
 rust-version = "1.81"
 keywords = ["miho", "repository", "git"]
 categories = ["development-tools"]
+
+[profile.release]
+codegen-units = 1
+debug = false
+debug-assertions = false
+incremental = false
+lto = "fat"
+opt-level = 3
+strip = "symbols"
 
 [lints.rust]
 async_fn_in_trait = "allow"

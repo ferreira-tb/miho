@@ -1,9 +1,9 @@
 {
   "name": "miho",
-  "version": "5.5.0",
+  "version": "5.5.1",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@9.12.2",
+  "packageManager": "pnpm@9.12.3",
   "scripts": {
     "clippy": "cargo clippy",
     "format": "cargo fmt --all",
