@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "5.5.1"
+version = "5.5.2"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -8,7 +8,7 @@ authors = ["Andrew Ferreira <andrew.shien2@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 edition = "2021"
-rust-version = "1.81"
+rust-version = "1.82"
 keywords = ["miho", "repository", "git"]
 categories = ["development-tools"]
 
