@@ -1,6 +1,6 @@
 {
   "name": "miho",
-  "version": "5.5.4",
+  "version": "5.5.5",
   "type": "module",
   "private": true,
   "packageManager": "pnpm@9.14.4",

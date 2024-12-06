@@ -55,7 +55,7 @@ impl<'a> SearchBuilder<'a> {
         let path = entry.path().canonicalize()?;
         let package = Package::new(path);
         if matches!(package, Ok(ref it) if !packages.contains(it)) {
-          packages.push(package.unwrap());
+          packages.push(unsafe { package.unwrap_unchecked() });
         }
       }
     }
