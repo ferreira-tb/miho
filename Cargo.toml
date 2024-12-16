@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "5.5.6"
+version = "5.5.7"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -47,7 +47,7 @@ priority = -1
 
 [dependencies]
 anyhow = "1.0"
-colored = "2.1"
+colored = "2.2"
 crossterm = "0.28"
 futures = "0.3"
 globset = "0.4"

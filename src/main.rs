@@ -1,4 +1,4 @@
-#![feature(async_closure, let_chains, try_blocks)]
+#![feature(let_chains, try_blocks)]
 
 mod agent;
 mod command;
