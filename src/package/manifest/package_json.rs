@@ -1,3 +1,4 @@
+use super::default_version;
 use crate::agent::Agent;
 use crate::dependency::{self, DependencyKind, DependencyTree};
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
@@ -14,6 +15,7 @@ use std::fs;
 #[serde(rename_all(deserialize = "camelCase"))]
 pub(super) struct PackageJson {
   pub name: String,
+  #[serde(default = "default_version")]
   pub version: String,
   pub package_manager: Option<String>,
 

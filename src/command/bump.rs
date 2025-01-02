@@ -1,5 +1,6 @@
 use super::{Choice, Commit, PromptResult};
 use crate::agent::Agent;
+use crate::package::manifest::DEFAULT_VERSION;
 use crate::package::Package;
 use crate::prelude::*;
 use crate::release::Release;
@@ -74,7 +75,11 @@ impl super::Command for Bump {
   async fn execute(mut self) -> Result<()> {
     self.set_release()?;
 
-    let packages = search_packages!(&self);
+    let packages = search_packages!(&self)
+      .into_iter()
+      .filter(|it| it.version != *DEFAULT_VERSION)
+      .collect_vec();
+
     preview(&packages);
 
     if self.dry_run {

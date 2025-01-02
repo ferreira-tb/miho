@@ -1,3 +1,4 @@
+use super::default_version;
 use crate::agent::Agent;
 use crate::dependency::{self, DependencyKind, DependencyTree};
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
@@ -25,6 +26,7 @@ pub(super) struct CargoToml {
 #[derive(Deserialize)]
 pub(super) struct CargoPackage {
   pub name: String,
+  #[serde(default = "default_version")]
   pub version: String,
 }
 

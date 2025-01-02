@@ -11,10 +11,13 @@ use dependency::DependencyTree;
 use globset::Glob;
 use package_json::PackageJson;
 use semver::Version;
+use std::sync::LazyLock;
 use strum::{EnumIter, IntoEnumIterator};
 use tauri_conf_json::TauriConfJson;
 
 pub(super) type ManifestBox = Box<dyn Handler + Send + Sync>;
+
+pub static DEFAULT_VERSION: LazyLock<Version> = LazyLock::new(|| Version::new(0, 0, 0));
 
 trait Manifest {
   type Value;
@@ -76,4 +79,8 @@ impl TryFrom<&Path> for ManifestKind {
     let path = path.to_string_lossy().into_owned();
     Err(anyhow!("invalid manifest:\n{path}"))
   }
+}
+
+fn default_version() -> String {
+  DEFAULT_VERSION.to_string()
 }
