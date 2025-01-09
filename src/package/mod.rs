@@ -3,10 +3,11 @@ mod search;
 
 use crate::agent::Agent;
 use crate::dependency::{DependencyKind, DependencyTree};
-use crate::prelude::*;
 use crate::release::Release;
 use crate::version::VersionExt;
 use crate::{command, return_if_ne};
+use anyhow::{bail, Result};
+use colored::Colorize;
 use itertools::Itertools;
 use manifest::{ManifestBox, ManifestKind};
 pub use search::SearchBuilder;

@@ -2,8 +2,8 @@ mod add;
 mod commit;
 mod push;
 
-use crate::prelude::*;
 pub use add::Add;
+use anyhow::Result;
 pub use commit::Commit;
 pub use push::Push;
 use std::process::ExitStatus;

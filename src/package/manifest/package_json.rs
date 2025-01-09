@@ -3,14 +3,15 @@ use crate::agent::Agent;
 use crate::dependency::{self, DependencyKind, DependencyTree};
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::Package;
-use crate::prelude::*;
 use crate::version::ComparatorExt;
+use anyhow::Result;
 use itertools::Itertools;
 use semver::{Comparator, Version};
 use serde::Deserialize;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::fs;
+use std::path::Path;
 
 #[derive(Deserialize)]
 #[serde(rename_all(deserialize = "camelCase"))]

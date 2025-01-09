@@ -1,8 +1,7 @@
 mod bump;
 mod update;
 
-use crate::prelude::*;
-use anyhow::Context;
+use anyhow::{Context, Result};
 pub use bump::Bump;
 use serde::Deserialize;
 use std::env::current_dir;

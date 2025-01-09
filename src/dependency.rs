@@ -1,8 +1,8 @@
 use crate::agent::Agent;
-use crate::prelude::*;
 use crate::release::Release;
 use crate::return_if_ne;
 use crate::version::{ComparatorExt, VersionExt, VersionReqExt};
+use anyhow::{bail, Result};
 use itertools::Itertools;
 use reqwest::header::ACCEPT;
 use reqwest::Client;
@@ -11,8 +11,10 @@ use serde_json::Value;
 use std::cmp::Ordering;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
+use std::sync::{Arc, LazyLock, Mutex};
 use std::{fmt, mem};
 use strum::{AsRefStr, Display, EnumIs, EnumString};
+use tokio::task::JoinSet;
 
 pub type Cache = HashSet<DependencyCache>;
 

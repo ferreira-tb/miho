@@ -6,13 +6,12 @@ mod dependency;
 mod git;
 mod macros;
 mod package;
-mod prelude;
 mod release;
 mod version;
 
+pub use anyhow::Result;
 use clap::Parser;
 use command::{Bump, Command, Config, Update};
-use prelude::*;
 
 #[derive(Debug, Parser)]
 #[command(name = "miho")]

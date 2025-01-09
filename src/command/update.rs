@@ -2,20 +2,24 @@ use super::{Choice, Commit, Config, PromptResult};
 use crate::agent::Agent;
 use crate::dependency::{Dependency, DependencyTree};
 use crate::package::{GlobalPackage, Package, PackageDependencyTree, PackageDisplay};
-use crate::prelude::*;
 use crate::release::Release;
 use crate::version::ComparatorExt;
 use crate::{command, impl_commit, search_packages};
+use anyhow::{Error, Result};
 use clap::Args;
+use colored::Colorize;
 use crossterm::{cursor, terminal, ExecutableCommand};
 use inquire::{MultiSelect, Select};
 use itertools::Itertools;
 use semver::Comparator;
 use serde::Deserialize;
 use std::io::{self, Write};
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex, OnceLock};
 use std::{env, fmt, mem};
 use strum::IntoEnumIterator;
 use tokio::process::Command;
+use tokio::task::JoinSet;
 
 type TreeTuple<T> = (T, DependencyTree);
 

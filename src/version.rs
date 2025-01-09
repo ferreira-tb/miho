@@ -1,5 +1,5 @@
-use crate::prelude::*;
 use crate::release::Release;
+use anyhow::{bail, Result};
 use semver::{BuildMetadata, Comparator, Op, Prerelease, Version, VersionReq};
 
 pub trait VersionExt {

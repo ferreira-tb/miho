@@ -3,11 +3,12 @@ use crate::agent::Agent;
 use crate::dependency::{self, DependencyKind, DependencyTree};
 use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::Package;
-use crate::prelude::*;
+use anyhow::Result;
 use semver::Version;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs;
+use std::path::Path;
 use taplo::formatter;
 use toml::Value;
 
