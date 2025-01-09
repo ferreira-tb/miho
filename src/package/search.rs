@@ -4,6 +4,7 @@ use crate::package::Package;
 use crate::prelude::*;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
+use itertools::Itertools;
 
 #[derive(Debug)]
 pub struct SearchBuilder<'a> {
