@@ -26,6 +26,8 @@ macro_rules! return_if_ne {
 #[macro_export]
 macro_rules! search_packages {
   ($command:expr) => {{
+    use itertools::Itertools;
+
     let path = $command
       .path
       .as_deref()

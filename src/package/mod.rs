@@ -7,6 +7,7 @@ use crate::prelude::*;
 use crate::release::Release;
 use crate::version::VersionExt;
 use crate::{command, return_if_ne};
+use itertools::Itertools;
 use manifest::{ManifestBox, ManifestKind};
 pub use search::SearchBuilder;
 use semver::{Op, Version};

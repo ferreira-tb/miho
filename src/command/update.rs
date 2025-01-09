@@ -1,4 +1,4 @@
-use super::{Choice, Commit, PromptResult};
+use super::{Choice, Commit, Config, PromptResult};
 use crate::agent::Agent;
 use crate::dependency::{Dependency, DependencyTree};
 use crate::package::{GlobalPackage, Package, PackageDependencyTree, PackageDisplay};
@@ -9,7 +9,9 @@ use crate::{command, impl_commit, search_packages};
 use clap::Args;
 use crossterm::{cursor, terminal, ExecutableCommand};
 use inquire::{MultiSelect, Select};
+use itertools::Itertools;
 use semver::Comparator;
+use serde::Deserialize;
 use std::io::{self, Write};
 use std::{env, fmt, mem};
 use strum::IntoEnumIterator;
@@ -19,7 +21,7 @@ type TreeTuple<T> = (T, DependencyTree);
 
 static RELEASE: OnceLock<Option<Release>> = OnceLock::new();
 
-#[derive(Debug, Args)]
+#[derive(Args, Debug, Default, Deserialize)]
 pub struct Update {
   /// Type of the release.
   release: Option<String>,
@@ -76,6 +78,10 @@ pub struct Update {
   #[arg(long)]
   peer: bool,
 
+  /// Select all dependencies.
+  #[arg(short = 's', long)]
+  select_all: bool,
+
   /// Skip updating dependencies.
   #[arg(short = 'S', long, value_name = "DEPENDENCY")]
   skip_dependency: Option<Vec<String>>,
@@ -84,7 +90,11 @@ pub struct Update {
 impl_commit!(Update);
 
 impl super::Command for Update {
-  async fn execute(mut self) -> Result<()> {
+  async fn execute(mut self, config: Option<Config>) -> Result<()> {
+    if let Some(mut config) = config {
+      self.merge(&mut config.update);
+    }
+
     self.set_release();
 
     if self.global {
@@ -92,6 +102,33 @@ impl super::Command for Update {
     } else {
       self.execute_local().await
     }
+  }
+
+  fn merge(&mut self, value: &mut Self) {
+    macro_rules! take_opt {
+      ($field:ident) => {
+        if self.$field.is_none() {
+          self.$field = value.$field.take();
+        }
+      };
+    }
+
+    take_opt!(release);
+    take_opt!(add);
+    take_opt!(agent);
+    take_opt!(commit_message);
+    take_opt!(dependency);
+    take_opt!(package);
+    take_opt!(skip_dependency);
+
+    self.dry_run |= value.dry_run;
+    self.global |= value.global;
+    self.no_ask |= value.no_ask;
+    self.no_commit = value.no_commit;
+    self.no_push |= value.no_push;
+    self.no_verify |= value.no_verify;
+    self.peer |= value.peer;
+    self.select_all |= value.select_all;
   }
 }
 
@@ -123,7 +160,7 @@ impl Update {
     if self.no_ask {
       update_local(trees).await?;
     } else {
-      match prompt(&mut trees)? {
+      match prompt(&mut trees, self.select_all)? {
         PromptResult::Abort => return Ok(()),
         PromptResult::Continue => {
           update_local(trees).await?;
@@ -156,7 +193,7 @@ impl Update {
     if self.no_ask {
       update_global(trees).await
     } else {
-      match prompt(&mut trees)? {
+      match prompt(&mut trees, self.select_all)? {
         PromptResult::Abort => Ok(()),
         PromptResult::Continue => update_global(trees).await,
       }
@@ -301,7 +338,10 @@ async fn update_global(trees: Vec<TreeTuple<GlobalPackage>>) -> Result<()> {
   Ok(())
 }
 
-fn prompt(trees: &mut Vec<(impl PackageDisplay, DependencyTree)>) -> Result<PromptResult> {
+fn prompt(
+  trees: &mut Vec<(impl PackageDisplay, DependencyTree)>,
+  select_all: bool,
+) -> Result<PromptResult> {
   let options = Choice::iter().collect();
   let choice = Select::new("Update dependencies?", options).prompt()?;
 
@@ -317,11 +357,16 @@ fn prompt(trees: &mut Vec<(impl PackageDisplay, DependencyTree)>) -> Result<Prom
           .map(ChoiceWrapper)
           .collect();
 
-        let dependencies = MultiSelect::new(&message, dependencies)
-          .with_all_selected_by_default()
-          .prompt()?;
+        let mut select = MultiSelect::new(&message, dependencies);
+        if select_all {
+          select = select.with_all_selected_by_default();
+        }
 
-        tree.dependencies = dependencies.into_iter().map(|d| d.0).collect();
+        tree.dependencies = select
+          .prompt()?
+          .into_iter()
+          .map(|d| d.0)
+          .collect();
       }
 
       trees.retain(|(_, tree)| !tree.dependencies.is_empty());

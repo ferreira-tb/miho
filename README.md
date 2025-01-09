@@ -51,6 +51,7 @@ miho update [OPTIONS] [RELEASE]
 |     `--package`     | `-P`  | Packages to update.                                |
 |      `--path`       | `-p`  | Where to search for packages.                      |
 |      `--peer`       | none  | Whether to only update peer dependencies.          |
+|   `--select-all`    | `-s`  | Select all dependencies.                           |
 | `--skip-dependency` | `-S`  | Skip updating dependencies.                        |
 
 ## License

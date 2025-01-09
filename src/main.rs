@@ -11,7 +11,7 @@ mod release;
 mod version;
 
 use clap::Parser;
-use command::{Bump, Command, Update};
+use command::{Bump, Command, Config, Update};
 use prelude::*;
 
 #[derive(Debug, Parser)]
@@ -26,8 +26,9 @@ enum Cli {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+  let config = Config::load().await?;
   match Cli::parse() {
-    Cli::Bump(cmd) => cmd.execute().await,
-    Cli::Update(cmd) => cmd.execute().await,
+    Cli::Bump(cmd) => cmd.execute(config).await,
+    Cli::Update(cmd) => cmd.execute(config).await,
   }
 }

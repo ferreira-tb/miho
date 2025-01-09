@@ -5,10 +5,11 @@ use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::Package;
 use crate::prelude::*;
 use crate::version::ComparatorExt;
-use ahash::HashMap;
+use itertools::Itertools;
 use semver::{Comparator, Version};
 use serde::Deserialize;
 use serde_json::Value;
+use std::collections::HashMap;
 use std::fs;
 
 #[derive(Deserialize)]
