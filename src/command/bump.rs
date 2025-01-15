@@ -1,7 +1,7 @@
 use super::{Choice, Commit, Config, PromptResult};
 use crate::agent::Agent;
-use crate::package::manifest::DEFAULT_VERSION;
 use crate::package::Package;
+use crate::package::manifest::DEFAULT_VERSION;
 use crate::release::Release;
 use crate::version::VersionExt;
 use crate::{impl_commit, search_packages};

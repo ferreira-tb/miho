@@ -6,7 +6,7 @@ use crate::dependency::{DependencyKind, DependencyTree};
 use crate::release::Release;
 use crate::version::VersionExt;
 use crate::{command, return_if_ne};
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use colored::Colorize;
 use itertools::Itertools;
 use manifest::{ManifestBox, ManifestKind};

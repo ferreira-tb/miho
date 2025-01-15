@@ -1,8 +1,8 @@
 use super::default_version;
 use crate::agent::Agent;
 use crate::dependency::{self, DependencyKind, DependencyTree};
-use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::Package;
+use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::version::ComparatorExt;
 use anyhow::Result;
 use itertools::Itertools;

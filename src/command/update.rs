@@ -8,7 +8,7 @@ use crate::{command, impl_commit, search_packages};
 use anyhow::{Error, Result};
 use clap::Args;
 use colored::Colorize;
-use crossterm::{cursor, terminal, ExecutableCommand};
+use crossterm::{ExecutableCommand, cursor, terminal};
 use inquire::{MultiSelect, Select};
 use itertools::Itertools;
 use semver::Comparator;

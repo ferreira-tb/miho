@@ -1,7 +1,7 @@
 use crate::agent::Agent;
-use crate::package::manifest::ManifestKind;
 use crate::package::Package;
-use anyhow::{bail, Result};
+use crate::package::manifest::ManifestKind;
+use anyhow::{Result, bail};
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
 use itertools::Itertools;

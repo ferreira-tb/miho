@@ -5,7 +5,7 @@ mod tauri_conf_json;
 use super::Package;
 use crate::agent::Agent;
 use crate::dependency::{self, Target};
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use cargo_toml::CargoToml;
 use dependency::DependencyTree;
 use globset::Glob;

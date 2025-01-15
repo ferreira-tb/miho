@@ -1,8 +1,8 @@
 use super::default_version;
 use crate::agent::Agent;
 use crate::dependency::{self, DependencyKind, DependencyTree};
-use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use crate::package::Package;
+use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use anyhow::Result;
 use semver::Version;
 use serde::Deserialize;
