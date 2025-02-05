@@ -20,6 +20,7 @@ use tokio::process::Command;
 static RELEASE: OnceLock<Release> = OnceLock::new();
 
 #[derive(Args, Debug, Default, Deserialize)]
+#[serde(default)]
 pub struct Bump {
   /// Type of the release.
   #[arg(default_value = "patch")]

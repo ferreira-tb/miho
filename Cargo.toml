@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "6.0.1"
+version = "6.0.2"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -9,7 +9,7 @@ license = "MIT"
 readme = "README.md"
 edition = "2024"
 rust-version = "1.86"
-keywords = ["miho", "repository", "git"]
+keywords = ["git", "repository"]
 categories = ["development-tools"]
 
 [profile.release]

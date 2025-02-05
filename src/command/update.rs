@@ -26,6 +26,7 @@ type TreeTuple<T> = (T, DependencyTree);
 static RELEASE: OnceLock<Option<Release>> = OnceLock::new();
 
 #[derive(Args, Debug, Default, Deserialize)]
+#[serde(default)]
 pub struct Update {
   /// Type of the release.
   release: Option<String>,
