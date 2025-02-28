@@ -2,12 +2,9 @@
   "name": "miho",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.2.0",
+  "packageManager": "pnpm@10.5.2",
   "scripts": {
-    "clippy": "cargo clippy",
-    "format": "cargo fmt --all",
     "mock:bump": "cargo run -- bump -t -p mocks",
-    "mock:update": "cargo run -- update major -t -p mocks",
-    "release": "pnpm run clippy && cargo publish"
+    "mock:update": "cargo run -- update major -t -p mocks"
   }
 }
