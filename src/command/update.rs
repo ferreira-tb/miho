@@ -1,4 +1,4 @@
-use super::{Choice, Commit, Config, PromptResult};
+use super::{Choice, Commit, PromptResult};
 use crate::agent::Agent;
 use crate::dependency::{Dependency, DependencyTree};
 use crate::package::{GlobalPackage, Package, PackageDependencyTree, PackageDisplay};
@@ -95,11 +95,7 @@ pub struct Update {
 impl_commit!(Update);
 
 impl super::Command for Update {
-  async fn execute(mut self, config: Option<Config>) -> Result<()> {
-    if let Some(mut config) = config {
-      self.merge(&mut config.update);
-    }
-
+  async fn execute(mut self) -> Result<()> {
     self.set_release();
 
     if self.global {
@@ -107,33 +103,6 @@ impl super::Command for Update {
     } else {
       self.execute_local().await
     }
-  }
-
-  fn merge(&mut self, value: &mut Self) {
-    macro_rules! take_opt {
-      ($field:ident) => {
-        if self.$field.is_none() {
-          self.$field = value.$field.take();
-        }
-      };
-    }
-
-    take_opt!(release);
-    take_opt!(add);
-    take_opt!(agent);
-    take_opt!(commit_message);
-    take_opt!(dependency);
-    take_opt!(package);
-    take_opt!(skip_dependency);
-
-    self.dry_run |= value.dry_run;
-    self.global |= value.global;
-    self.no_ask |= value.no_ask;
-    self.no_commit = value.no_commit;
-    self.no_push |= value.no_push;
-    self.no_verify |= value.no_verify;
-    self.peer |= value.peer;
-    self.select_all |= value.select_all;
   }
 }
 

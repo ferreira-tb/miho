@@ -21,7 +21,7 @@ pub type Cache = HashSet<DependencyCache>;
 const CARGO_REGISTRY: &str = "https://crates.io/api/v1/crates";
 const NPM_REGISTRY: &str = "https://registry.npmjs.org";
 
-const USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
+const USER_AGENT: &str = concat!("miho/", env!("CARGO_PKG_VERSION"));
 
 static HTTP_CLIENT: LazyLock<Client> = LazyLock::new(|| {
   Client::builder()

@@ -1,4 +1,4 @@
-use super::{Choice, Commit, Config, PromptResult};
+use super::{Choice, Commit, PromptResult};
 use crate::agent::Agent;
 use crate::package::Package;
 use crate::package::manifest::DEFAULT_VERSION;
@@ -78,11 +78,7 @@ pub struct Bump {
 impl_commit!(Bump);
 
 impl super::Command for Bump {
-  async fn execute(mut self, config: Option<Config>) -> Result<()> {
-    if let Some(mut config) = config {
-      self.merge(&mut config.bump);
-    }
-
+  async fn execute(mut self) -> Result<()> {
     self.set_release()?;
 
     let packages = search_packages!(&self)
@@ -107,29 +103,6 @@ impl super::Command for Bump {
     }
 
     Ok(())
-  }
-
-  fn merge(&mut self, value: &mut Self) {
-    macro_rules! take_opt {
-      ($field:ident) => {
-        if self.$field.is_none() {
-          self.$field = value.$field.take();
-        }
-      };
-    }
-
-    take_opt!(add);
-    take_opt!(agent);
-    take_opt!(build);
-    take_opt!(commit_message);
-    take_opt!(package);
-    take_opt!(pre);
-
-    self.dry_run |= value.dry_run;
-    self.no_ask |= value.no_ask;
-    self.no_commit |= value.no_commit;
-    self.no_push |= value.no_push;
-    self.no_verify |= value.no_verify;
   }
 }
 
