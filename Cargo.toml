@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "7.0.0"
+version = "7.0.1"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -46,7 +46,6 @@ priority = -1
 anyhow = "1.0"
 colored = "3.0"
 crossterm = "0.28"
-futures = "0.3"
 globset = "0.4"
 ignore = "0.4"
 inquire = "0.7"
@@ -79,7 +78,7 @@ version = "0.18"
 features = ["ansi"]
 
 [dependencies.tokio]
-version = "1.43"
+version = "1.44"
 features = ["full"]
 
 [dependencies.toml]
