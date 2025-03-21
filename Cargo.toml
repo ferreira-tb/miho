@@ -8,7 +8,7 @@ authors = ["Andrew Ferreira <andrew.shien2@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 edition = "2024"
-rust-version = "1.86"
+rust-version = "1.85"
 keywords = ["git", "repository"]
 categories = ["development-tools"]
 
