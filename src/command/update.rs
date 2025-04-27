@@ -1,10 +1,3 @@
-use super::{Choice, Commit, PromptResult};
-use crate::agent::Agent;
-use crate::dependency::{Dependency, DependencyTree};
-use crate::package::{GlobalPackage, Package, PackageDependencyTree, PackageDisplay};
-use crate::release::Release;
-use crate::version::ComparatorExt;
-use crate::{command, impl_commit, search_packages};
 use anyhow::{Error, Result};
 use clap::Args;
 use colored::Colorize;
@@ -20,6 +13,14 @@ use std::{env, fmt, mem};
 use strum::IntoEnumIterator;
 use tokio::process::Command;
 use tokio::task::JoinSet;
+
+use super::{Choice, Commit, PromptResult};
+use crate::agent::Agent;
+use crate::dependency::{Dependency, DependencyTree};
+use crate::package::{GlobalPackage, Package, PackageDependencyTree, PackageDisplay};
+use crate::release::Release;
+use crate::version::ComparatorExt;
+use crate::{command, impl_commit, search_packages};
 
 type TreeTuple<T> = (T, DependencyTree);
 

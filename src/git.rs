@@ -2,12 +2,13 @@ mod add;
 mod commit;
 mod push;
 
-pub use add::Add;
 use anyhow::Result;
-pub use commit::Commit;
-pub use push::Push;
 use std::process::ExitStatus;
 use strum::{Display, EnumString};
+
+pub use add::Add;
+pub use commit::Commit;
+pub use push::Push;
 
 pub trait Git {
   async fn spawn(&mut self) -> Result<ExitStatus>;

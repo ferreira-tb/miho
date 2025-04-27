@@ -1,11 +1,12 @@
-use crate::agent::Agent;
-use crate::package::Package;
-use crate::package::manifest::ManifestKind;
 use anyhow::{Result, bail};
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ignore::{DirEntry, WalkBuilder};
 use itertools::Itertools;
 use std::path::Path;
+
+use crate::agent::Agent;
+use crate::package::Package;
+use crate::package::manifest::ManifestKind;
 
 #[derive(Debug)]
 pub struct SearchBuilder<'a> {

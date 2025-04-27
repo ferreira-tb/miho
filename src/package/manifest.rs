@@ -2,9 +2,6 @@ mod cargo_toml;
 mod package_json;
 mod tauri_conf_json;
 
-use super::Package;
-use crate::agent::Agent;
-use crate::dependency::{self, Target};
 use anyhow::{Result, anyhow};
 use cargo_toml::CargoToml;
 use dependency::DependencyTree;
@@ -15,6 +12,10 @@ use std::path::Path;
 use std::sync::LazyLock;
 use strum::{EnumIter, IntoEnumIterator};
 use tauri_conf_json::TauriConfJson;
+
+use super::Package;
+use crate::agent::Agent;
+use crate::dependency::{self, Target};
 
 pub(super) type ManifestBox = Box<dyn Handler + Send + Sync>;
 

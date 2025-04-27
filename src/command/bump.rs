@@ -1,10 +1,3 @@
-use super::{Choice, Commit, PromptResult};
-use crate::agent::Agent;
-use crate::package::Package;
-use crate::package::manifest::DEFAULT_VERSION;
-use crate::release::Release;
-use crate::version::VersionExt;
-use crate::{impl_commit, search_packages};
 use anyhow::Result;
 use clap::Args;
 use colored::Colorize;
@@ -16,6 +9,14 @@ use std::path::PathBuf;
 use std::sync::OnceLock;
 use strum::IntoEnumIterator;
 use tokio::process::Command;
+
+use super::{Choice, Commit, PromptResult};
+use crate::agent::Agent;
+use crate::package::Package;
+use crate::package::manifest::DEFAULT_VERSION;
+use crate::release::Release;
+use crate::version::VersionExt;
+use crate::{impl_commit, search_packages};
 
 static RELEASE: OnceLock<Release> = OnceLock::new();
 

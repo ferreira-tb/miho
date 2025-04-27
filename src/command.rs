@@ -2,8 +2,9 @@ mod bump;
 mod update;
 
 use anyhow::Result;
-pub use bump::Bump;
 use strum::{Display, EnumIter, EnumString};
+
+pub use bump::Bump;
 pub use update::Update;
 
 pub trait Command {

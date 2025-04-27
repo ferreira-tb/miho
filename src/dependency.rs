@@ -1,7 +1,3 @@
-use crate::agent::Agent;
-use crate::release::Release;
-use crate::return_if_ne;
-use crate::version::{ComparatorExt, VersionExt, VersionReqExt};
 use anyhow::{Result, bail};
 use itertools::Itertools;
 use reqwest::Client;
@@ -15,6 +11,11 @@ use std::sync::{Arc, LazyLock, Mutex};
 use std::{fmt, mem};
 use strum::{AsRefStr, Display, EnumIs, EnumString};
 use tokio::task::JoinSet;
+
+use crate::agent::Agent;
+use crate::release::Release;
+use crate::return_if_ne;
+use crate::version::{ComparatorExt, VersionExt, VersionReqExt};
 
 pub type Cache = HashSet<DependencyCache>;
 

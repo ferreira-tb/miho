@@ -1,7 +1,5 @@
 # Miho
 
-Easily bump your packages and update your dependencies.
-
 ```sh
 rustup toolchain install nightly
 cargo +nightly install miho --locked

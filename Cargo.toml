@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "7.0.1"
+version = "7.0.2"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -8,7 +8,7 @@ authors = ["Andrew Ferreira <andrew.shien2@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.86"
 keywords = ["git", "repository"]
 categories = ["development-tools"]
 
@@ -45,7 +45,7 @@ priority = -1
 [dependencies]
 anyhow = "1.0"
 colored = "3.0"
-crossterm = "0.28"
+crossterm = "0.29"
 globset = "0.4"
 ignore = "0.4"
 inquire = "0.7"
@@ -59,6 +59,7 @@ features = ["derive"]
 
 [dependencies.reqwest]
 version = "0.12"
+default-features = false
 features = ["brotli", "gzip", "json", "rustls-tls"]
 
 [dependencies.serde]
@@ -74,7 +75,7 @@ version = "0.27"
 features = ["derive"]
 
 [dependencies.tabled]
-version = "0.18"
+version = "0.19"
 features = ["ansi"]
 
 [dependencies.tokio]

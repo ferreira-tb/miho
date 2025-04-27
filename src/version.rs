@@ -1,6 +1,7 @@
-use crate::release::Release;
 use anyhow::{Result, bail};
 use semver::{BuildMetadata, Comparator, Op, Prerelease, Version, VersionReq};
+
+use crate::release::Release;
 
 pub trait VersionExt {
   fn as_comparator(&self, op: Op) -> Comparator;

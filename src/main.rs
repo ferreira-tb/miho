@@ -9,7 +9,7 @@ mod package;
 mod release;
 mod version;
 
-pub use anyhow::Result;
+use anyhow::Result;
 use clap::Parser;
 use command::{Bump, Command, Update};
 

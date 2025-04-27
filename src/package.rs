@@ -1,21 +1,23 @@
 pub mod manifest;
 mod search;
 
-use crate::agent::Agent;
-use crate::dependency::{DependencyKind, DependencyTree};
-use crate::release::Release;
-use crate::version::VersionExt;
-use crate::{command, return_if_ne};
 use anyhow::{Result, bail};
 use colored::Colorize;
 use itertools::Itertools;
 use manifest::{ManifestBox, ManifestKind};
-pub use search::SearchBuilder;
 use semver::{Op, Version};
 use serde_json::Value;
 use std::cmp::Ordering;
 use std::fmt;
 use std::path::{Path, PathBuf};
+
+pub use search::SearchBuilder;
+
+use crate::agent::Agent;
+use crate::dependency::{DependencyKind, DependencyTree};
+use crate::release::Release;
+use crate::version::VersionExt;
+use crate::{command, return_if_ne};
 
 pub struct Package {
   pub name: String,

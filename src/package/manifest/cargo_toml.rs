@@ -1,8 +1,3 @@
-use super::default_version;
-use crate::agent::Agent;
-use crate::dependency::{self, DependencyKind, DependencyTree};
-use crate::package::Package;
-use crate::package::manifest::{Handler, Manifest, ManifestBox};
 use anyhow::Result;
 use semver::Version;
 use serde::Deserialize;
@@ -11,6 +6,12 @@ use std::fs;
 use std::path::Path;
 use taplo::formatter;
 use toml::Value;
+
+use super::default_version;
+use crate::agent::Agent;
+use crate::dependency::{self, DependencyKind, DependencyTree};
+use crate::package::Package;
+use crate::package::manifest::{Handler, Manifest, ManifestBox};
 
 #[derive(Deserialize)]
 pub(super) struct CargoToml {
