@@ -9,7 +9,6 @@ use globset::Glob;
 use package_json::PackageJson;
 use semver::Version;
 use std::path::Path;
-use std::sync::LazyLock;
 use strum::{EnumIter, IntoEnumIterator};
 use tauri_conf_json::TauriConfJson;
 
@@ -19,7 +18,7 @@ use crate::dependency::{self, Target};
 
 pub(super) type ManifestBox = Box<dyn Handler + Send + Sync>;
 
-pub static DEFAULT_VERSION: LazyLock<Version> = LazyLock::new(|| Version::new(0, 0, 0));
+pub const DEFAULT_VERSION: Version = Version::new(0, 0, 0);
 
 trait Manifest {
   type Value;

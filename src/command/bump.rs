@@ -84,7 +84,7 @@ impl super::Command for Bump {
 
     let packages = search_packages!(&self)
       .into_iter()
-      .filter(|it| it.version != *DEFAULT_VERSION)
+      .filter(|it| it.version != DEFAULT_VERSION)
       .collect_vec();
 
     preview(&packages);

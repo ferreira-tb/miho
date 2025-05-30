@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "7.0.3"
+version = "7.0.4"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
@@ -51,7 +51,7 @@ ignore = "0.4"
 inquire = "0.7"
 itertools = "0.14"
 semver = "1.0"
-taplo = "0.13"
+taplo = "0.14"
 
 [dependencies.clap]
 version = "4.5"
