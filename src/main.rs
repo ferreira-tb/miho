@@ -1,4 +1,4 @@
-#![feature(let_chains, try_blocks)]
+#![feature(try_blocks)]
 
 mod agent;
 mod command;
