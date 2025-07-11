@@ -1,6 +1,6 @@
 [package]
 name = "miho"
-version = "7.0.5"
+version = "7.0.6"
 description = "Repository management tools"
 homepage = "https://github.com/ferreira-tb/miho"
 repository = "https://github.com/ferreira-tb/miho"
